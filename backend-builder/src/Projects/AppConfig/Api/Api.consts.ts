@@ -51,3 +51,10 @@ input ModelBooleanInput {
   attributeType: ModelAttributeTypes
 }
 `
+
+export const ModelSortDirection = `
+enum ModelSortDirection {
+  ASC
+  DESC
+}
+`
