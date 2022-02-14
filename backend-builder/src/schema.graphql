@@ -31,13 +31,23 @@ type Connection {
 }
 
 type DataField {
-  connections: [Connection!]!
+  _id: ObjectId!
+  connection: [Connection!]
   dataType: String!
   fieldName: String!
   isHashed: Boolean!
   isUnique: Boolean!
   keys: [Key!]!
+  nullable: Boolean!
   rules: [Auth!]!
+}
+
+input DataFieldInput {
+  dataType: String!
+  fieldName: String!
+  isHashed: Boolean!
+  isUnique: Boolean!
+  nullable: Boolean!
 }
 
 """
@@ -64,12 +74,32 @@ type Key {
 }
 
 type Mutation {
+  createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
+  createEntityModel(name: String!, projectId: ObjectId!): EntityModel
+  createField: Boolean
+  createMutation: Boolean
   createOrganization(organization: OrganizationInput!): Organization!
   createProject(project: ProjectInput!): Project!
+  createQuery: Boolean
+  createRelationship: Boolean
+  createSubscription: Boolean
   createUser(user: UserInput!): User!
+  deleteEntityModel: Boolean
+  deleteField: Boolean
+  deleteMutations: Boolean
+  deleteQuery: Boolean
+  deleteRelationship: Boolean
+  deleteSubscription: Boolean
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
+  publishApi(projectId: ObjectId!): Boolean!
   register(email: String!, password: String!): UserResponse!
+  updateEntityModel: Boolean
+  updateField: Boolean
+  updateMutation: Boolean
+  updateQuery: Boolean
+  updateRelationship: Boolean
+  updateSubscription: Boolean
 }
 
 """Mongo object id scalar type"""
@@ -88,8 +118,9 @@ input OrganizationInput {
 }
 
 type Project {
+  _id: ObjectId!
   appConfig: AppConfig!
-  id: Float!
+  appId: String!
   organization: Organization!
   projectName: String!
 }
@@ -100,8 +131,21 @@ input ProjectInput {
 }
 
 type Query {
+  listEntityModel: Boolean
+  listFields: Boolean
+  listMutations: Boolean
   listOrganizations: [Organization!]!
+  listProjects: [Project!]!
+  listQueries: Boolean
+  listRelationships: Boolean
+  listSubscriptions: Boolean
   me: User
+  retrieveEntityModel: Boolean
+  retrieveField: Boolean
+  retrieveMutation: Boolean
+  retrieveQuery: Boolean
+  retrieveRelationship: Boolean
+  retrieveSubscription: Boolean
 }
 
 type User {

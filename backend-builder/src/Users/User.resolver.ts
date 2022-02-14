@@ -7,8 +7,10 @@ import { UserInput } from "./User.input";
 import { hash, verify } from "argon2";
 import { ApolloError } from "apollo-server";
 import { COOKIE_NAME } from "../consts";
+import { Service } from "typedi";
 
 const passwordRegex = /(?=(.*[0-9]))(?=.*[\!@#$%^&*()\\[\]{}\-_+=~`|:;"'<>,./?])(?=.*[a-z])(?=(.*[A-Z]))(?=(.*)).{6,}/g;
+
 
 @ObjectType()
 class UserResponse {
@@ -22,6 +24,7 @@ class UserResponse {
   sessionId?: String;
 }
 
+@Service()
 @Resolver(User)
 export class UserResolver {
   @Query(() => User, { nullable: true })

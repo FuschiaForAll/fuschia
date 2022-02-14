@@ -1,15 +1,28 @@
-import { Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { ObjectId } from "mongoose";
+import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Context } from "../../../types";
+import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { ApiService } from "./Api.service";
+import { ProjectService } from "../../Project.service";
+import { ApolloError } from "apollo-server";
+import { ProjectModel } from "../../../Models";
+import { Service } from "typedi";
 
+@Service()
 @Resolver()
 export class ApiResolver {
   constructor(
-    private apiService: ApiService
+    private apiService: ApiService,
+    private projectService: ProjectService
   ) { }
-  @Mutation()
-  async publishApi(@Ctx() ctx: Context) {
-
+  @Mutation(() => Boolean)
+  async publishApi(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Ctx() ctx: Context) {
+    if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
+    const project = await ProjectModel.findById(projectId)
+    if (project) {
+      this.apiService.publish(project)
+    }
+    return true;
   }
 
   @Mutation(() => Boolean, { nullable: true })
@@ -30,28 +43,6 @@ export class ApiResolver {
   }
   @Mutation(() => Boolean, { nullable: true })
   async deleteRelationship(@Ctx() ctx: Context) {
-    return true
-  }
-
-
-  @Mutation(() => Boolean, { nullable: true })
-  async createType(@Ctx() ctx: Context) {
-    return true
-  }
-  @Query(() => Boolean, { nullable: true })
-  async retrieveType(@Ctx() ctx: Context) {
-    return true
-  }
-  @Query(() => Boolean, { nullable: true })
-  async listTypes(@Ctx() ctx: Context) {
-    return true
-  }
-  @Mutation(() => Boolean, { nullable: true })
-  async updateType(@Ctx() ctx: Context) {
-    return true
-  }
-  @Mutation(() => Boolean, { nullable: true })
-  async deleteType(@Ctx() ctx: Context) {
     return true
   }
 

@@ -21,20 +21,25 @@ import { v4 as uuid } from 'uuid';
 import cookies from 'cookie-parser';
 import { COOKIE_NAME } from "./consts";
 import http from 'http'
+import { Container } from "typedi";
+import { EntityModelResolver } from "./Projects/AppConfig/Api/Models/EntityModel.resolver";
+import { DataFieldResolver } from "./Projects/AppConfig/Api/Fields/DataField.resolver";
+import { ApiResolver } from "./Projects/AppConfig/Api/Api.resolver";
 
 (async () => {
   const redisStore = connectRedis(session)
   const redis = new Redis(REDIS_URL)
 
-  const mongoose = await connect(MONGO_DB_URL)
+  const mongoose = await connect(MONGO_DB_URL, { dbName: 'fuschia' })
 
   const schema = await buildSchema({
-    resolvers: [UserResolver, OrganizationResolver, ProjectResolver],
+    resolvers: [UserResolver, OrganizationResolver, ProjectResolver, EntityModelResolver, DataFieldResolver, ApiResolver],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],
     scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar}],
     validate: true,
-    authChecker
+    authChecker,
+    container: Container
   })
 
   

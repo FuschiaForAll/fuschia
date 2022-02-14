@@ -1,17 +1,19 @@
-import { prop as Property, getModelForClass } from "@typegoose/typegoose";
+import { prop as Property, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 import { ObjectId } from "mongoose";
 import { ObjectType, Field } from "type-graphql";
 import { Auth } from "../Auth.entity";
 import { DataField } from "../Fields/DataField.entity";
 import { Key } from "../Key.entity";
 import { ObjectIdScalar } from '../../../../utils/object-id.scalar'
+
+@modelOptions({ options: { allowMixed: Severity.ALLOW }})
 @ObjectType()
 export class EntityModel {
     @Field(type => ObjectIdScalar)
     readonly _id!: ObjectId;
-
+    
     @Field()
-    @Property({ required: true })
+    @Property({ required: true, unique: true })
     name!: string;
 
     @Field(type => [Key])
