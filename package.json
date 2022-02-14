@@ -1,4 +1,4 @@
 {
   "private": true,
-  "workspaces": ["hello", "world", "frontend-builder"]
+  "workspaces": ["backend-builder", "frontend-builder"]
 }
