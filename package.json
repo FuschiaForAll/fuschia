@@ -1,0 +1,4 @@
+{
+  "private": true,
+  "workspaces": ["backend-builder", "frontend-builder"]
+}
