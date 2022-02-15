@@ -118,4 +118,7 @@ web-build/
 # macOS
 .DS_Store
 
+# VIM
+*.swp
+
 cert/
