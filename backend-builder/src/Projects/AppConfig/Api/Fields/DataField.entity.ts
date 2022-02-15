@@ -25,7 +25,7 @@ export class DataField {
     readonly _id!: ObjectId;
     
     @Field()
-    @Property({ unique: true })
+    @Property()
     fieldName!: string;
     
     @Field()

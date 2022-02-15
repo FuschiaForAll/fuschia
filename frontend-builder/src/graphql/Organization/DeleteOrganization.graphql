@@ -1,0 +1,3 @@
+mutation DeleteOrganization($organizationId: ObjectId!) {
+  deleteOrganization(organizationId: $organizationId)
+}

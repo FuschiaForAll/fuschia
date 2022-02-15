@@ -1,0 +1,7 @@
+query ListProjects {
+  listProjects {
+    _id
+    projectName
+    appId
+  }
+}

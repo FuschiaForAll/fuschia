@@ -13,7 +13,7 @@ export class EntityModel {
     readonly _id!: ObjectId;
     
     @Field()
-    @Property({ required: true, unique: true })
+    @Property({ required: true })
     name!: string;
 
     @Field(type => [Key])

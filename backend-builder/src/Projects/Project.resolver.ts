@@ -4,9 +4,11 @@ import { Service } from "typedi";
 import { OrganizationModel, ProjectModel, UserModel } from "../Models";
 import { OrganizationService } from "../Organizations/Organization.service";
 import { Context } from "../types";
+import { ObjectIdScalar } from "../utils/object-id.scalar";
 import { AppConfig } from "./AppConfig/AppConfig.entity";
 import { Project } from "./Project.entity";
 import { ProjectInput } from "./Project.input";
+import { ObjectId } from 'mongoose'
 
 @Service()
 @Resolver(Project)
@@ -35,5 +37,12 @@ export class ProjectResolver {
     }).save()
     await OrganizationModel.findByIdAndUpdate(project.organizationId, { $push: { projects: newProject._id }})
     return newProject
+  }
+
+  @Mutation(returns => ObjectIdScalar)
+  async deleteProject(@Arg("projectId", type => ObjectIdScalar) projectId: ObjectId, @Ctx() ctx: Context) {
+    if (!ctx.req.session.userId) { throw new ApolloError('Unauthorized') }
+    await ProjectModel.findByIdAndDelete(projectId)
+    return projectId
   }
 }

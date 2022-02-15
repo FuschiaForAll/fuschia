@@ -87,6 +87,8 @@ type Mutation {
   deleteEntityModel: Boolean
   deleteField: Boolean
   deleteMutations: Boolean
+  deleteOrganization(organizationId: ObjectId!): ObjectId!
+  deleteProject(projectId: ObjectId!): ObjectId!
   deleteQuery: Boolean
   deleteRelationship: Boolean
   deleteSubscription: Boolean
@@ -153,7 +155,6 @@ type User {
   email: String!
   lastLogin: DateTime
   organizations: [Organization!]!
-  password: String!
   status: String!
   userRole: String!
 }

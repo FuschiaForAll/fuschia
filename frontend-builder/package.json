@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "^3.5.8",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
     "@mui/icons-material": "^5.4.1",
@@ -31,7 +32,8 @@
     "build": "react-app-rewired build",
     "test": "react-app-rewired test --passWithNoTests",
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
-    "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\""
+    "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",
+    "gen": "graphql-codegen --config codegen.yaml"
   },
   "eslintConfig": {
     "extends": [
@@ -52,5 +54,11 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@graphql-codegen/cli": "^2.6.1",
+    "@graphql-codegen/typescript": "^2.4.3",
+    "@graphql-codegen/typescript-operations": "^2.3.0",
+    "@graphql-codegen/typescript-react-apollo": "^3.2.6"
   }
 }

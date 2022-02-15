@@ -12,16 +12,15 @@ export class User {
     readonly _id!: ObjectId;
 
     @Field()
-    @Property({ required: true })
+    @Property({ required: true, unique: true })
     email!: string;
 
-    @Field()
     @Property({ required: true })
     password!: string;
 
     @Field()
-    @Property({ required: true })
-    userRole: UserRole = UserRole.USER;
+    @Property({ required: true, default: UserRole.USER})
+    userRole!: UserRole;
 
     @Field(() => Date, { nullable: true })
     @Property({ required: false })

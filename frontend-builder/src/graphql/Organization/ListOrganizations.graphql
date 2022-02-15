@@ -1,0 +1,13 @@
+query ListOrganizations {
+  listOrganizations {
+    _id
+    name
+    owner {
+      _id
+    }
+    members {
+      _id
+      email
+    }
+  }
+}

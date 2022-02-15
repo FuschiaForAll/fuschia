@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
-    "start:dev": "NODE_TLS_REJECT_UNAUTHORIZED='0' DEBUG=express-session nodemon --watch src -e js,json,ts,graphql,gql --exec \"yarn start\""
+    "start:dev": "NODE_TLS_REJECT_UNAUTHORIZED='0' DEBUG=express-session nodemon --watch src -e ts --exec \"yarn start\""
   },
   "dependencies": {
     "@typegoose/typegoose": "^9.6.2",
@@ -22,6 +22,7 @@
     "express-session": "^1.17.2",
     "generate-password": "^1.7.0",
     "graphql": "^15.3.0",
+    "graphql-redis-subscriptions": "^2.4.2",
     "graphql-upload": "^13.0.0",
     "ioredis": "^4.28.5",
     "jsonwebtoken": "^8.5.1",
@@ -31,6 +32,7 @@
     "pg": "^8.7.3",
     "pg-hstore": "^2.3.4",
     "reflect-metadata": "^0.1.13",
+    "subscriptions-transport-ws": "^0.11.0",
     "type-graphql": "^1.1.1",
     "typedi": "^0.10.0",
     "typeorm": "^0.2.41",

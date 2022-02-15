@@ -50,11 +50,6 @@ export class UserResolver {
   ) {
     const lowerCaseEmail = email.toLowerCase()
     const hashedPassword = await hash(password);
- 
-    const checkExists = await UserModel.findOne({ where: { email } })
-    if (checkExists) {
-      throw new ApolloError("Email account is already in use")
-    }
 
     const createResult = await UserModel.create({
       email: lowerCaseEmail,
@@ -98,6 +93,7 @@ export class UserResolver {
     ctx.req.session.email = user.email;
     ctx.req.session.userRole = user.userRole;
     ctx.req.session.userId = user._id;
+    console.log(ctx.req.session)
 
     return { user, sessionId: ctx.req.session.id };
   }

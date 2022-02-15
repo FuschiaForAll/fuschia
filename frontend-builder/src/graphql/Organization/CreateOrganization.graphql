@@ -1,0 +1,13 @@
+mutation CreateOrganization($organization: OrganizationInput!) {
+  createOrganization(organization: $organization) {
+    _id
+    name
+    owner {
+      _id
+    }
+    members {
+      _id
+      email
+    }
+  }
+}
