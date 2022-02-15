@@ -117,3 +117,5 @@ web-build/
 
 # macOS
 .DS_Store
+
+cert/
