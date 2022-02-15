@@ -1,8 +1,14 @@
 import React from 'react'
 import Canvas from './Canvas'
+import Sidebar from './Sidebar'
 
 const Builder: React.FC = function Builder() {
-  return <Canvas />
+  return (
+    <div>
+      <Canvas />
+      <Sidebar />
+    </div>
+  )
 }
 
 export default Builder
