@@ -1,0 +1,58 @@
+query GetProject($projectId: ObjectId!) {
+  getProject(projectId: $projectId) {
+    _id
+    appId
+    projectName
+    appConfig {
+      apiConfig {
+        models {
+          _id
+          name
+          keys {
+            name
+            fieldNames
+          }
+          auth {
+            allow
+            provider
+            ownerField
+            identityClaim
+            groupClaim
+            groups
+            groupsField
+            operations
+          }
+          fields {
+            _id
+            fieldName
+            isUnique
+            isHashed
+            nullable
+            dataType
+            rules {
+              allow
+              provider
+              ownerField
+              identityClaim
+              groupClaim
+              groups
+              groupsField
+              operations
+            }
+            keys {
+              name
+              fieldNames
+            }
+            connection {
+              keyName
+              fieldNames
+            }
+          }
+        }
+        queries
+        mutations
+        subscriptions
+      }
+    }
+  }
+}

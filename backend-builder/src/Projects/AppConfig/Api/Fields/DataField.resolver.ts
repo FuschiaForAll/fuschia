@@ -21,8 +21,10 @@ export class DataFieldResolver {
     if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
     const project = await ProjectModel.findById(projectId)
     if (project) {
-      const entityModel = project.appConfig.apiConfig.models.find(model => model._id.instance === entityModelId.instance)
-      console.log(entityModel)
+      const entityModel = project.appConfig.apiConfig.models.find(model => {
+        // @ts-ignore
+        return model._id.equals(entityModelId)
+      })
       if (entityModel) {
         const newDataField = new DataField()
         newDataField.fieldName = dataField.fieldName
@@ -31,7 +33,6 @@ export class DataFieldResolver {
         newDataField.dataType = dataField.dataType
         newDataField.nullable = dataField.nullable
         entityModel.fields.push(newDataField)
-        console.log(entityModel)
         project.save()
         return entityModel.fields.at(-1)
       }
@@ -51,8 +52,24 @@ export class DataFieldResolver {
   async updateEntityModel(@Ctx() ctx: Context) {
     return true
   }
-  @Mutation(() => Boolean, { nullable: true })
-  async deleteEntityModel(@Ctx() ctx: Context) {
-    return true
+  @Mutation(() => ObjectIdScalar, { nullable: true })
+  async deleteDataField(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('entityModelId', type => ObjectIdScalar) entityModelId: ObjectId, @Arg('dataFieldId', type => ObjectIdScalar) dataFieldId: ObjectId, @Ctx() ctx: Context) {
+    if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
+    const project = await ProjectModel.findById(projectId)
+    if (project) {
+      const entityModel = project.appConfig.apiConfig.models.find(model => {
+        // @ts-ignore
+        return model._id.equals(entityModelId)
+      })
+      if (entityModel) {
+        entityModel.fields = entityModel.fields.filter(field => {
+          // @ts-ignore
+        return !field._id.equals(dataFieldId)
+        })
+        project.save()
+        return dataFieldId
+      }
+    }
+    return null
   }
 }

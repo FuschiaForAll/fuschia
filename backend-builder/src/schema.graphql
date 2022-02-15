@@ -5,7 +5,7 @@
 
 type Api {
   models: [EntityModel!]!
-  mutation: [String!]!
+  mutations: [String!]!
   queries: [String!]!
   subscriptions: [String!]!
 }
@@ -84,6 +84,7 @@ type Mutation {
   createRelationship: Boolean
   createSubscription: Boolean
   createUser(user: UserInput!): User!
+  deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel: Boolean
   deleteField: Boolean
   deleteMutations: Boolean
@@ -133,6 +134,7 @@ input ProjectInput {
 }
 
 type Query {
+  getProject(projectId: ObjectId!): Project!
   listEntityModel: Boolean
   listFields: Boolean
   listMutations: Boolean

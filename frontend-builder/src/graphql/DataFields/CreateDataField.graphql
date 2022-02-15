@@ -1,0 +1,36 @@
+mutation CreateDataField(
+  $projectId: ObjectId!
+  $entityModelId: ObjectId!
+  $dataField: DataFieldInput!
+) {
+  createDataField(
+    projectId: $projectId
+    entityModelId: $entityModelId
+    dataField: $dataField
+  ) {
+    _id
+    fieldName
+    isUnique
+    isHashed
+    nullable
+    dataType
+    rules {
+      allow
+      provider
+      ownerField
+      identityClaim
+      groupClaim
+      groups
+      groupsField
+      operations
+    }
+    keys {
+      name
+      fieldNames
+    }
+    connection {
+      keyName
+      fieldNames
+    }
+  }
+}

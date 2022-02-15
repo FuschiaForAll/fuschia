@@ -1,0 +1,6 @@
+mutation CreateEntityModel($projectId: ObjectId!, $name: String!) {
+  createEntityModel(projectId: $projectId, name: $name) {
+    _id
+    name
+  }
+}

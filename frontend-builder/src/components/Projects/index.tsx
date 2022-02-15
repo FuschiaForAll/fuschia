@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   useCreateProjectMutation,
   useListOrganizationsQuery,
@@ -7,6 +8,7 @@ import {
 } from '../../generated/graphql'
 
 const Projects: React.FC = function Projects() {
+  const navigate = useNavigate()
   const [selectedOrganization, setSelectedOrganization] = useState('')
   const [projectName, setProjectName] = useState('')
   const { data: organizations } = useListOrganizationsQuery()
@@ -50,7 +52,9 @@ const Projects: React.FC = function Projects() {
           }}
         >
           {organizations?.listOrganizations.map(org => (
-            <option value={org._id}>{org.name}</option>
+            <option value={org._id} key={org._id}>
+              {org.name}
+            </option>
           ))}
         </select>
       </div>
@@ -84,6 +88,9 @@ const Projects: React.FC = function Projects() {
       {projects?.listProjects.map(project => (
         <div key={project._id}>{project.projectName}</div>
       ))}
+      <button onClick={() => navigate('/database-editor')}>
+        Edit Database
+      </button>
     </div>
   )
 }

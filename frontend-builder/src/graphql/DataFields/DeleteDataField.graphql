@@ -1,0 +1,11 @@
+mutation DeleteDataField(
+  $projectId: ObjectId!
+  $entityModelId: ObjectId!
+  $dataFieldId: ObjectId!
+) {
+  deleteDataField(
+    projectId: $projectId
+    entityModelId: $entityModelId
+    dataFieldId: $dataFieldId
+  )
+}

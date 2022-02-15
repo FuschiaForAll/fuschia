@@ -28,7 +28,7 @@ export type Scalars = {
 export type Api = {
   __typename?: 'Api'
   models: Array<EntityModel>
-  mutation: Array<Scalars['String']>
+  mutations: Array<Scalars['String']>
   queries: Array<Scalars['String']>
   subscriptions: Array<Scalars['String']>
 }
@@ -110,6 +110,7 @@ export type Mutation = {
   createRelationship?: Maybe<Scalars['Boolean']>
   createSubscription?: Maybe<Scalars['Boolean']>
   createUser: User
+  deleteDataField?: Maybe<Scalars['ObjectId']>
   deleteEntityModel?: Maybe<Scalars['Boolean']>
   deleteField?: Maybe<Scalars['Boolean']>
   deleteMutations?: Maybe<Scalars['Boolean']>
@@ -151,6 +152,12 @@ export type MutationCreateProjectArgs = {
 
 export type MutationCreateUserArgs = {
   user: UserInput
+}
+
+export type MutationDeleteDataFieldArgs = {
+  dataFieldId: Scalars['ObjectId']
+  entityModelId: Scalars['ObjectId']
+  projectId: Scalars['ObjectId']
 }
 
 export type MutationDeleteOrganizationArgs = {
@@ -204,6 +211,7 @@ export type ProjectInput = {
 
 export type Query = {
   __typename?: 'Query'
+  getProject: Project
   listEntityModel?: Maybe<Scalars['Boolean']>
   listFields?: Maybe<Scalars['Boolean']>
   listMutations?: Maybe<Scalars['Boolean']>
@@ -219,6 +227,10 @@ export type Query = {
   retrieveQuery?: Maybe<Scalars['Boolean']>
   retrieveRelationship?: Maybe<Scalars['Boolean']>
   retrieveSubscription?: Maybe<Scalars['Boolean']>
+}
+
+export type QueryGetProjectArgs = {
+  projectId: Scalars['ObjectId']
 }
 
 export type User = {
@@ -241,6 +253,67 @@ export type UserResponse = {
   errors?: Maybe<Array<FieldError>>
   sessionId?: Maybe<Scalars['String']>
   user?: Maybe<User>
+}
+
+export type CreateDataFieldMutationVariables = Exact<{
+  projectId: Scalars['ObjectId']
+  entityModelId: Scalars['ObjectId']
+  dataField: DataFieldInput
+}>
+
+export type CreateDataFieldMutation = {
+  __typename?: 'Mutation'
+  createDataField?: {
+    __typename?: 'DataField'
+    _id: any
+    fieldName: string
+    isUnique: boolean
+    isHashed: boolean
+    nullable: boolean
+    dataType: string
+    rules: Array<{
+      __typename?: 'Auth'
+      allow: string
+      provider: string
+      ownerField: string
+      identityClaim: string
+      groupClaim: string
+      groups: Array<string>
+      groupsField: string
+      operations: Array<string>
+    }>
+    keys: Array<{ __typename?: 'Key'; name: string; fieldNames: Array<string> }>
+    connection?: Array<{
+      __typename?: 'Connection'
+      keyName: string
+      fieldNames: Array<string>
+    }> | null
+  } | null
+}
+
+export type DeleteDataFieldMutationVariables = Exact<{
+  projectId: Scalars['ObjectId']
+  entityModelId: Scalars['ObjectId']
+  dataFieldId: Scalars['ObjectId']
+}>
+
+export type DeleteDataFieldMutation = {
+  __typename?: 'Mutation'
+  deleteDataField?: any | null
+}
+
+export type CreateEntityModelMutationVariables = Exact<{
+  projectId: Scalars['ObjectId']
+  name: Scalars['String']
+}>
+
+export type CreateEntityModelMutation = {
+  __typename?: 'Mutation'
+  createEntityModel?: {
+    __typename?: 'EntityModel'
+    _id: any
+    name: string
+  } | null
 }
 
 export type CreateOrganizationMutationVariables = Exact<{
@@ -303,6 +376,80 @@ export type DeleteProjectMutation = {
   deleteProject: any
 }
 
+export type GetProjectQueryVariables = Exact<{
+  projectId: Scalars['ObjectId']
+}>
+
+export type GetProjectQuery = {
+  __typename?: 'Query'
+  getProject: {
+    __typename?: 'Project'
+    _id: any
+    appId: string
+    projectName: string
+    appConfig: {
+      __typename?: 'AppConfig'
+      apiConfig: {
+        __typename?: 'Api'
+        queries: Array<string>
+        mutations: Array<string>
+        subscriptions: Array<string>
+        models: Array<{
+          __typename?: 'EntityModel'
+          _id: any
+          name: string
+          keys: Array<{
+            __typename?: 'Key'
+            name: string
+            fieldNames: Array<string>
+          }>
+          auth: Array<{
+            __typename?: 'Auth'
+            allow: string
+            provider: string
+            ownerField: string
+            identityClaim: string
+            groupClaim: string
+            groups: Array<string>
+            groupsField: string
+            operations: Array<string>
+          }>
+          fields: Array<{
+            __typename?: 'DataField'
+            _id: any
+            fieldName: string
+            isUnique: boolean
+            isHashed: boolean
+            nullable: boolean
+            dataType: string
+            rules: Array<{
+              __typename?: 'Auth'
+              allow: string
+              provider: string
+              ownerField: string
+              identityClaim: string
+              groupClaim: string
+              groups: Array<string>
+              groupsField: string
+              operations: Array<string>
+            }>
+            keys: Array<{
+              __typename?: 'Key'
+              name: string
+              fieldNames: Array<string>
+            }>
+            connection?: Array<{
+              __typename?: 'Connection'
+              keyName: string
+              fieldNames: Array<string>
+            }> | null
+          }>
+        }>
+      }
+    }
+  }
+}
+
 export type ListProjectsQueryVariables = Exact<{ [key: string]: never }>
 
 export type ListProjectsQuery = {
@@ -357,6 +504,199 @@ export type RegisterMutation = {
   }
 }
 
+export const CreateDataFieldDocument = gql`
+  mutation CreateDataField(
+    $projectId: ObjectId!
+    $entityModelId: ObjectId!
+    $dataField: DataFieldInput!
+  ) {
+    createDataField(
+      projectId: $projectId
+      entityModelId: $entityModelId
+      dataField: $dataField
+    ) {
+      _id
+      fieldName
+      isUnique
+      isHashed
+      nullable
+      dataType
+      rules {
+        allow
+        provider
+        ownerField
+        identityClaim
+        groupClaim
+        groups
+        groupsField
+        operations
+      }
+      keys {
+        name
+        fieldNames
+      }
+      connection {
+        keyName
+        fieldNames
+      }
+    }
+  }
+`
+export type CreateDataFieldMutationFn = Apollo.MutationFunction<
+  CreateDataFieldMutation,
+  CreateDataFieldMutationVariables
+>
+
+/**
+ * __useCreateDataFieldMutation__
+ *
+ * To run a mutation, you first call `useCreateDataFieldMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateDataFieldMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createDataFieldMutation, { data, loading, error }] = useCreateDataFieldMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      entityModelId: // value for 'entityModelId'
+ *      dataField: // value for 'dataField'
+ *   },
+ * });
+ */
+export function useCreateDataFieldMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateDataFieldMutation,
+    CreateDataFieldMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<
+    CreateDataFieldMutation,
+    CreateDataFieldMutationVariables
+  >(CreateDataFieldDocument, options)
+}
+export type CreateDataFieldMutationHookResult = ReturnType<
+  typeof useCreateDataFieldMutation
+>
+export type CreateDataFieldMutationResult =
+  Apollo.MutationResult<CreateDataFieldMutation>
+export type CreateDataFieldMutationOptions = Apollo.BaseMutationOptions<
+  CreateDataFieldMutation,
+  CreateDataFieldMutationVariables
+>
+export const DeleteDataFieldDocument = gql`
+  mutation DeleteDataField(
+    $projectId: ObjectId!
+    $entityModelId: ObjectId!
+    $dataFieldId: ObjectId!
+  ) {
+    deleteDataField(
+      projectId: $projectId
+      entityModelId: $entityModelId
+      dataFieldId: $dataFieldId
+    )
+  }
+`
+export type DeleteDataFieldMutationFn = Apollo.MutationFunction<
+  DeleteDataFieldMutation,
+  DeleteDataFieldMutationVariables
+>
+
+/**
+ * __useDeleteDataFieldMutation__
+ *
+ * To run a mutation, you first call `useDeleteDataFieldMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteDataFieldMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteDataFieldMutation, { data, loading, error }] = useDeleteDataFieldMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      entityModelId: // value for 'entityModelId'
+ *      dataFieldId: // value for 'dataFieldId'
+ *   },
+ * });
+ */
+export function useDeleteDataFieldMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteDataFieldMutation,
+    DeleteDataFieldMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<
+    DeleteDataFieldMutation,
+    DeleteDataFieldMutationVariables
+  >(DeleteDataFieldDocument, options)
+}
+export type DeleteDataFieldMutationHookResult = ReturnType<
+  typeof useDeleteDataFieldMutation
+>
+export type DeleteDataFieldMutationResult =
+  Apollo.MutationResult<DeleteDataFieldMutation>
+export type DeleteDataFieldMutationOptions = Apollo.BaseMutationOptions<
+  DeleteDataFieldMutation,
+  DeleteDataFieldMutationVariables
+>
+export const CreateEntityModelDocument = gql`
+  mutation CreateEntityModel($projectId: ObjectId!, $name: String!) {
+    createEntityModel(projectId: $projectId, name: $name) {
+      _id
+      name
+    }
+  }
+`
+export type CreateEntityModelMutationFn = Apollo.MutationFunction<
+  CreateEntityModelMutation,
+  CreateEntityModelMutationVariables
+>
+
+/**
+ * __useCreateEntityModelMutation__
+ *
+ * To run a mutation, you first call `useCreateEntityModelMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateEntityModelMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createEntityModelMutation, { data, loading, error }] = useCreateEntityModelMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      name: // value for 'name'
+ *   },
+ * });
+ */
+export function useCreateEntityModelMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateEntityModelMutation,
+    CreateEntityModelMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<
+    CreateEntityModelMutation,
+    CreateEntityModelMutationVariables
+  >(CreateEntityModelDocument, options)
+}
+export type CreateEntityModelMutationHookResult = ReturnType<
+  typeof useCreateEntityModelMutation
+>
+export type CreateEntityModelMutationResult =
+  Apollo.MutationResult<CreateEntityModelMutation>
+export type CreateEntityModelMutationOptions = Apollo.BaseMutationOptions<
+  CreateEntityModelMutation,
+  CreateEntityModelMutationVariables
+>
 export const CreateOrganizationDocument = gql`
   mutation CreateOrganization($organization: OrganizationInput!) {
     createOrganization(organization: $organization) {
@@ -627,6 +967,115 @@ export type DeleteProjectMutationResult =
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<
   DeleteProjectMutation,
   DeleteProjectMutationVariables
+>
+export const GetProjectDocument = gql`
+  query GetProject($projectId: ObjectId!) {
+    getProject(projectId: $projectId) {
+      _id
+      appId
+      projectName
+      appConfig {
+        apiConfig {
+          models {
+            _id
+            name
+            keys {
+              name
+              fieldNames
+            }
+            auth {
+              allow
+              provider
+              ownerField
+              identityClaim
+              groupClaim
+              groups
+              groupsField
+              operations
+            }
+            fields {
+              _id
+              fieldName
+              isUnique
+              isHashed
+              nullable
+              dataType
+              rules {
+                allow
+                provider
+                ownerField
+                identityClaim
+                groupClaim
+                groups
+                groupsField
+                operations
+              }
+              keys {
+                name
+                fieldNames
+              }
+              connection {
+                keyName
+                fieldNames
+              }
+            }
+          }
+          queries
+          mutations
+          subscriptions
+        }
+      }
+    }
+  }
+`
+
+/**
+ * __useGetProjectQuery__
+ *
+ * To run a query within a React component, call `useGetProjectQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetProjectQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetProjectQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useGetProjectQuery(
+  baseOptions: Apollo.QueryHookOptions<
+    GetProjectQuery,
+    GetProjectQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<GetProjectQuery, GetProjectQueryVariables>(
+    GetProjectDocument,
+    options
+  )
+}
+export function useGetProjectLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    GetProjectQuery,
+    GetProjectQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<GetProjectQuery, GetProjectQueryVariables>(
+    GetProjectDocument,
+    options
+  )
+}
+export type GetProjectQueryHookResult = ReturnType<typeof useGetProjectQuery>
+export type GetProjectLazyQueryHookResult = ReturnType<
+  typeof useGetProjectLazyQuery
+>
+export type GetProjectQueryResult = Apollo.QueryResult<
+  GetProjectQuery,
+  GetProjectQueryVariables
 >
 export const ListProjectsDocument = gql`
   query ListProjects {

@@ -15,7 +15,7 @@ export class Api {
 
     @Field(type => [String])
     @Property({ default: [] })
-    mutation!: string[]
+    mutations!: string[]
 
     @Field(type => [String])
     @Property({ default: [] })
