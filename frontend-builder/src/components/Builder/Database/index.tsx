@@ -86,17 +86,19 @@ const Database: React.FC = function Database() {
             data.getProject.appConfig.apiConfig.models.map(model => (
               <div key={model._id}>
                 <table>
-                  <tr>
-                    <td>
-                      <EntityModel
-                        projectId={selectedProjectId}
-                        model={model}
-                      />
-                    </td>
-                    <td>
-                      <DataEditor model={model} />
-                    </td>
-                  </tr>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <EntityModel
+                          projectId={selectedProjectId}
+                          model={model}
+                        />
+                      </td>
+                      <td>
+                        <DataEditor model={model} />
+                      </td>
+                    </tr>
+                  </tbody>
                 </table>
               </div>
             ))}

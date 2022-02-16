@@ -19,6 +19,7 @@ function checkTypeForPrimitive(type: string) {
     case 'String':
     case 'Boolean':
     case 'Int':
+    case 'Float':
       return true
   }
   return false
@@ -31,6 +32,7 @@ export class ApiService {
     // for now let's just spin up an instance
     console.log("spawning API")
     spawn( 'node', ['/mnt/c/work/fuschia/backend-runner/src/index.js'], { env: { ...process.env, NODE_ENV: 'test', MONGO_DB_URL:'mongodb://localhost:27017', PROJECT_ID: project._id.toString()  } })
+    
     if (sandbox) {
       if (project.appConfig.apiConfig.sandboxEndpoint) {
         // version, destroy, and restart
