@@ -5,6 +5,14 @@ import { prop as Property, getModelForClass, modelOptions, Severity } from "@typ
 @modelOptions({ options: { allowMixed: Severity.ALLOW }, schemaOptions: { _id: false }})
 @ObjectType()
 export class Api {
+    @Field()
+    @Property()
+    sandboxEndpoint!: String
+
+    @Field()
+    @Property()
+    liveEndpoint!: String
+
     @Field(type => [EntityModel])
     @Property({ type: () => EntityModel, default: [] })
     models!: EntityModel[];

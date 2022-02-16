@@ -86,7 +86,7 @@ function publish(project) {
   project.appConfig.apiConfig.models.forEach(model => {
     const name = model.name.replace(' ', '')
     resolverBuilder.Query[`get${name}`] = (parent, args, context, info) => resolver.genericGetQueryResolver(model._id.toString(), parent, args, context, info)
-    resolverBuilder.Query[`list${name}`] = () => resolver.genericListQueryResolver(model._id.toString(), parent, args.input, context, info)
+    resolverBuilder.Query[`list${name}`] = (parent, args, context, info) => resolver.genericListQueryResolver(model._id.toString(), parent, args.input, context, info)
     queryBuilder.push(`  get${name}(_id: ID!): ${name}`)
     queryBuilder.push(`  list${name}(filter: Model${name}FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${name}Connection`)
     mutationBuilder.push(`  create${name}(input: Create${name}Input!, condition: Model${name}ConditionalInput): ${name}`)

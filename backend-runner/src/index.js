@@ -10,7 +10,7 @@ const { MongoClient } = require('mongodb');
   const { typeDefs, resolvers } = publish(project[0])
   console.log(typeDefs)
   const server = new ApolloServer({ debug: true, typeDefs: gql`${typeDefs}`, resolvers });
-  server.listen().then(({ url }) => {
+  server.listen({ port: 4005 }).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
 })()

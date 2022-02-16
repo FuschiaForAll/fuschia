@@ -67,7 +67,6 @@ export class UserResolver {
       userRole: UserRole.USER,
       status: UserStatus.ACTIVE,
     }).catch((error) => {
-      console.log("Users.Resolver::Register() Err", error);
       throw new ApolloError("Failed to register your account");
     });
     const newOrganization = await OrganizationModel.create({
@@ -95,8 +94,6 @@ export class UserResolver {
   ) {
     const lowerCaseEmail = email.toLowerCase();
     const user = await UserModel.findOne({ email: lowerCaseEmail });
-    console.log(`logged in user`);
-    console.log(user);
     if (!user) {
       throw new ApolloError("Login error");
     }
@@ -107,7 +104,6 @@ export class UserResolver {
     ctx.req.session.email = user.email;
     ctx.req.session.userRole = user.userRole;
     ctx.req.session.userId = user._id;
-    console.log(ctx.req.session);
 
     return { user, sessionId: ctx.req.session.id };
   }
@@ -118,7 +114,6 @@ export class UserResolver {
       ctx.req.session.destroy((err) => {
         ctx.res.clearCookie(COOKIE_NAME);
         if (err) {
-          console.log(err);
           resolve(false);
           return;
         }

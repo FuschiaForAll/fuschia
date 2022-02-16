@@ -1,0 +1,3 @@
+mutation PublishApi($projectId: ObjectId!) {
+  publishApi(projectId: $projectId)
+}

@@ -24,34 +24,6 @@ export const LoginTextField = withStyles({
   },
 })(TextField) as typeof TextField
 
-export const LoginBox = styled.div`
-  width: 90%;
-  max-width: 450px;
-  background: white;
-  border: 1px solid #b1b1b1;
-  box-sizing: border-box;
-  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
-  display: grid;
-  justify-items: center;
-  align-content: start;
-  padding: 16px 23px 27px;
-  grid-auto-rows: min-content;
-  img.logo {
-    width: 100%;
-    height: auto;
-  }
-`
-
-export const LoginBoxContainer = styled.div`
-  background-size: cover;
-  height: 100vh;
-  width: 100vw;
-  display: grid;
-  justify-content: center;
-  align-content: center;
-`
-
 export const WelcomeText = styled.span`
   font-family: 'Open Sans';
   font-style: normal;

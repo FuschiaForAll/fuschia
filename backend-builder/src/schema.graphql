@@ -4,9 +4,11 @@
 # -----------------------------------------------
 
 type Api {
+  liveEndpoint: String!
   models: [EntityModel!]!
   mutations: [String!]!
   queries: [String!]!
+  sandboxEndpoint: String!
   subscriptions: [String!]!
 }
 
