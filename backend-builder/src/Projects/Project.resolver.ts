@@ -23,7 +23,6 @@ export class ProjectResolver {
   async getProject(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Ctx() ctx: Context) {
     if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
     const project = await ProjectModel.findById(projectId)
-    console.log(project)
     return project
   }
 
@@ -31,9 +30,8 @@ export class ProjectResolver {
   @Query(returns => [Project])
   async listProjects(@Ctx() ctx: Context) {
     if (!ctx.req.session.userId) { throw new ApolloError('Unauthorized') }
-    const user = await UserModel.findOne({ where: { _id: ctx.req.session.userId }})
-    const projects = await ProjectModel.find().where({ $in: { organization: user?.organizations }})
-    console.log(projects)
+    const user = await UserModel.findById(ctx.req.session.userId)
+    const projects = await ProjectModel.find({ organization: { $in: user?.organizations }})
     return projects
   }
 

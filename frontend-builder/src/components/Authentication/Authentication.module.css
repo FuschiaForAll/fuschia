@@ -1,0 +1,24 @@
+.login-container {
+  background-size: cover;
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  background-color: var(--canvasBg);
+}
+
+.login-box {
+  width: 90%;
+  max-width: 450px;
+  background: white;
+  border: 1px solid #b1b1b1;
+  box-sizing: border-box;
+  box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: 16px 23px 27px;
+  grid-auto-rows: min-content;
+}
