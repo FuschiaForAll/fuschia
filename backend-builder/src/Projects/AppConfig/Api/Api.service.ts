@@ -31,7 +31,18 @@ export class ApiService {
   public publish(project: Project, sandbox?: Boolean) {
     // for now let's just spin up an instance
     console.log("spawning API")
-    spawn( 'node', ['/mnt/c/work/fuschia/backend-runner/src/index.js'], { env: { ...process.env, NODE_ENV: 'test', MONGO_DB_URL:'mongodb://localhost:27017', PROJECT_ID: project._id.toString()  } })
+    const child = spawn( 'node', ['/mnt/c/work/fuschia/backend-runner/src/index.js'], { env: { ...process.env, NODE_ENV: 'test', MONGO_DB_URL:'mongodb://localhost:27017', PROJECT_ID: project._id.toString()  } })
+
+    
+child.stdout.setEncoding('utf8');
+child.stdout.on('data', function(data) {
+    console.log('stdout: ' + data);
+});
+
+child.stderr.setEncoding('utf8');
+child.stderr.on('data', function(data) {
+    console.log('stderr: ' + data);
+});
     
     if (sandbox) {
       if (project.appConfig.apiConfig.sandboxEndpoint) {

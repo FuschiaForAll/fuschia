@@ -5,6 +5,14 @@ interface DataEditorProps {
   model: EntityModel
 }
 
+const defaultData = {
+  String: '',
+  Int: 0,
+  Float: 0,
+  Boolean: true,
+  Date: new Date(),
+}
+
 const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
   const [data, setData] = useState<any[]>([])
   const [keys, setKeys] = useState<any[]>([])
@@ -12,6 +20,12 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
   useEffect(() => {
     if (model) {
       setKeys(model.fields.map(field => field.fieldName))
+      const newDataStructure = model.fields.reduce((acc, field) => {
+        acc[field.fieldName] =
+          defaultData[field.dataType as keyof typeof defaultData]
+        return acc
+      }, {} as any)
+      setNewData(newDataStructure)
       fetch('http://localhost:4005', {
         method: 'POST',
         body: JSON.stringify({
@@ -37,6 +51,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
         .then(result => {
           setData(result.data[`list${model.name}`].items)
         })
+        .catch(e => console.log(e))
     }
   }, [model])
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,52 +76,63 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
             </tr>
           </thead>
           <tbody>
-            {data.map((item, idx) => (
-              <tr key={idx}>
-                <td>{item._id}</td>
-                {keys.map(key => (
-                  <td key={key}>{item[key]}</td>
-                ))}
-                <td>
-                  <button
-                    onClick={() => {
-                      fetch('http://localhost:4005', {
-                        method: 'POST',
-                        body: JSON.stringify({
-                          operationName: `Delete${model.name}`,
-                          query: `
+            {data.map(
+              (item, idx) =>
+                item && (
+                  <tr key={idx}>
+                    <td>{item._id}</td>
+                    {keys.map(key => (
+                      <td key={key}>{item[key]}</td>
+                    ))}
+                    <td>
+                      <button
+                        onClick={() => {
+                          fetch('http://localhost:4005', {
+                            method: 'POST',
+                            body: JSON.stringify({
+                              operationName: `Delete${model.name}`,
+                              query: `
                         mutation Delete${model.name}($input: Delete${model.name}Input!) {
                           delete${model.name}(input: $input) {
                             _id
                           }
                       }
                         `,
-                          variables: {
-                            input: { _id: item._id },
-                          },
-                        }),
-                        headers: {
-                          'Content-Type': 'application/json',
-                        },
-                      })
-                        .then(res => res.json())
-                        .then(result => {
-                          setData(data => data.filter(i => i._id !== item._id))
-                        })
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
+                              variables: {
+                                input: { _id: item._id },
+                              },
+                            }),
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                          })
+                            .then(res => res.json())
+                            .then(result => {
+                              setData(data =>
+                                data.filter(i => i._id !== item._id)
+                              )
+                            })
+                            .catch(e => console.log(e))
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                )
+            )}
           </tbody>
           <tfoot>
             <tr>
               <td></td>
               {keys.map(key => (
                 <td key={key}>
-                  <input type="text" name={key} onChange={handleInput} />
+                  <input
+                    type="text"
+                    name={key}
+                    value={newData[key]}
+                    onChange={handleInput}
+                  />
                 </td>
               ))}
               <td>
@@ -140,8 +166,19 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
                             ...newData,
                           },
                         ])
-                        setNewData({})
+                        const newDataStructure = model.fields.reduce(
+                          (acc, field) => {
+                            acc[field.fieldName] =
+                              defaultData[
+                                field.dataType as keyof typeof defaultData
+                              ]
+                            return acc
+                          },
+                          {} as any
+                        )
+                        setNewData(newDataStructure)
                       })
+                      .catch((e: any) => console.log(e))
                   }}
                 >
                   Add

@@ -5,7 +5,7 @@ import {
   useDeleteDataFieldMutation,
 } from '../../../generated/graphql'
 
-const DATA_TYPES = ['string', 'date', 'integer', 'float', 'boolean']
+const DATA_TYPES = ['String', 'Date', 'Int', 'Float', 'Boolean']
 
 interface EntityModelProps {
   projectId: string
@@ -25,10 +25,10 @@ interface EntityModelProps {
 
 export function EntityModel({ projectId, model }: EntityModelProps) {
   const [fieldName, setFieldName] = useState('')
-  const [dataType, setDataType] = useState('string')
+  const [dataType, setDataType] = useState('String')
   const [isHashed, setIsHashed] = useState(false)
   const [isUnique, setIsUnique] = useState(false)
-  const [nullable, setNullable] = useState(false)
+  const [nullable, setNullable] = useState(true)
   const [createDataField] = useCreateDataFieldMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
