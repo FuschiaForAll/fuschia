@@ -12,10 +12,9 @@ import { useNavigate } from 'react-router-dom'
 const Wrapper = styled.div`
   position: fixed;
   top: 0;
-  bottom: 0;
   left: 2rem;
+  height: 100%;
   pointer-events: none;
-  width: 60px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -23,7 +22,7 @@ const Wrapper = styled.div`
 
 const cardStyles = {
   padding: '0.5rem 0',
-  margin: '0.5rem 0',
+  margin: '1rem 0',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',

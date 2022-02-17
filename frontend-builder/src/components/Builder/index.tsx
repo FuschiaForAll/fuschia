@@ -9,11 +9,13 @@ import Topbar from './Topbar'
 
 const Builder: React.FC = function Builder() {
   const { data: projects } = useListProjectsQuery()
+
   const { data: currentProjectData } = useQuery(gql`
     query CurrentProjectId {
       currentProjectId @client
     }
   `)
+
   return (
     <div>
       <Canvas />
