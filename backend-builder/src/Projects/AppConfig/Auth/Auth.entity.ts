@@ -7,81 +7,85 @@ import { ObjectId } from "mongoose";
 @ObjectType()
 export class Auth {
   @Field(type => ObjectIdScalar)
-  readonly _id!: ObjectId;
+  readonly _id!: ObjectId
+  
+  @Field()
+  @Property({ default: false })
+  requiresAuth!: Boolean;
 
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: false })
   allowUnauthenticatedUsers!: Boolean;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: false })
   mfaEnabled!: Boolean;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'OFF' })
   mfaConfiguration!: 'OFF' | 'ON' | 'OPTIONAL';
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'SMS' })
   mfaTypes!: 'SMS' | 'TOTP' | 'EMAIL';
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'Your authentication code is {####}' })
   smsAuthenticationMessage!: string;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'Your verification code is {####}' })
   smsVerificationMessage!: string;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'Your verification code' })
   emailVerificationSubject!: string;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 'Your verification code is {####}' })
   emailVerificationMessage!: string;
 
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: false })
   defaultPasswordPolicy!: boolean;
 
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 8 })
   passwordPolicyMinLength!: number;
   
   @Field()
-  @Property()
+  @Property({ default: false })
   passwordRequiresUppercase!: boolean;
 
   @Field()
-  @Property()
+  @Property({ default: false })
   passwordRequiresNumbers!: boolean;
   
   @Field()
-  @Property()
+  @Property({ default: false })
   passwordRequiresSymbols!: boolean;
 
-  @Field(type => [String], { nullable: true })
+  @Field(type => [String], )
   @Property({type: () => [String], default: [] })
   requiredAttributes!: string[];
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: 10 })
   clientRefreshTokenValidity!: number;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: false })
   usernameCaseSensitive!: boolean;
   
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: '' })
   tableId!: string;
 
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: '' })
   usernameFieldId!: string;
 
-  @Field({ nullable: true })
-  @Property()
+  @Field()
+  @Property({ default: '' })
   passwordFieldId!: string;
 }

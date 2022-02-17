@@ -1,0 +1,3 @@
+mutation DeleteEntityModel($projectId: ObjectId!, $entityModelId: ObjectId!) {
+  deleteEntityModel(projectId: $projectId, entityModelId: $entityModelId)
+}

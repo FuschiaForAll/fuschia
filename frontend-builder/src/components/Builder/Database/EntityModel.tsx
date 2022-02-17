@@ -37,7 +37,6 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
   })
   return (
     <div>
-      {model._id} - {model.name}
       <table>
         <thead>
           <tr>

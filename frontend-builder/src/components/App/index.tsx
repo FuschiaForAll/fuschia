@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Login, Register } from '../Authentication'
 import Builder from '../Builder'
 import Database from '../Builder/Database'
-import { AuthConfig } from '../Builder/Database/AuthConfig'
 import Dashboard from '../Dashboard'
 import Projects from '../Projects'
 import NewProject from '../Projects/NewProject'
@@ -17,8 +16,7 @@ const App: React.FC = function App() {
         <Route path="/" element={<Navigate replace to="/builder" />} />
         <Route path="/builder" element={<Builder />} />
         <Route path="/builder/*" element={<Builder />} />
-        <Route path="/database-editor" element={<Database />} />
-        <Route path="/auth-config" element={<AuthConfig />} />
+        <Route path=":projectId/database-editor" element={<Database />} />
         <Route path="/organizations" element={<Organizations />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/project/new" element={<NewProject />} />

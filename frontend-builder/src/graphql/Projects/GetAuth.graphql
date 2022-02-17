@@ -1,0 +1,6 @@
+#import "./Auth.fragment.graphql"
+query GetAuth($projectId: ObjectId!) {
+  getAuth(projectId: $projectId) {
+    ...AuthFragment
+  }
+}

@@ -19,25 +19,26 @@ type AppConfig {
 
 type Auth {
   _id: ObjectId!
-  allowUnauthenticatedUsers: Boolean
-  clientRefreshTokenValidity: Float
-  defaultPasswordPolicy: Boolean
-  emailVerificationMessage: String
-  emailVerificationSubject: String
-  mfaConfiguration: String
-  mfaEnabled: Boolean
-  mfaTypes: String
-  passwordFieldId: String
-  passwordPolicyMinLength: Float
+  allowUnauthenticatedUsers: Boolean!
+  clientRefreshTokenValidity: Float!
+  defaultPasswordPolicy: Boolean!
+  emailVerificationMessage: String!
+  emailVerificationSubject: String!
+  mfaConfiguration: String!
+  mfaEnabled: Boolean!
+  mfaTypes: String!
+  passwordFieldId: String!
+  passwordPolicyMinLength: Float!
   passwordRequiresNumbers: Boolean!
   passwordRequiresSymbols: Boolean!
   passwordRequiresUppercase: Boolean!
-  requiredAttributes: [String!]
-  smsAuthenticationMessage: String
-  smsVerificationMessage: String
-  tableId: String
-  usernameCaseSensitive: Boolean
-  usernameFieldId: String
+  requiredAttributes: [String!]!
+  requiresAuth: Boolean!
+  smsAuthenticationMessage: String!
+  smsVerificationMessage: String!
+  tableId: String!
+  usernameCaseSensitive: Boolean!
+  usernameFieldId: String!
 }
 
 input AuthInput {
@@ -134,7 +135,7 @@ type Mutation {
   createSubscription: Boolean
   createUser(user: UserInput!): User!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
-  deleteEntityModel: Boolean
+  deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteField: Boolean
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
@@ -144,7 +145,7 @@ type Mutation {
   deleteSubscription: Boolean
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
-  publishApi(projectId: ObjectId!): Boolean!
+  publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   register(email: String!, password: String!): UserResponse!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateEntityModel: Boolean
@@ -184,7 +185,9 @@ input ProjectInput {
 }
 
 type Query {
+  getAuth(projectId: ObjectId!): Auth
   getProject(projectId: ObjectId!): Project!
+  getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
   listFields: Boolean
   listMutations: Boolean

@@ -1,6 +1,4 @@
-import { ratingClasses } from '@mui/material'
 import React, { useEffect } from 'react'
-import { useIntrospectionQueryQuery } from '../../../generated/graphql'
 import { getIntrospectionQuery, buildClientSchema } from 'graphql'
 import { useQuery, gql } from '@apollo/client'
 
@@ -12,7 +10,6 @@ function recursiveTypeOf(ofType: any): String {
 }
 
 const GraphQLDesigner: React.FC = function GraphQLDesigner() {
-  const { data: graphData } = useIntrospectionQueryQuery()
   const { data: introspectionData } = useQuery(
     gql`
       ${getIntrospectionQuery()}
@@ -25,17 +22,17 @@ const GraphQLDesigner: React.FC = function GraphQLDesigner() {
       console.log(schema)
     }
   }, [introspectionData])
-  if (!graphData) {
-    return <div>Loading....</div>
+  if (!introspectionData) {
+    return <div>Loading...</div>
   }
   return (
     <div>
       GraphQLDesigner
-      {graphData.__schema.types.map((type, idx) => (
+      {introspectionData.__schema.types.map((type: any, idx: number) => (
         <React.Fragment key={idx}>
           <h2>{type.name}</h2>
           <div>
-            {type.fields?.map(field => (
+            {type.fields?.map((field: any) => (
               <div key={field.name}>
                 <span>
                   {field.name} - {field.type.name}{' '}
