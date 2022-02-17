@@ -1,0 +1,8 @@
+#import "./TypeRef.fragment.graphql"
+fragment InputValue on __InputValue {
+  name
+  type {
+    ...TypeRef
+  }
+  defaultValue
+}

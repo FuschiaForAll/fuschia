@@ -38,10 +38,64 @@ export type Api = {
 export type AppConfig = {
   __typename?: 'AppConfig'
   apiConfig: Api
+  authConfig: Auth
 }
 
 export type Auth = {
   __typename?: 'Auth'
+  _id: Scalars['ObjectId']
+  allowUnauthenticatedUsers?: Maybe<Scalars['Boolean']>
+  clientRefreshTokenValidity?: Maybe<Scalars['Float']>
+  defaultPasswordPolicy?: Maybe<Scalars['Boolean']>
+  emailVerificationMessage?: Maybe<Scalars['String']>
+  emailVerificationSubject?: Maybe<Scalars['String']>
+  mfaConfiguration?: Maybe<Scalars['String']>
+  mfaEnabled?: Maybe<Scalars['Boolean']>
+  mfaTypes?: Maybe<Scalars['String']>
+  passwordFieldId?: Maybe<Scalars['String']>
+  passwordPolicyMinLength?: Maybe<Scalars['Float']>
+  passwordRequiresNumbers: Scalars['Boolean']
+  passwordRequiresSymbols: Scalars['Boolean']
+  passwordRequiresUppercase: Scalars['Boolean']
+  requiredAttributes?: Maybe<Array<Scalars['String']>>
+  smsAuthenticationMessage?: Maybe<Scalars['String']>
+  smsVerificationMessage?: Maybe<Scalars['String']>
+  tableId?: Maybe<Scalars['String']>
+  usernameCaseSensitive?: Maybe<Scalars['Boolean']>
+  usernameFieldId?: Maybe<Scalars['String']>
+}
+
+export type AuthInput = {
+  allowUnauthenticatedUsers?: InputMaybe<Scalars['Boolean']>
+  clientRefreshTokenValidity?: InputMaybe<Scalars['Float']>
+  defaultPasswordPolicy?: InputMaybe<Scalars['Boolean']>
+  emailVerificationMessage?: InputMaybe<Scalars['String']>
+  emailVerificationSubject?: InputMaybe<Scalars['String']>
+  mfaConfiguration?: InputMaybe<Scalars['String']>
+  mfaEnabled?: InputMaybe<Scalars['Boolean']>
+  mfaTypes?: InputMaybe<Scalars['String']>
+  passwordFieldId?: InputMaybe<Scalars['String']>
+  passwordPolicyMinLength?: InputMaybe<Scalars['Float']>
+  passwordRequiresNumbers?: InputMaybe<Scalars['Boolean']>
+  passwordRequiresSymbols?: InputMaybe<Scalars['Boolean']>
+  passwordRequiresUppercase?: InputMaybe<Scalars['Boolean']>
+  requiredAttributes?: InputMaybe<Array<Scalars['String']>>
+  requiresAuth?: InputMaybe<Scalars['Boolean']>
+  smsAuthenticationMessage?: InputMaybe<Scalars['String']>
+  smsVerificationMessage?: InputMaybe<Scalars['String']>
+  tableId?: InputMaybe<Scalars['String']>
+  usernameCaseSensitive?: InputMaybe<Scalars['Boolean']>
+  usernameFieldId?: InputMaybe<Scalars['String']>
+}
+
+export type Connection = {
+  __typename?: 'Connection'
+  fieldNames: Array<Scalars['String']>
+  keyName: Scalars['String']
+}
+
+export type DataAuth = {
+  __typename?: 'DataAuth'
   allow: Scalars['String']
   groupClaim: Scalars['String']
   groups: Array<Scalars['String']>
@@ -50,12 +104,6 @@ export type Auth = {
   operations: Array<Scalars['String']>
   ownerField: Scalars['String']
   provider: Scalars['String']
-}
-
-export type Connection = {
-  __typename?: 'Connection'
-  fieldNames: Array<Scalars['String']>
-  keyName: Scalars['String']
 }
 
 export type DataField = {
@@ -68,7 +116,7 @@ export type DataField = {
   isUnique: Scalars['Boolean']
   keys: Array<Key>
   nullable: Scalars['Boolean']
-  rules: Array<Auth>
+  rules: Array<DataAuth>
 }
 
 export type DataFieldInput = {
@@ -82,7 +130,7 @@ export type DataFieldInput = {
 export type EntityModel = {
   __typename?: 'EntityModel'
   _id: Scalars['ObjectId']
-  auth: Array<Auth>
+  auth: Array<DataAuth>
   fields: Array<DataField>
   keys: Array<Key>
   name: Scalars['String']
@@ -125,6 +173,7 @@ export type Mutation = {
   logout: Scalars['Boolean']
   publishApi: Scalars['Boolean']
   register: UserResponse
+  updateAuth?: Maybe<Auth>
   updateEntityModel?: Maybe<Scalars['Boolean']>
   updateField?: Maybe<Scalars['Boolean']>
   updateMutation?: Maybe<Scalars['Boolean']>
@@ -182,6 +231,11 @@ export type MutationPublishApiArgs = {
 export type MutationRegisterArgs = {
   email: Scalars['String']
   password: Scalars['String']
+}
+
+export type MutationUpdateAuthArgs = {
+  input: AuthInput
+  projectId: Scalars['ObjectId']
 }
 
 export type Organization = {
@@ -257,6 +311,190 @@ export type UserResponse = {
   user?: Maybe<User>
 }
 
+/**
+ * A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+ *
+ * In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.
+ */
+export type __Directive = {
+  __typename?: '__Directive'
+  name: Scalars['String']
+  description?: Maybe<Scalars['String']>
+  isRepeatable: Scalars['Boolean']
+  locations: Array<__DirectiveLocation>
+  args: Array<__InputValue>
+}
+
+/**
+ * A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.
+ *
+ * In some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.
+ */
+export type __DirectiveArgsArgs = {
+  includeDeprecated?: InputMaybe<Scalars['Boolean']>
+}
+
+/** A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies. */
+export enum __DirectiveLocation {
+  /** Location adjacent to a query operation. */
+  Query = 'QUERY',
+  /** Location adjacent to a mutation operation. */
+  Mutation = 'MUTATION',
+  /** Location adjacent to a subscription operation. */
+  Subscription = 'SUBSCRIPTION',
+  /** Location adjacent to a field. */
+  Field = 'FIELD',
+  /** Location adjacent to a fragment definition. */
+  FragmentDefinition = 'FRAGMENT_DEFINITION',
+  /** Location adjacent to a fragment spread. */
+  FragmentSpread = 'FRAGMENT_SPREAD',
+  /** Location adjacent to an inline fragment. */
+  InlineFragment = 'INLINE_FRAGMENT',
+  /** Location adjacent to a variable definition. */
+  VariableDefinition = 'VARIABLE_DEFINITION',
+  /** Location adjacent to a schema definition. */
+  Schema = 'SCHEMA',
+  /** Location adjacent to a scalar definition. */
+  Scalar = 'SCALAR',
+  /** Location adjacent to an object type definition. */
+  Object = 'OBJECT',
+  /** Location adjacent to a field definition. */
+  FieldDefinition = 'FIELD_DEFINITION',
+  /** Location adjacent to an argument definition. */
+  ArgumentDefinition = 'ARGUMENT_DEFINITION',
+  /** Location adjacent to an interface definition. */
+  Interface = 'INTERFACE',
+  /** Location adjacent to a union definition. */
+  Union = 'UNION',
+  /** Location adjacent to an enum definition. */
+  Enum = 'ENUM',
+  /** Location adjacent to an enum value definition. */
+  EnumValue = 'ENUM_VALUE',
+  /** Location adjacent to an input object type definition. */
+  InputObject = 'INPUT_OBJECT',
+  /** Location adjacent to an input object field definition. */
+  InputFieldDefinition = 'INPUT_FIELD_DEFINITION',
+}
+
+/** One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string. */
+export type __EnumValue = {
+  __typename?: '__EnumValue'
+  name: Scalars['String']
+  description?: Maybe<Scalars['String']>
+  isDeprecated: Scalars['Boolean']
+  deprecationReason?: Maybe<Scalars['String']>
+}
+
+/** Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type. */
+export type __Field = {
+  __typename?: '__Field'
+  name: Scalars['String']
+  description?: Maybe<Scalars['String']>
+  args: Array<__InputValue>
+  type: __Type
+  isDeprecated: Scalars['Boolean']
+  deprecationReason?: Maybe<Scalars['String']>
+}
+
+/** Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type. */
+export type __FieldArgsArgs = {
+  includeDeprecated?: InputMaybe<Scalars['Boolean']>
+}
+
+/** Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value. */
+export type __InputValue = {
+  __typename?: '__InputValue'
+  name: Scalars['String']
+  description?: Maybe<Scalars['String']>
+  type: __Type
+  /** A GraphQL-formatted string representing the default value for this input value. */
+  defaultValue?: Maybe<Scalars['String']>
+  isDeprecated: Scalars['Boolean']
+  deprecationReason?: Maybe<Scalars['String']>
+}
+
+/** A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations. */
+export type __Schema = {
+  __typename?: '__Schema'
+  description?: Maybe<Scalars['String']>
+  /** A list of all types supported by this server. */
+  types: Array<__Type>
+  /** The type that query operations will be rooted at. */
+  queryType: __Type
+  /** If this server supports mutation, the type that mutation operations will be rooted at. */
+  mutationType?: Maybe<__Type>
+  /** If this server support subscription, the type that subscription operations will be rooted at. */
+  subscriptionType?: Maybe<__Type>
+  /** A list of all directives supported by this server. */
+  directives: Array<__Directive>
+}
+
+/**
+ * The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
+ *
+ * Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+ */
+export type __Type = {
+  __typename?: '__Type'
+  kind: __TypeKind
+  name?: Maybe<Scalars['String']>
+  description?: Maybe<Scalars['String']>
+  specifiedByUrl?: Maybe<Scalars['String']>
+  fields?: Maybe<Array<__Field>>
+  interfaces?: Maybe<Array<__Type>>
+  possibleTypes?: Maybe<Array<__Type>>
+  enumValues?: Maybe<Array<__EnumValue>>
+  inputFields?: Maybe<Array<__InputValue>>
+  ofType?: Maybe<__Type>
+}
+
+/**
+ * The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
+ *
+ * Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+ */
+export type __TypeFieldsArgs = {
+  includeDeprecated?: InputMaybe<Scalars['Boolean']>
+}
+
+/**
+ * The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
+ *
+ * Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+ */
+export type __TypeEnumValuesArgs = {
+  includeDeprecated?: InputMaybe<Scalars['Boolean']>
+}
+
+/**
+ * The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.
+ *
+ * Depending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByUrl`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.
+ */
+export type __TypeInputFieldsArgs = {
+  includeDeprecated?: InputMaybe<Scalars['Boolean']>
+}
+
+/** An enum describing what kind of type a given `__Type` is. */
+export enum __TypeKind {
+  /** Indicates this type is a scalar. */
+  Scalar = 'SCALAR',
+  /** Indicates this type is an object. `fields` and `interfaces` are valid fields. */
+  Object = 'OBJECT',
+  /** Indicates this type is an interface. `fields`, `interfaces`, and `possibleTypes` are valid fields. */
+  Interface = 'INTERFACE',
+  /** Indicates this type is a union. `possibleTypes` is a valid field. */
+  Union = 'UNION',
+  /** Indicates this type is an enum. `enumValues` is a valid field. */
+  Enum = 'ENUM',
+  /** Indicates this type is an input object. `inputFields` is a valid field. */
+  InputObject = 'INPUT_OBJECT',
+  /** Indicates this type is a list. `ofType` is a valid field. */
+  List = 'LIST',
+  /** Indicates this type is a non-null. `ofType` is a valid field. */
+  NonNull = 'NON_NULL',
+}
+
 export type CreateDataFieldMutationVariables = Exact<{
   projectId: Scalars['ObjectId']
   entityModelId: Scalars['ObjectId']
@@ -274,7 +512,7 @@ export type CreateDataFieldMutation = {
     nullable: boolean
     dataType: string
     rules: Array<{
-      __typename?: 'Auth'
+      __typename?: 'DataAuth'
       allow: string
       provider: string
       ownerField: string
@@ -315,6 +553,610 @@ export type CreateEntityModelMutation = {
     __typename?: 'EntityModel'
     _id: any
     name: string
+  } | null
+}
+
+export type FullTypeFragment = {
+  __typename?: '__Type'
+  kind: __TypeKind
+  name?: string | null
+  fields?: Array<{
+    __typename?: '__Field'
+    name: string
+    isDeprecated: boolean
+    deprecationReason?: string | null
+    args: Array<{
+      __typename?: '__InputValue'
+      name: string
+      defaultValue?: string | null
+      type: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      }
+    }>
+    type: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    }
+  }> | null
+  inputFields?: Array<{
+    __typename?: '__InputValue'
+    name: string
+    defaultValue?: string | null
+    type: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    }
+  }> | null
+  interfaces?: Array<{
+    __typename?: '__Type'
+    kind: __TypeKind
+    name?: string | null
+    ofType?: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    } | null
+  }> | null
+  enumValues?: Array<{
+    __typename?: '__EnumValue'
+    name: string
+    isDeprecated: boolean
+    deprecationReason?: string | null
+  }> | null
+  possibleTypes?: Array<{
+    __typename?: '__Type'
+    kind: __TypeKind
+    name?: string | null
+    ofType?: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    } | null
+  }> | null
+}
+
+export type InputValueFragment = {
+  __typename?: '__InputValue'
+  name: string
+  defaultValue?: string | null
+  type: {
+    __typename?: '__Type'
+    kind: __TypeKind
+    name?: string | null
+    ofType?: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    } | null
+  }
+}
+
+export type IntrospectionQueryQueryVariables = Exact<{ [key: string]: never }>
+
+export type IntrospectionQueryQuery = {
+  __typename?: 'Query'
+  __schema: {
+    __typename?: '__Schema'
+    queryType: { __typename?: '__Type'; name?: string | null }
+    mutationType?: { __typename?: '__Type'; name?: string | null } | null
+    subscriptionType?: { __typename?: '__Type'; name?: string | null } | null
+    types: Array<{
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      fields?: Array<{
+        __typename?: '__Field'
+        name: string
+        isDeprecated: boolean
+        deprecationReason?: string | null
+        args: Array<{
+          __typename?: '__InputValue'
+          name: string
+          defaultValue?: string | null
+          type: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                      ofType?: {
+                        __typename?: '__Type'
+                        kind: __TypeKind
+                        name?: string | null
+                        ofType?: {
+                          __typename?: '__Type'
+                          kind: __TypeKind
+                          name?: string | null
+                        } | null
+                      } | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          }
+        }>
+        type: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                      ofType?: {
+                        __typename?: '__Type'
+                        kind: __TypeKind
+                        name?: string | null
+                      } | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        }
+      }> | null
+      inputFields?: Array<{
+        __typename?: '__InputValue'
+        name: string
+        defaultValue?: string | null
+        type: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                      ofType?: {
+                        __typename?: '__Type'
+                        kind: __TypeKind
+                        name?: string | null
+                      } | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        }
+      }> | null
+      interfaces?: Array<{
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      }> | null
+      enumValues?: Array<{
+        __typename?: '__EnumValue'
+        name: string
+        isDeprecated: boolean
+        deprecationReason?: string | null
+      }> | null
+      possibleTypes?: Array<{
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        } | null
+      }> | null
+    }>
+    directives: Array<{
+      __typename?: '__Directive'
+      name: string
+      locations: Array<__DirectiveLocation>
+      args: Array<{
+        __typename?: '__InputValue'
+        name: string
+        defaultValue?: string | null
+        type: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+                ofType?: {
+                  __typename?: '__Type'
+                  kind: __TypeKind
+                  name?: string | null
+                  ofType?: {
+                    __typename?: '__Type'
+                    kind: __TypeKind
+                    name?: string | null
+                    ofType?: {
+                      __typename?: '__Type'
+                      kind: __TypeKind
+                      name?: string | null
+                      ofType?: {
+                        __typename?: '__Type'
+                        kind: __TypeKind
+                        name?: string | null
+                      } | null
+                    } | null
+                  } | null
+                } | null
+              } | null
+            } | null
+          } | null
+        }
+      }>
+    }>
+  }
+}
+
+export type TypeRefFragment = {
+  __typename?: '__Type'
+  kind: __TypeKind
+  name?: string | null
+  ofType?: {
+    __typename?: '__Type'
+    kind: __TypeKind
+    name?: string | null
+    ofType?: {
+      __typename?: '__Type'
+      kind: __TypeKind
+      name?: string | null
+      ofType?: {
+        __typename?: '__Type'
+        kind: __TypeKind
+        name?: string | null
+        ofType?: {
+          __typename?: '__Type'
+          kind: __TypeKind
+          name?: string | null
+          ofType?: {
+            __typename?: '__Type'
+            kind: __TypeKind
+            name?: string | null
+            ofType?: {
+              __typename?: '__Type'
+              kind: __TypeKind
+              name?: string | null
+              ofType?: {
+                __typename?: '__Type'
+                kind: __TypeKind
+                name?: string | null
+              } | null
+            } | null
+          } | null
+        } | null
+      } | null
+    } | null
   } | null
 }
 
@@ -406,7 +1248,7 @@ export type GetProjectQuery = {
             fieldNames: Array<string>
           }>
           auth: Array<{
-            __typename?: 'Auth'
+            __typename?: 'DataAuth'
             allow: string
             provider: string
             ownerField: string
@@ -425,7 +1267,7 @@ export type GetProjectQuery = {
             nullable: boolean
             dataType: string
             rules: Array<{
-              __typename?: 'Auth'
+              __typename?: 'DataAuth'
               allow: string
               provider: string
               ownerField: string
@@ -473,6 +1315,38 @@ export type PublishApiMutation = {
   publishApi: boolean
 }
 
+export type UpdateAuthMutationVariables = Exact<{
+  projectId: Scalars['ObjectId']
+  input: AuthInput
+}>
+
+export type UpdateAuthMutation = {
+  __typename?: 'Mutation'
+  updateAuth?: {
+    __typename?: 'Auth'
+    _id: any
+    allowUnauthenticatedUsers?: boolean | null
+    mfaEnabled?: boolean | null
+    mfaConfiguration?: string | null
+    mfaTypes?: string | null
+    smsAuthenticationMessage?: string | null
+    smsVerificationMessage?: string | null
+    emailVerificationSubject?: string | null
+    emailVerificationMessage?: string | null
+    defaultPasswordPolicy?: boolean | null
+    passwordPolicyMinLength?: number | null
+    passwordRequiresUppercase: boolean
+    passwordRequiresNumbers: boolean
+    passwordRequiresSymbols: boolean
+    requiredAttributes?: Array<string> | null
+    clientRefreshTokenValidity?: number | null
+    usernameCaseSensitive?: boolean | null
+    tableId?: string | null
+    usernameFieldId?: string | null
+    passwordFieldId?: string | null
+  } | null
+}
+
 export type LoginMutationVariables = Exact<{
   email: Scalars['String']
   password: Scalars['String']
@@ -515,6 +1389,83 @@ export type RegisterMutation = {
   }
 }
 
+export const TypeRefFragmentDoc = gql`
+  fragment TypeRef on __Type {
+    kind
+    name
+    ofType {
+      kind
+      name
+      ofType {
+        kind
+        name
+        ofType {
+          kind
+          name
+          ofType {
+            kind
+            name
+            ofType {
+              kind
+              name
+              ofType {
+                kind
+                name
+                ofType {
+                  kind
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`
+export const InputValueFragmentDoc = gql`
+  fragment InputValue on __InputValue {
+    name
+    type {
+      ...TypeRef
+    }
+    defaultValue
+  }
+  ${TypeRefFragmentDoc}
+`
+export const FullTypeFragmentDoc = gql`
+  fragment FullType on __Type {
+    kind
+    name
+    fields(includeDeprecated: true) {
+      name
+      args {
+        ...InputValue
+      }
+      type {
+        ...TypeRef
+      }
+      isDeprecated
+      deprecationReason
+    }
+    inputFields {
+      ...InputValue
+    }
+    interfaces {
+      ...TypeRef
+    }
+    enumValues(includeDeprecated: true) {
+      name
+      isDeprecated
+      deprecationReason
+    }
+    possibleTypes {
+      ...TypeRef
+    }
+  }
+  ${InputValueFragmentDoc}
+  ${TypeRefFragmentDoc}
+`
 export const CreateDataFieldDocument = gql`
   mutation CreateDataField(
     $projectId: ObjectId!
@@ -707,6 +1658,83 @@ export type CreateEntityModelMutationResult =
 export type CreateEntityModelMutationOptions = Apollo.BaseMutationOptions<
   CreateEntityModelMutation,
   CreateEntityModelMutationVariables
+>
+export const IntrospectionQueryDocument = gql`
+  query IntrospectionQuery {
+    __schema {
+      queryType {
+        name
+      }
+      mutationType {
+        name
+      }
+      subscriptionType {
+        name
+      }
+      types {
+        ...FullType
+      }
+      directives {
+        name
+        locations
+        args {
+          ...InputValue
+        }
+      }
+    }
+  }
+  ${FullTypeFragmentDoc}
+  ${InputValueFragmentDoc}
+`
+
+/**
+ * __useIntrospectionQueryQuery__
+ *
+ * To run a query within a React component, call `useIntrospectionQueryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useIntrospectionQueryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useIntrospectionQueryQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useIntrospectionQueryQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    IntrospectionQueryQuery,
+    IntrospectionQueryQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useQuery<
+    IntrospectionQueryQuery,
+    IntrospectionQueryQueryVariables
+  >(IntrospectionQueryDocument, options)
+}
+export function useIntrospectionQueryLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    IntrospectionQueryQuery,
+    IntrospectionQueryQueryVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useLazyQuery<
+    IntrospectionQueryQuery,
+    IntrospectionQueryQueryVariables
+  >(IntrospectionQueryDocument, options)
+}
+export type IntrospectionQueryQueryHookResult = ReturnType<
+  typeof useIntrospectionQueryQuery
+>
+export type IntrospectionQueryLazyQueryHookResult = ReturnType<
+  typeof useIntrospectionQueryLazyQuery
+>
+export type IntrospectionQueryQueryResult = Apollo.QueryResult<
+  IntrospectionQueryQuery,
+  IntrospectionQueryQueryVariables
 >
 export const CreateOrganizationDocument = gql`
   mutation CreateOrganization($organization: OrganizationInput!) {
@@ -1193,6 +2221,75 @@ export type PublishApiMutationResult = Apollo.MutationResult<PublishApiMutation>
 export type PublishApiMutationOptions = Apollo.BaseMutationOptions<
   PublishApiMutation,
   PublishApiMutationVariables
+>
+export const UpdateAuthDocument = gql`
+  mutation UpdateAuth($projectId: ObjectId!, $input: AuthInput!) {
+    updateAuth(projectId: $projectId, input: $input) {
+      _id
+      allowUnauthenticatedUsers
+      mfaEnabled
+      mfaConfiguration
+      mfaTypes
+      smsAuthenticationMessage
+      smsVerificationMessage
+      emailVerificationSubject
+      emailVerificationMessage
+      defaultPasswordPolicy
+      passwordPolicyMinLength
+      passwordRequiresUppercase
+      passwordRequiresNumbers
+      passwordRequiresSymbols
+      requiredAttributes
+      clientRefreshTokenValidity
+      usernameCaseSensitive
+      tableId
+      usernameFieldId
+      passwordFieldId
+    }
+  }
+`
+export type UpdateAuthMutationFn = Apollo.MutationFunction<
+  UpdateAuthMutation,
+  UpdateAuthMutationVariables
+>
+
+/**
+ * __useUpdateAuthMutation__
+ *
+ * To run a mutation, you first call `useUpdateAuthMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateAuthMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateAuthMutation, { data, loading, error }] = useUpdateAuthMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      input: // value for 'input'
+ *   },
+ * });
+ */
+export function useUpdateAuthMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    UpdateAuthMutation,
+    UpdateAuthMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<UpdateAuthMutation, UpdateAuthMutationVariables>(
+    UpdateAuthDocument,
+    options
+  )
+}
+export type UpdateAuthMutationHookResult = ReturnType<
+  typeof useUpdateAuthMutation
+>
+export type UpdateAuthMutationResult = Apollo.MutationResult<UpdateAuthMutation>
+export type UpdateAuthMutationOptions = Apollo.BaseMutationOptions<
+  UpdateAuthMutation,
+  UpdateAuthMutationVariables
 >
 export const LoginDocument = gql`
   mutation Login($email: String!, $password: String!) {

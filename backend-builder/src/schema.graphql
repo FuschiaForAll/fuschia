@@ -14,9 +14,61 @@ type Api {
 
 type AppConfig {
   apiConfig: Api!
+  authConfig: Auth!
 }
 
 type Auth {
+  _id: ObjectId!
+  allowUnauthenticatedUsers: Boolean
+  clientRefreshTokenValidity: Float
+  defaultPasswordPolicy: Boolean
+  emailVerificationMessage: String
+  emailVerificationSubject: String
+  mfaConfiguration: String
+  mfaEnabled: Boolean
+  mfaTypes: String
+  passwordFieldId: String
+  passwordPolicyMinLength: Float
+  passwordRequiresNumbers: Boolean!
+  passwordRequiresSymbols: Boolean!
+  passwordRequiresUppercase: Boolean!
+  requiredAttributes: [String!]
+  smsAuthenticationMessage: String
+  smsVerificationMessage: String
+  tableId: String
+  usernameCaseSensitive: Boolean
+  usernameFieldId: String
+}
+
+input AuthInput {
+  allowUnauthenticatedUsers: Boolean
+  clientRefreshTokenValidity: Float
+  defaultPasswordPolicy: Boolean
+  emailVerificationMessage: String
+  emailVerificationSubject: String
+  mfaConfiguration: String
+  mfaEnabled: Boolean
+  mfaTypes: String
+  passwordFieldId: String
+  passwordPolicyMinLength: Float
+  passwordRequiresNumbers: Boolean
+  passwordRequiresSymbols: Boolean
+  passwordRequiresUppercase: Boolean
+  requiredAttributes: [String!]
+  requiresAuth: Boolean
+  smsAuthenticationMessage: String
+  smsVerificationMessage: String
+  tableId: String
+  usernameCaseSensitive: Boolean
+  usernameFieldId: String
+}
+
+type Connection {
+  fieldNames: [String!]!
+  keyName: String!
+}
+
+type DataAuth {
   allow: String!
   groupClaim: String!
   groups: [String!]!
@@ -25,11 +77,6 @@ type Auth {
   operations: [String!]!
   ownerField: String!
   provider: String!
-}
-
-type Connection {
-  fieldNames: [String!]!
-  keyName: String!
 }
 
 type DataField {
@@ -41,7 +88,7 @@ type DataField {
   isUnique: Boolean!
   keys: [Key!]!
   nullable: Boolean!
-  rules: [Auth!]!
+  rules: [DataAuth!]!
 }
 
 input DataFieldInput {
@@ -59,7 +106,7 @@ scalar DateTime
 
 type EntityModel {
   _id: ObjectId!
-  auth: [Auth!]!
+  auth: [DataAuth!]!
   fields: [DataField!]!
   keys: [Key!]!
   name: String!
@@ -99,6 +146,7 @@ type Mutation {
   logout: Boolean!
   publishApi(projectId: ObjectId!): Boolean!
   register(email: String!, password: String!): UserResponse!
+  updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateEntityModel: Boolean
   updateField: Boolean
   updateMutation: Boolean

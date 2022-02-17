@@ -1,0 +1,24 @@
+mutation UpdateAuth($projectId: ObjectId!, $input: AuthInput!) {
+  updateAuth(projectId: $projectId, input: $input) {
+    _id
+    allowUnauthenticatedUsers
+    mfaEnabled
+    mfaConfiguration
+    mfaTypes
+    smsAuthenticationMessage
+    smsVerificationMessage
+    emailVerificationSubject
+    emailVerificationMessage
+    defaultPasswordPolicy
+    passwordPolicyMinLength
+    passwordRequiresUppercase
+    passwordRequiresNumbers
+    passwordRequiresSymbols
+    requiredAttributes
+    clientRefreshTokenValidity
+    usernameCaseSensitive
+    tableId
+    usernameFieldId
+    passwordFieldId
+  }
+}

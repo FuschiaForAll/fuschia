@@ -3,7 +3,7 @@ import { ObjectId } from "mongoose";
 import { ObjectType, Field } from "type-graphql";
 import { ObjectIdScalar } from "../../../../utils/object-id.scalar";
 import { Ref } from "../../../../utils/ref-type";
-import { Auth } from "../Auth.entity";
+import { DataAuth } from "../DataAuth.entity";
 import { Key } from "../Key.entity";
 import { DataTypes } from "./DataField.enum";
 
@@ -44,9 +44,9 @@ export class DataField {
     @Property()
     dataType!: string;
 
-    @Field(type => [Auth])
-    @Property({ type: () => [Auth], default: [] })
-    rules!: Auth[]
+    @Field(type => [DataAuth])
+    @Property({ type: () => [DataAuth], default: [] })
+    rules!: DataAuth[]
 
     @Field(type => [Key])
     @Property({ type: () => [Key], default: [] })

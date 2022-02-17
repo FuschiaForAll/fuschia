@@ -58,12 +58,10 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
     const field = e.target.name
     const value = e.target.value
     setNewData((data: any) => ({ ...data, [field]: value }))
-    console.log(field)
-    console.log(value)
   }
   return (
     <div>
-      <h1>Edit Data</h1>
+      <h1>Edit {model.name} Data</h1>
       {data && (
         <table>
           <thead>
@@ -188,7 +186,6 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
           </tfoot>
         </table>
       )}
-      <div>{JSON.stringify(newData)}</div>
     </div>
   )
 }
