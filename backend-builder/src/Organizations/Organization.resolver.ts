@@ -20,7 +20,6 @@ export class OrganizationResolver {
 
   @Mutation(returns => Organization)
   async createOrganization(@Arg("organization") organization: OrganizationInput, @Ctx() ctx: Context) {
-    console.log(ctx.req.session)
     if (!ctx.req.session.userId) { throw new ApolloError("Unauthorized") }
     const org = await new OrganizationModel({
       ...organization,

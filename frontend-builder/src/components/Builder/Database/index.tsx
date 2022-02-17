@@ -4,7 +4,9 @@ import {
   useCreateEntityModelMutation,
   useGetProjectLazyQuery,
   useListProjectsQuery,
+  usePublishApiMutation,
 } from '../../../generated/graphql'
+import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
 
 const Database: React.FC = function Database() {
@@ -14,6 +16,7 @@ const Database: React.FC = function Database() {
     string | undefined
   >()
   const [getProject, { data, loading, error }] = useGetProjectLazyQuery()
+  const [publishApi] = usePublishApiMutation()
   const { data: projects } = useListProjectsQuery()
   const [createNewEntityModel] = useCreateEntityModelMutation()
   useEffect(() => {
@@ -81,12 +84,35 @@ const Database: React.FC = function Database() {
           </button>
           {selectedProjectId &&
             data.getProject.appConfig.apiConfig.models.map(model => (
-              <EntityModel
-                projectId={selectedProjectId}
-                key={model._id}
-                model={model}
-              />
+              <div key={model._id}>
+                <table>
+                  <tbody>
+                    <tr>
+                      <td>
+                        <EntityModel
+                          projectId={selectedProjectId}
+                          model={model}
+                        />
+                      </td>
+                      <td>
+                        <DataEditor model={model} />
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             ))}
+          <button
+            onClick={() =>
+              publishApi({
+                variables: {
+                  projectId: selectedProjectId,
+                },
+              })
+            }
+          >
+            Publish
+          </button>
         </div>
       )}
     </div>

@@ -27,9 +27,11 @@ export type Scalars = {
 
 export type Api = {
   __typename?: 'Api'
+  liveEndpoint: Scalars['String']
   models: Array<EntityModel>
   mutations: Array<Scalars['String']>
   queries: Array<Scalars['String']>
+  sandboxEndpoint: Scalars['String']
   subscriptions: Array<Scalars['String']>
 }
 
@@ -460,6 +462,15 @@ export type ListProjectsQuery = {
     projectName: string
     appId: string
   }>
+}
+
+export type PublishApiMutationVariables = Exact<{
+  projectId: Scalars['ObjectId']
+}>
+
+export type PublishApiMutation = {
+  __typename?: 'Mutation'
+  publishApi: boolean
 }
 
 export type LoginMutationVariables = Exact<{
@@ -1135,6 +1146,53 @@ export type ListProjectsLazyQueryHookResult = ReturnType<
 export type ListProjectsQueryResult = Apollo.QueryResult<
   ListProjectsQuery,
   ListProjectsQueryVariables
+>
+export const PublishApiDocument = gql`
+  mutation PublishApi($projectId: ObjectId!) {
+    publishApi(projectId: $projectId)
+  }
+`
+export type PublishApiMutationFn = Apollo.MutationFunction<
+  PublishApiMutation,
+  PublishApiMutationVariables
+>
+
+/**
+ * __usePublishApiMutation__
+ *
+ * To run a mutation, you first call `usePublishApiMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePublishApiMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [publishApiMutation, { data, loading, error }] = usePublishApiMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function usePublishApiMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    PublishApiMutation,
+    PublishApiMutationVariables
+  >
+) {
+  const options = { ...defaultOptions, ...baseOptions }
+  return Apollo.useMutation<PublishApiMutation, PublishApiMutationVariables>(
+    PublishApiDocument,
+    options
+  )
+}
+export type PublishApiMutationHookResult = ReturnType<
+  typeof usePublishApiMutation
+>
+export type PublishApiMutationResult = Apollo.MutationResult<PublishApiMutation>
+export type PublishApiMutationOptions = Apollo.BaseMutationOptions<
+  PublishApiMutation,
+  PublishApiMutationVariables
 >
 export const LoginDocument = gql`
   mutation Login($email: String!, $password: String!) {
