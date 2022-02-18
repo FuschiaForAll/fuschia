@@ -84,6 +84,7 @@ export class ApiResolver {
             this.processes[`${projectId.toString()}`] = pid
           }
         } else {
+          // temp for now, it will actually cause problems if an api is offline but the server is started.
           const openPort = await portfinder.getPortPromise();
           project.appConfig.apiConfig.sandboxEndpoint = `http://localhost:${openPort}`;
           project.save();

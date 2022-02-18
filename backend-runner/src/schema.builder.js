@@ -103,6 +103,32 @@ function publish(project) {
   const schemaBuilder = [];
   const queryBuilder = ["type Query {"];
   const mutationBuilder = ["type Mutation {"];
+  if (project.appConfig.authConfig.requiresAuth) {
+    mutationBuilder.push(`  login(username: String!, password: String!): String`)
+    resolverBuilder.Mutation.login = (parent, args, context, info) =>
+    resolver.loginResolver(
+      project.appConfig.authConfig.tableId.toString(),
+      project.appConfig.authConfig.usernameFieldId.toString(),
+      project.appConfig.authConfig.passwordFieldId.toString(),
+      args,
+    );
+    mutationBuilder.push(`  logout: Boolean!`)
+    resolverBuilder.Mutation.logout = (parent, args, context, info) =>
+    resolver.logoutResolver(
+      project.appConfig.authConfig.tableId.toString(),
+      project.appConfig.authConfig.usernameFieldId.toString(),
+      project.appConfig.authConfig.passwordFieldId.toString(),
+      args,
+    );
+    mutationBuilder.push(`  register(username: String!, password: String!): String`)
+    resolverBuilder.Mutation.register = (parent, args, context, info) =>
+    resolver.registerResolver(
+      project.appConfig.authConfig.tableId.toString(),
+      project.appConfig.authConfig.usernameFieldId.toString(),
+      project.appConfig.authConfig.passwordFieldId.toString(),
+      args,
+    );
+  }
   const subscriptionBuilder = ["type Subscription {"];
   const connectionsBuilder = [];
   const createInputsBuilder = [];
