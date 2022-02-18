@@ -3,6 +3,8 @@ import { EntityModel } from '../../../generated/graphql'
 
 interface DataEditorProps {
   model: EntityModel
+  sandboxEndpoint?: string | null
+  liveEndpoint?: string | null
 }
 
 const defaultData = {
@@ -13,20 +15,25 @@ const defaultData = {
   Date: new Date(),
 }
 
-const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
+const DataEditor: React.FC<DataEditorProps> = function DataEditor({
+  model,
+  sandboxEndpoint,
+  liveEndpoint,
+}) {
+  const [sandboxMode, setSandboxMode] = useState(true)
   const [data, setData] = useState<any[]>([])
   const [keys, setKeys] = useState<any[]>([])
   const [newData, setNewData] = useState<any>({})
   useEffect(() => {
     if (model) {
-      setKeys(model.fields.map(field => field.fieldName))
+      setKeys(model.fields.map(field => field.fieldName.replaceAll(' ', '')))
       const newDataStructure = model.fields.reduce((acc, field) => {
-        acc[field.fieldName] =
+        acc[field.fieldName.replaceAll(' ', '')] =
           defaultData[field.dataType as keyof typeof defaultData]
         return acc
       }, {} as any)
       setNewData(newDataStructure)
-      fetch('http://localhost:4005', {
+      fetch(sandboxMode ? sandboxEndpoint || '' : liveEndpoint || '', {
         method: 'POST',
         body: JSON.stringify({
           operationName: `List${model.name}`,
@@ -36,7 +43,9 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
                 nextToken
                 items {
                     _id
-                    ${model.fields.map(field => field.fieldName).join('\n')}
+                    ${model.fields
+                      .map(field => field.fieldName.replaceAll(' ', ''))
+                      .join('\n')}
                 }
             }
         }
@@ -53,7 +62,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
         })
         .catch(e => console.log(e))
     }
-  }, [model])
+  }, [model, liveEndpoint, sandboxEndpoint, sandboxMode])
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name
     const value = e.target.value
@@ -85,25 +94,30 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
                     <td>
                       <button
                         onClick={() => {
-                          fetch('http://localhost:4005', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                              operationName: `Delete${model.name}`,
-                              query: `
+                          fetch(
+                            sandboxMode
+                              ? sandboxEndpoint || ''
+                              : liveEndpoint || '',
+                            {
+                              method: 'POST',
+                              body: JSON.stringify({
+                                operationName: `Delete${model.name}`,
+                                query: `
                         mutation Delete${model.name}($input: Delete${model.name}Input!) {
                           delete${model.name}(input: $input) {
                             _id
                           }
                       }
                         `,
-                              variables: {
-                                input: { _id: item._id },
+                                variables: {
+                                  input: { _id: item._id },
+                                },
+                              }),
+                              headers: {
+                                'Content-Type': 'application/json',
                               },
-                            }),
-                            headers: {
-                              'Content-Type': 'application/json',
-                            },
-                          })
+                            }
+                          )
                             .then(res => res.json())
                             .then(result => {
                               setData(data =>
@@ -136,25 +150,28 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
               <td>
                 <button
                   onClick={() => {
-                    fetch('http://localhost:4005', {
-                      method: 'POST',
-                      body: JSON.stringify({
-                        operationName: `Create${model.name}`,
-                        query: `
+                    fetch(
+                      sandboxMode ? sandboxEndpoint || '' : liveEndpoint || '',
+                      {
+                        method: 'POST',
+                        body: JSON.stringify({
+                          operationName: `Create${model.name}`,
+                          query: `
                     mutation Create${model.name}($input: Create${model.name}Input!) {
                       create${model.name}(input: $input) {
                         _id
                       }
                   }
                     `,
-                        variables: {
-                          input: newData,
+                          variables: {
+                            input: newData,
+                          },
+                        }),
+                        headers: {
+                          'Content-Type': 'application/json',
                         },
-                      }),
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                    })
+                      }
+                    )
                       .then(res => res.json())
                       .then(result => {
                         setData(data => [
@@ -166,7 +183,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({ model }) {
                         ])
                         const newDataStructure = model.fields.reduce(
                           (acc, field) => {
-                            acc[field.fieldName] =
+                            acc[field.fieldName.replaceAll(' ', '')] =
                               defaultData[
                                 field.dataType as keyof typeof defaultData
                               ]

@@ -155,7 +155,7 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
                   setIsUnique(false)
                   setNullable(false)
                   setFieldName('')
-                  setDataType('string')
+                  setDataType('String')
                 }}
               >
                 New Field

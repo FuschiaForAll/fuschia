@@ -5,6 +5,8 @@ query GetProject($projectId: ObjectId!) {
     projectName
     appConfig {
       apiConfig {
+        sandboxEndpoint
+        liveEndpoint
         models {
           _id
           name

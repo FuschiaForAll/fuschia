@@ -10,6 +10,8 @@ import { Service } from "typedi";
 import { spawn } from "child_process";
 import portfinder from "portfinder";
 import { MONGO_DB_URL } from "../../../utils/config";
+import axios from 'axios'
+import kill from 'tree-kill'
 
 function spawnInstance(
   environment: string,
@@ -18,7 +20,7 @@ function spawnInstance(
   port: string
 ) {
   console.log(`${__dirname}/../../../../../backend-runner/src/index.js`)
-  spawn("node", [`${__dirname}/../../../../../backend-runner/src/index.js`], {
+  const child = spawn("node", [`${__dirname}/../../../../../backend-runner/src/index.js`], {
     env: {
       ...process.env,
       NODE_ENV: environment,
@@ -27,15 +29,31 @@ function spawnInstance(
       PORT: port,
     },
   });
+
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", function (data) {
+      console.log("stdout: " + data);
+    });
+
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", function (data) {
+      console.log("stderr: " + data);
+    });
+    return child.pid
 }
+
+type pid = number
 
 @Service()
 @Resolver()
 export class ApiResolver {
+  // this is for temp development only and should be moved to AWS ECS local containers
+  processes: { [projectId: string]: pid} = {};
   constructor(
     private apiService: ApiService,
     private projectService: ProjectService
-  ) {}
+  ) {
+  }
   @Mutation(() => Boolean)
   async publishApi(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
@@ -52,26 +70,38 @@ export class ApiResolver {
     if (project) {
       if (sandbox) {
         if (project.appConfig.apiConfig.sandboxEndpoint) {
-          const port =
-            project.appConfig.apiConfig.sandboxEndpoint.split(":")[1];
-          spawnInstance("test", MONGO_DB_URL, project._id.toString(), port);
+          if (this.processes[projectId.toString()]) {
+            await new Promise((resolve, reject) => {
+              kill(this.processes[projectId.toString()], 'SIGKILL', e => {
+                resolve(true)
+              })
+            })
+            delete this.processes[projectId.toString()]
+          }
+          const url = new URL(project.appConfig.apiConfig.sandboxEndpoint)
+          const pid = spawnInstance("test", MONGO_DB_URL, project._id.toString(), url.port);
+          if (pid) {
+            this.processes[`${projectId.toString()}`] = pid
+          }
         } else {
           const openPort = await portfinder.getPortPromise();
           project.appConfig.apiConfig.sandboxEndpoint = `http://localhost:${openPort}`;
           project.save();
-          spawnInstance(
+          const pid = spawnInstance(
             "test",
             MONGO_DB_URL,
             project._id.toString(),
             `${openPort}`
           );
+          if (pid) {
+            this.processes[`${projectId.toString()}`] = pid
+          }
           return true;
         }
       } else {
         if (project.appConfig.apiConfig.liveEndpoint) {
-          const port =
-            project.appConfig.apiConfig.sandboxEndpoint.split(":")[1];
-          spawnInstance("prod", MONGO_DB_URL, project._id.toString(), port);
+            const url = new URL(project.appConfig.apiConfig.sandboxEndpoint)
+          spawnInstance("prod", MONGO_DB_URL, project._id.toString(), url.port);
         } else {
           const openPort = await portfinder.getPortPromise();
           project.appConfig.apiConfig.liveEndpoint = `http://localhost:${openPort}`;
@@ -97,9 +127,49 @@ export class ApiResolver {
     const project = await ProjectModel.findById(projectId);
     if (project) {
       if (sandbox && project.appConfig.apiConfig.sandboxEndpoint) {
-        throw new ApolloError('Not Implemented')
+        try {
+          const response = await axios.post(project.appConfig.apiConfig.sandboxEndpoint, {
+            operationName: 'Introspection',
+            query: `
+              query Introspection {
+                __schema {
+                  types {
+                    name
+                  }
+                }
+              }
+            `
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          return true
+        } catch  {
+        }
+        return false
       } else if (!sandbox && project.appConfig.apiConfig.liveEndpoint) {
-        throw new ApolloError('Not Implemented')
+        try {
+          const response = await axios.post(project.appConfig.apiConfig.liveEndpoint, {
+            operationName: 'Introspection',
+            query: `
+              query Introspection {
+                __schema {
+                  types {
+                    name
+                  }
+                }
+              }
+            `
+          }, {
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          return true
+        } catch {
+        }
+        return false
       }
     }
     return false
@@ -123,27 +193,6 @@ export class ApiResolver {
   }
   @Mutation(() => Boolean, { nullable: true })
   async deleteRelationship(@Ctx() ctx: Context) {
-    return true;
-  }
-
-  @Mutation(() => Boolean, { nullable: true })
-  async createField(@Ctx() ctx: Context) {
-    return true;
-  }
-  @Query(() => Boolean, { nullable: true })
-  async retrieveField(@Ctx() ctx: Context) {
-    return true;
-  }
-  @Query(() => Boolean, { nullable: true })
-  async listFields(@Ctx() ctx: Context) {
-    return true;
-  }
-  @Mutation(() => Boolean, { nullable: true })
-  async updateField(@Ctx() ctx: Context) {
-    return true;
-  }
-  @Mutation(() => Boolean, { nullable: true })
-  async deleteField(@Ctx() ctx: Context) {
     return true;
   }
 

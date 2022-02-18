@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   useCreateEntityModelMutation,
   useGetProjectQuery,
+  useGetServerStatusQuery,
   usePublishApiMutation,
 } from '../../../generated/graphql'
 import { AuthConfig } from './AuthConfig'
@@ -43,6 +44,18 @@ const Database: React.FC = function Database() {
   let { projectId } = useParams<{ projectId: string }>()
   const navigation = useNavigate()
   const [expanded, setExpanded] = React.useState<string | false>(false)
+  const { data: liveServerStatusData } = useGetServerStatusQuery({
+    variables: {
+      projectId,
+      sandbox: false,
+    },
+  })
+  const { data: sandboxServerStatusData } = useGetServerStatusQuery({
+    variables: {
+      projectId,
+      sandbox: true,
+    },
+  })
   const [selectedTab, setSelectedTab] = React.useState(0)
   const [newModelName, setNewModelName] = useState('')
   const { data, loading, error } = useGetProjectQuery({
@@ -77,6 +90,18 @@ const Database: React.FC = function Database() {
     <div>
       <h1>Database</h1>
       <button onClick={() => navigation('/organizations')}>Organization</button>
+      {liveServerStatusData && (
+        <div>
+          Live Server Status -{' '}
+          {liveServerStatusData.getServerStatus ? 'Online' : 'Offline'}
+        </div>
+      )}
+      {sandboxServerStatusData && (
+        <div>
+          Sandbox Server Status -{' '}
+          {sandboxServerStatusData?.getServerStatus ? 'Online' : 'Offline'}
+        </div>
+      )}
       <Tabs value={selectedTab} onChange={handleChange}>
         <Tab label="Database Editor" />
         <Tab label="Data Editor" />
@@ -142,7 +167,13 @@ const Database: React.FC = function Database() {
         {data &&
           data.getProject.appConfig.apiConfig.models.map(model => (
             <div key={model._id}>
-              <DataEditor model={model} />
+              <DataEditor
+                model={model}
+                sandboxEndpoint={
+                  data.getProject.appConfig.apiConfig.sandboxEndpoint
+                }
+                liveEndpoint={data.getProject.appConfig.apiConfig.liveEndpoint}
+              />
             </div>
           ))}
       </TabPanel>

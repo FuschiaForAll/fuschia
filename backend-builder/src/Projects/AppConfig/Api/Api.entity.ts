@@ -6,12 +6,12 @@ import { prop as Property, getModelForClass, modelOptions, Severity } from "@typ
 @ObjectType()
 export class Api {
     @Field()
-    @Property()
-    sandboxEndpoint!: String
+    @Property({ nullable: true })
+    sandboxEndpoint!: string
 
-    @Field()
+    @Field({ nullable: true })
     @Property()
-    liveEndpoint!: String
+    liveEndpoint!: string
 
     @Field(type => [EntityModel])
     @Property({ type: () => EntityModel, default: [] })

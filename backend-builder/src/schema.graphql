@@ -4,7 +4,7 @@
 # -----------------------------------------------
 
 type Api {
-  liveEndpoint: String!
+  liveEndpoint: String
   models: [EntityModel!]!
   mutations: [String!]!
   queries: [String!]!
@@ -126,7 +126,6 @@ type Key {
 type Mutation {
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
-  createField: Boolean
   createMutation: Boolean
   createOrganization(organization: OrganizationInput!): Organization!
   createProject(project: ProjectInput!): Project!
@@ -136,7 +135,6 @@ type Mutation {
   createUser(user: UserInput!): User!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
-  deleteField: Boolean
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
   deleteProject(projectId: ObjectId!): ObjectId!
@@ -149,7 +147,6 @@ type Mutation {
   register(email: String!, password: String!): UserResponse!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateEntityModel: Boolean
-  updateField: Boolean
   updateMutation: Boolean
   updateQuery: Boolean
   updateRelationship: Boolean
@@ -189,7 +186,6 @@ type Query {
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
-  listFields: Boolean
   listMutations: Boolean
   listOrganizations: [Organization!]!
   listProjects: [Project!]!
@@ -198,7 +194,6 @@ type Query {
   listSubscriptions: Boolean
   me: User
   retrieveEntityModel: Boolean
-  retrieveField: Boolean
   retrieveMutation: Boolean
   retrieveQuery: Boolean
   retrieveRelationship: Boolean

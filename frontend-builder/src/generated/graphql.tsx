@@ -21,7 +21,7 @@ export type Scalars = {
 
 export type Api = {
   __typename?: 'Api';
-  liveEndpoint: Scalars['String'];
+  liveEndpoint?: Maybe<Scalars['String']>;
   models: Array<EntityModel>;
   mutations: Array<Scalars['String']>;
   queries: Array<Scalars['String']>;
@@ -147,7 +147,6 @@ export type Mutation = {
   __typename?: 'Mutation';
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
-  createField?: Maybe<Scalars['Boolean']>;
   createMutation?: Maybe<Scalars['Boolean']>;
   createOrganization: Organization;
   createProject: Project;
@@ -157,7 +156,6 @@ export type Mutation = {
   createUser: User;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
   deleteEntityModel?: Maybe<Scalars['ObjectId']>;
-  deleteField?: Maybe<Scalars['Boolean']>;
   deleteMutations?: Maybe<Scalars['Boolean']>;
   deleteOrganization: Scalars['ObjectId'];
   deleteProject: Scalars['ObjectId'];
@@ -170,7 +168,6 @@ export type Mutation = {
   register: UserResponse;
   updateAuth?: Maybe<Auth>;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
-  updateField?: Maybe<Scalars['Boolean']>;
   updateMutation?: Maybe<Scalars['Boolean']>;
   updateQuery?: Maybe<Scalars['Boolean']>;
   updateRelationship?: Maybe<Scalars['Boolean']>;
@@ -285,7 +282,6 @@ export type Query = {
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
   listEntityModel?: Maybe<Scalars['Boolean']>;
-  listFields?: Maybe<Scalars['Boolean']>;
   listMutations?: Maybe<Scalars['Boolean']>;
   listOrganizations: Array<Organization>;
   listProjects: Array<Project>;
@@ -294,7 +290,6 @@ export type Query = {
   listSubscriptions?: Maybe<Scalars['Boolean']>;
   me?: Maybe<User>;
   retrieveEntityModel?: Maybe<Scalars['Boolean']>;
-  retrieveField?: Maybe<Scalars['Boolean']>;
   retrieveMutation?: Maybe<Scalars['Boolean']>;
   retrieveQuery?: Maybe<Scalars['Boolean']>;
   retrieveRelationship?: Maybe<Scalars['Boolean']>;
@@ -620,7 +615,15 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', apiConfig: { __typename?: 'Api', queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, nullable: boolean, dataType: string, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, connection?: Array<{ __typename?: 'Connection', keyName: string, fieldNames: Array<string> }> | null }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', apiConfig: { __typename?: 'Api', sandboxEndpoint: string, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, nullable: boolean, dataType: string, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, connection?: Array<{ __typename?: 'Connection', keyName: string, fieldNames: Array<string> }> | null }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+
+export type GetServerStatusQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  sandbox: Scalars['Boolean'];
+}>;
+
+
+export type GetServerStatusQuery = { __typename?: 'Query', getServerStatus: boolean };
 
 export type ListProjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -1201,6 +1204,8 @@ export const GetProjectDocument = gql`
     projectName
     appConfig {
       apiConfig {
+        sandboxEndpoint
+        liveEndpoint
         models {
           _id
           name
@@ -1303,6 +1308,40 @@ export function useGetProjectLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions
 export type GetProjectQueryHookResult = ReturnType<typeof useGetProjectQuery>;
 export type GetProjectLazyQueryHookResult = ReturnType<typeof useGetProjectLazyQuery>;
 export type GetProjectQueryResult = Apollo.QueryResult<GetProjectQuery, GetProjectQueryVariables>;
+export const GetServerStatusDocument = gql`
+    query GetServerStatus($projectId: ObjectId!, $sandbox: Boolean!) {
+  getServerStatus(projectId: $projectId, sandbox: $sandbox)
+}
+    `;
+
+/**
+ * __useGetServerStatusQuery__
+ *
+ * To run a query within a React component, call `useGetServerStatusQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetServerStatusQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetServerStatusQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      sandbox: // value for 'sandbox'
+ *   },
+ * });
+ */
+export function useGetServerStatusQuery(baseOptions: Apollo.QueryHookOptions<GetServerStatusQuery, GetServerStatusQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetServerStatusQuery, GetServerStatusQueryVariables>(GetServerStatusDocument, options);
+      }
+export function useGetServerStatusLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetServerStatusQuery, GetServerStatusQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetServerStatusQuery, GetServerStatusQueryVariables>(GetServerStatusDocument, options);
+        }
+export type GetServerStatusQueryHookResult = ReturnType<typeof useGetServerStatusQuery>;
+export type GetServerStatusLazyQueryHookResult = ReturnType<typeof useGetServerStatusLazyQuery>;
+export type GetServerStatusQueryResult = Apollo.QueryResult<GetServerStatusQuery, GetServerStatusQueryVariables>;
 export const ListProjectsDocument = gql`
     query ListProjects {
   listProjects {
