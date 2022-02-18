@@ -5,6 +5,7 @@ import { Ref } from "../utils/ref-type";
 import { AppConfig } from "./AppConfig/AppConfig.entity";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
+import { AppBody } from "@fuchsia/types";
 import { v4 as uuid } from 'uuid';
 
 @ObjectType()
@@ -27,4 +28,8 @@ export class Project {
     @Field(type => AppConfig)
     @Property({ type: () => AppConfig, required: true })
     appConfig!: AppConfig;
+
+    @Field(type => AppBody)
+    @Property({ type: () => AppBody, required: false })
+    body!: AppBody
 }
