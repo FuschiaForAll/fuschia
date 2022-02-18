@@ -71,6 +71,17 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
   return (
     <div>
       <h1>Edit {model.name} Data</h1>
+
+      <label htmlFor="sandboxMode">Use Sandbox Mode?</label>
+      <input
+        name="sandboxMode"
+        type="checkbox"
+        checked={sandboxMode}
+        onChange={e => {
+          const value = e.target.checked
+          setSandboxMode(value)
+        }}
+      />
       {data && (
         <table>
           <thead>

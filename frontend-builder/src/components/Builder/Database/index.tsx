@@ -158,7 +158,19 @@ const Database: React.FC = function Database() {
                 })
               }
             >
-              Publish
+              Publish Sandbox
+            </button>
+            <button
+              onClick={() =>
+                publishApi({
+                  variables: {
+                    projectId,
+                    sandbox: false,
+                  },
+                })
+              }
+            >
+              Publish Live
             </button>
           </div>
         )}
