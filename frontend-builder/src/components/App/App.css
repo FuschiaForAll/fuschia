@@ -1,6 +1,7 @@
 :root {
   --canvasBg: #f5f5f5;
   --black: #000;
+  --primary: #1976d2;
 }
 
 * {

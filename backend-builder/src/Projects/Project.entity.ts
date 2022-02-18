@@ -1,11 +1,11 @@
 import { ObjectType, Field } from "type-graphql";
 import { prop as Property } from "@typegoose/typegoose";
+import { AppBody } from "@fuchsia/types";
 import { Organization } from "../Organizations/Organization.entity";
 import { Ref } from "../utils/ref-type";
 import { AppConfig } from "./AppConfig/AppConfig.entity";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
-import { AppBody } from "@fuchsia/types";
 import { v4 as uuid } from 'uuid';
 
 @ObjectType()
@@ -29,7 +29,7 @@ export class Project {
     @Property({ type: () => AppConfig, required: true })
     appConfig!: AppConfig;
 
-    @Field(type => AppBody)
-    @Property({ type: () => AppBody, required: false })
+    @Field({ nullable: true })
+    @Property({ required: false })
     body!: AppBody
 }
