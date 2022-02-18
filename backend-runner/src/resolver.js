@@ -33,6 +33,16 @@ class Resolvers {
     const doc = await this.db.collection(collectionName).findOneAndDelete({ _id: new ObjectId(args._id) })
     return doc.value
   }
+
+  async loginResolver(collectionName, usernameId, passwordId, args) {
+    return "true"    
+  }
+  async logoutResolver(collectionName, usernameId, passwordId, args) {
+    return "true"    
+  }
+  async registerResolver(collectionName, usernameId, passwordId, args) {
+    return "true"    
+  }
 }
 
 exports.resolver = new Resolvers()

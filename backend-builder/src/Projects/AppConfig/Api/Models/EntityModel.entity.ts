@@ -1,7 +1,7 @@
 import { prop as Property, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 import { ObjectId } from "mongoose";
 import { ObjectType, Field } from "type-graphql";
-import { Auth } from "../Auth.entity";
+import { DataAuth } from "../DataAuth.entity";
 import { DataField } from "../Fields/DataField.entity";
 import { Key } from "../Key.entity";
 import { ObjectIdScalar } from '../../../../utils/object-id.scalar'
@@ -20,9 +20,9 @@ export class EntityModel {
     @Property({ type: () => Key, default: [] })
     keys!: Key[]
 
-    @Field(type => [Auth])
-    @Property({ type: () => Auth, default: [] })
-    auth!: Auth[]
+    @Field(type => [DataAuth])
+    @Property({ type: () => DataAuth, default: [] })
+    auth!: DataAuth[]
 
     @Field(type => [DataField])
     @Property({ type: () => DataField, default: [] })

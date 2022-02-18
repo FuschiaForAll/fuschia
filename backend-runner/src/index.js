@@ -9,8 +9,8 @@ const { MongoClient } = require('mongodb');
   const project = await db.collection('projects').find({}).toArray()
   const { typeDefs, resolvers } = publish(project[0])
   console.log(typeDefs)
-  const server = new ApolloServer({ debug: true, typeDefs: gql`${typeDefs}`, resolvers });
-  server.listen({ port: 4005 }).then(({ url }) => {
+  const server = new ApolloServer({ cors: { origin: 'http://localhost:3000' }, debug: true, typeDefs: gql`${typeDefs}`, resolvers });
+  server.listen({ port: process.env.PORT }).then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
   });
 })()

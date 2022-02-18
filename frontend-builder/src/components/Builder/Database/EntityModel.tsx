@@ -37,7 +37,6 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
   })
   return (
     <div>
-      {model._id} - {model.name}
       <table>
         <thead>
           <tr>
@@ -156,7 +155,7 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
                   setIsUnique(false)
                   setNullable(false)
                   setFieldName('')
-                  setDataType('string')
+                  setDataType('String')
                 }}
               >
                 New Field

@@ -20,7 +20,7 @@ enum ModelOperation {
 }
 
 @ObjectType()
-export class Auth {
+export class DataAuth {
   @Field()
   @Property({ enum: AuthStrategy, type: String })
   allow!: AuthStrategy

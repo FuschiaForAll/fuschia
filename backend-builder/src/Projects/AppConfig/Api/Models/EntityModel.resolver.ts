@@ -41,8 +41,21 @@ export class EntityModelResolver {
   async updateEntityModel(@Ctx() ctx: Context) {
     return true
   }
-  @Mutation(() => Boolean, { nullable: true })
-  async deleteEntityModel(@Ctx() ctx: Context) {
-    return true
+  @Mutation(() => ObjectIdScalar, { nullable: true })
+  async deleteEntityModel(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('entityModelId', type => ObjectIdScalar) entityModelId: ObjectId, @Ctx() ctx: Context) {
+    if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
+    const project = await ProjectModel.findById(projectId)
+    if (project) {
+      const apiConfig = project.appConfig.apiConfig
+      if (apiConfig) {
+        apiConfig.models = apiConfig.models.filter(model => {
+          // @ts-ignore
+        return !model._id.equals(entityModelId)
+        })
+        project.save()
+        return entityModelId
+      }
+    }
+    return null
   }
 }

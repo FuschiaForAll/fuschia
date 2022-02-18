@@ -1,0 +1,6 @@
+#import "./Auth.fragment.graphql"
+mutation UpdateAuth($projectId: ObjectId!, $input: AuthInput!) {
+  updateAuth(projectId: $projectId, input: $input) {
+    ...AuthFragment
+  }
+}

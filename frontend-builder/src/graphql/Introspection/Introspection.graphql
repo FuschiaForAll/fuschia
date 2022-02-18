@@ -1,0 +1,25 @@
+#import "./FullType.fragment.graphql"
+#import "./InputValue.fragment.graphql"
+query IntrospectionQuery {
+  __schema {
+    queryType {
+      name
+    }
+    mutationType {
+      name
+    }
+    subscriptionType {
+      name
+    }
+    types {
+      ...FullType
+    }
+    directives {
+      name
+      locations
+      args {
+        ...InputValue
+      }
+    }
+  }
+}

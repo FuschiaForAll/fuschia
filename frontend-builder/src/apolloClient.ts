@@ -1,5 +1,6 @@
 import {
   ApolloClient,
+  ApolloLink,
   createHttpLink,
   InMemoryCache,
   makeVar,
@@ -11,6 +12,10 @@ export const currentProjectIdVar = makeVar(
 
 const httpLink = createHttpLink({
   uri: 'https://localhost:4001/graphql',
+  credentials: 'include',
+})
+const appLink = createHttpLink({
+  uri: 'http://localhost:4005',
   credentials: 'include',
 })
 
@@ -29,6 +34,10 @@ const cache = new InMemoryCache({
 })
 
 export const client = new ApolloClient({
-  link: httpLink,
+  link: ApolloLink.split(
+    operation => operation.getContext().clientName === 'app-server',
+    appLink,
+    httpLink
+  ),
   cache,
 })

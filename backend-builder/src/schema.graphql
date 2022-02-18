@@ -4,7 +4,7 @@
 # -----------------------------------------------
 
 type Api {
-  liveEndpoint: String!
+  liveEndpoint: String
   models: [EntityModel!]!
   mutations: [String!]!
   queries: [String!]!
@@ -14,9 +14,62 @@ type Api {
 
 type AppConfig {
   apiConfig: Api!
+  authConfig: Auth!
 }
 
 type Auth {
+  _id: ObjectId!
+  allowUnauthenticatedUsers: Boolean!
+  clientRefreshTokenValidity: Float!
+  defaultPasswordPolicy: Boolean!
+  emailVerificationMessage: String!
+  emailVerificationSubject: String!
+  mfaConfiguration: String!
+  mfaEnabled: Boolean!
+  mfaTypes: String!
+  passwordFieldId: String!
+  passwordPolicyMinLength: Float!
+  passwordRequiresNumbers: Boolean!
+  passwordRequiresSymbols: Boolean!
+  passwordRequiresUppercase: Boolean!
+  requiredAttributes: [String!]!
+  requiresAuth: Boolean!
+  smsAuthenticationMessage: String!
+  smsVerificationMessage: String!
+  tableId: String!
+  usernameCaseSensitive: Boolean!
+  usernameFieldId: String!
+}
+
+input AuthInput {
+  allowUnauthenticatedUsers: Boolean
+  clientRefreshTokenValidity: Float
+  defaultPasswordPolicy: Boolean
+  emailVerificationMessage: String
+  emailVerificationSubject: String
+  mfaConfiguration: String
+  mfaEnabled: Boolean
+  mfaTypes: String
+  passwordFieldId: String
+  passwordPolicyMinLength: Float
+  passwordRequiresNumbers: Boolean
+  passwordRequiresSymbols: Boolean
+  passwordRequiresUppercase: Boolean
+  requiredAttributes: [String!]
+  requiresAuth: Boolean
+  smsAuthenticationMessage: String
+  smsVerificationMessage: String
+  tableId: String
+  usernameCaseSensitive: Boolean
+  usernameFieldId: String
+}
+
+type Connection {
+  fieldNames: [String!]!
+  keyName: String!
+}
+
+type DataAuth {
   allow: String!
   groupClaim: String!
   groups: [String!]!
@@ -25,11 +78,6 @@ type Auth {
   operations: [String!]!
   ownerField: String!
   provider: String!
-}
-
-type Connection {
-  fieldNames: [String!]!
-  keyName: String!
 }
 
 type DataField {
@@ -41,7 +89,7 @@ type DataField {
   isUnique: Boolean!
   keys: [Key!]!
   nullable: Boolean!
-  rules: [Auth!]!
+  rules: [DataAuth!]!
 }
 
 input DataFieldInput {
@@ -59,7 +107,7 @@ scalar DateTime
 
 type EntityModel {
   _id: ObjectId!
-  auth: [Auth!]!
+  auth: [DataAuth!]!
   fields: [DataField!]!
   keys: [Key!]!
   name: String!
@@ -78,7 +126,6 @@ type Key {
 type Mutation {
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
-  createField: Boolean
   createMutation: Boolean
   createOrganization(organization: OrganizationInput!): Organization!
   createProject(project: ProjectInput!): Project!
@@ -87,8 +134,7 @@ type Mutation {
   createSubscription: Boolean
   createUser(user: UserInput!): User!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
-  deleteEntityModel: Boolean
-  deleteField: Boolean
+  deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
   deleteProject(projectId: ObjectId!): ObjectId!
@@ -97,10 +143,10 @@ type Mutation {
   deleteSubscription: Boolean
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
-  publishApi(projectId: ObjectId!): Boolean!
+  publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   register(email: String!, password: String!): UserResponse!
+  updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateEntityModel: Boolean
-  updateField: Boolean
   updateMutation: Boolean
   updateQuery: Boolean
   updateRelationship: Boolean
@@ -136,9 +182,10 @@ input ProjectInput {
 }
 
 type Query {
+  getAuth(projectId: ObjectId!): Auth
   getProject(projectId: ObjectId!): Project!
+  getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
-  listFields: Boolean
   listMutations: Boolean
   listOrganizations: [Organization!]!
   listProjects: [Project!]!
@@ -147,7 +194,6 @@ type Query {
   listSubscriptions: Boolean
   me: User
   retrieveEntityModel: Boolean
-  retrieveField: Boolean
   retrieveMutation: Boolean
   retrieveQuery: Boolean
   retrieveRelationship: Boolean

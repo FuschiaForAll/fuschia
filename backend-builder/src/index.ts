@@ -28,6 +28,7 @@ import fs from "fs";
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { execute, subscribe } from 'graphql';
 import { SubscriptionServer } from "subscriptions-transport-ws";
+import { AuthResolver } from "./Projects/AppConfig/Auth/Auth.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -56,6 +57,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       EntityModelResolver,
       DataFieldResolver,
       ApiResolver,
+      AuthResolver
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],

@@ -16,7 +16,7 @@ const App: React.FC = function App() {
         <Route path="/" element={<Navigate replace to="/builder" />} />
         <Route path="/builder" element={<Builder />} />
         <Route path="/builder/*" element={<Builder />} />
-        <Route path="/database-editor" element={<Database />} />
+        <Route path=":projectId/database-editor" element={<Database />} />
         <Route path="/organizations" element={<Organizations />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/project/new" element={<NewProject />} />

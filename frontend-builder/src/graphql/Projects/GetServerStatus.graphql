@@ -1,0 +1,3 @@
+query GetServerStatus($projectId: ObjectId!, $sandbox: Boolean!) {
+  getServerStatus(projectId: $projectId, sandbox: $sandbox)
+}
