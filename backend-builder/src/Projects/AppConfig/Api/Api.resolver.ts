@@ -17,7 +17,8 @@ function spawnInstance(
   environment: string,
   mongoUrl: string,
   projectId: string,
-  port: string
+  port: string,
+  jwtSecret?: string
 ) {
   console.log(`${__dirname}/../../../../../backend-runner/src/index.js`)
   const child = spawn("node", [`${__dirname}/../../../../../backend-runner/src/index.js`], {
@@ -27,6 +28,7 @@ function spawnInstance(
       MONGO_DB_URL: mongoUrl,
       PROJECT_ID: projectId,
       PORT: port,
+      JWT_SECRET: jwtSecret
     },
   });
 
@@ -79,7 +81,7 @@ export class ApiResolver {
             delete this.processes[projectId.toString()]
           }
           const url = new URL(project.appConfig.apiConfig.sandboxEndpoint)
-          const pid = spawnInstance("test", MONGO_DB_URL, project._id.toString(), url.port);
+          const pid = spawnInstance("test", MONGO_DB_URL, project._id.toString(), url.port, project.appConfig.sandboxJwtSecret);
           if (pid) {
             this.processes[`${projectId.toString()}`] = pid
           }
@@ -92,7 +94,8 @@ export class ApiResolver {
             "test",
             MONGO_DB_URL,
             project._id.toString(),
-            `${openPort}`
+            `${openPort}`,
+            project.appConfig.sandboxJwtSecret
           );
           if (pid) {
             this.processes[`${projectId.toString()}`] = pid
@@ -102,7 +105,7 @@ export class ApiResolver {
       } else {
         if (project.appConfig.apiConfig.liveEndpoint) {
             const url = new URL(project.appConfig.apiConfig.sandboxEndpoint)
-          spawnInstance("prod", MONGO_DB_URL, project._id.toString(), url.port);
+          spawnInstance("prod", MONGO_DB_URL, project._id.toString(), url.port, project.appConfig.liveJwtSecret);
         } else {
           const openPort = await portfinder.getPortPromise();
           project.appConfig.apiConfig.liveEndpoint = `http://localhost:${openPort}`;
@@ -111,7 +114,8 @@ export class ApiResolver {
             "prod",
             MONGO_DB_URL,
             project._id.toString(),
-            `${openPort}`
+            `${openPort}`,
+            project.appConfig.liveJwtSecret
           );
           return true;
         }
