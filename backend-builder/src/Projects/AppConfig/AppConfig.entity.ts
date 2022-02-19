@@ -7,6 +7,12 @@ import { Auth } from "./Auth/Auth.entity";
 @modelOptions({ options: { allowMixed: Severity.ALLOW }})
 @ObjectType()
 export class AppConfig {
+    @Property()
+    liveJwtSecret?: string
+
+    @Property()
+    sandboxJwtSecret?: string
+
     @Field()
     @Property({type: () => Api, default: new Api() })
     apiConfig!: Api;

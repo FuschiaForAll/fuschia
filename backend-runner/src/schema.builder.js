@@ -100,34 +100,48 @@ function publish(project) {
     Mutation: {},
     Subscription: {},
   };
+  global.tableAndFieldNameMap = {};
+  global.tableAndFieldIdMap = {};
   const schemaBuilder = [];
   const queryBuilder = ["type Query {"];
   const mutationBuilder = ["type Mutation {"];
   if (project.appConfig.authConfig.requiresAuth) {
-    mutationBuilder.push(`  login(username: String!, password: String!): String`)
+    mutationBuilder.push(
+      `  login(username: String!, password: String!): String`
+    );
     resolverBuilder.Mutation.login = (parent, args, context, info) =>
-    resolver.loginResolver(
-      project.appConfig.authConfig.tableId.toString(),
-      project.appConfig.authConfig.usernameFieldId.toString(),
-      project.appConfig.authConfig.passwordFieldId.toString(),
-      args,
-    );
-    mutationBuilder.push(`  logout: Boolean!`)
+      resolver.loginResolver(
+        project.appConfig.authConfig.tableId.toString(),
+        project.appConfig.authConfig.usernameFieldId.toString(),
+        project.appConfig.authConfig.passwordFieldId.toString(),
+        project.appConfig.authConfig.usernameCaseSensitive,
+        args,
+        parent,
+        context,
+        info
+      );
+    mutationBuilder.push(`  logout: Boolean!`);
     resolverBuilder.Mutation.logout = (parent, args, context, info) =>
-    resolver.logoutResolver(
-      project.appConfig.authConfig.tableId.toString(),
-      project.appConfig.authConfig.usernameFieldId.toString(),
-      project.appConfig.authConfig.passwordFieldId.toString(),
-      args,
+      resolver.logoutResolver(
+        project.appConfig.authConfig.tableId.toString(),
+        project.appConfig.authConfig.usernameFieldId.toString(),
+        project.appConfig.authConfig.passwordFieldId.toString(),
+        project.appConfig.authConfig.usernameCaseSensitive,
+        args
+      );
+    mutationBuilder.push(
+      `  register(username: String!, password: String!): String`
     );
-    mutationBuilder.push(`  register(username: String!, password: String!): String`)
     resolverBuilder.Mutation.register = (parent, args, context, info) =>
-    resolver.registerResolver(
-      project.appConfig.authConfig.tableId.toString(),
-      project.appConfig.authConfig.usernameFieldId.toString(),
-      project.appConfig.authConfig.passwordFieldId.toString(),
-      args,
-    );
+      resolver.registerResolver(
+        project.appConfig.authConfig.tableId.toString(),
+        project.appConfig.authConfig.usernameFieldId.toString(),
+        project.appConfig.authConfig.passwordFieldId.toString(),
+        args,
+        parent,
+        context,
+        info
+      );
   }
   const subscriptionBuilder = ["type Subscription {"];
   const connectionsBuilder = [];
@@ -138,6 +152,14 @@ function publish(project) {
   const conditionalBuilder = [];
   project.appConfig.apiConfig.models.forEach((model) => {
     const name = model.name.replaceAll(" ", "");
+    global.tableAndFieldNameMap[name] = {
+      id: model._id.toString(),
+      fields: {},
+    };
+    global.tableAndFieldIdMap[model._id.toString()] = {
+      name: model.name.toString(),
+      fields: {},
+    };
     resolverBuilder.Query[`get${name}`] = (parent, args, context, info) =>
       resolver.genericGetQueryResolver(
         model._id.toString(),
@@ -149,6 +171,7 @@ function publish(project) {
     resolverBuilder.Query[`list${name}`] = (parent, args, context, info) =>
       resolver.genericListQueryResolver(
         model._id.toString(),
+        model.name.replace(" ", ""),
         parent,
         args.input,
         context,
@@ -164,6 +187,7 @@ function publish(project) {
     resolverBuilder.Mutation[`create${name}`] = (parent, args, context, info) =>
       resolver.genericCreateResolver(
         model._id.toString(),
+        model.name,
         parent,
         args.input,
         context,
@@ -191,6 +215,24 @@ function publish(project) {
     modelBuilder.push(`\ntype ${name} {`);
     modelBuilder.push(`  _id: ID!`);
     model.fields.forEach((field) => {
+      global.tableAndFieldNameMap[name].fields[
+        field.fieldName.replace(" ", "")
+      ] = {
+        id: field._id.toString(),
+        config: {
+          isUnique: field.isUnique,
+          isHashed: field.isHashed,
+        },
+      };
+      global.tableAndFieldIdMap[model._id.toString()].fields[
+        field._id.toString()
+      ] = {
+        name: field.fieldName.replace(" ", ""),
+        config: {
+          isUnique: field.isUnique,
+          isHashed: field.isHashed,
+        },
+      };
       if (field.connection) {
         modelBuilder.push(
           `  ${field.fieldName.replaceAll(" ", "")}(filter: Model${
