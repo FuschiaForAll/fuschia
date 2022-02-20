@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react'
 import { getIntrospectionQuery, buildClientSchema } from 'graphql'
-import { useQuery, gql } from '@apollo/client'
 
 interface GraphQLDesignerProps {
   sandboxEndpoint?: string | null
