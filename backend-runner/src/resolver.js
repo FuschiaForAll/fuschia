@@ -102,7 +102,7 @@ class Resolvers {
       .toArray();
     if (doc.length > 0) {
       const record = doc[0];
-      const username = [usernameFieldId];
+      const username = record[usernameFieldId];
       const password = record[passwordFieldId];
       if (await argon2.verify(password, args.password)) {
         const token = jwt.sign(
