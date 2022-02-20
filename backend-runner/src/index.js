@@ -13,6 +13,7 @@ const jwt = require('jsonwebtoken');
     const projectDb = mongoClient.db(process.env.PROJECT_ID);
     await initialize(projectDb, project[0])
     const { typeDefs, resolvers } = publish(project[0]);
+    global.filterParser = require('./filter.builder')(resolvers)
     const server = new ApolloServer({
       cors: { origin: "http://localhost:3000" },
       debug: true,

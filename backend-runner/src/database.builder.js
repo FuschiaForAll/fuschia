@@ -1,6 +1,5 @@
 async function initialize(db, project) {
   const collections = await db.listCollections().toArray()
-  console.log(collections)
   project.appConfig.apiConfig.models.forEach(model => {
     const collection = collections.find(collection => collection.name === model._id.toString())
     if (!collection) {

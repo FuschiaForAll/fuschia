@@ -13,7 +13,6 @@ class Resolvers {
     const mongoClient = new MongoClient(`${process.env.MONGO_DB_URL}`);
     await mongoClient.connect();
     this.db = mongoClient.db(process.env.PROJECT_ID);
-    // todo, create unique indexes
   }
 
   namesToIds(collectionName, obj) {
@@ -58,7 +57,7 @@ class Resolvers {
     context,
     info
   ) {
-    const docs = await this.db.collection(collectionId).find({}).toArray();
+    const docs = await this.db.collection(collectionId).find(global.filterParser(args.filter, global.tableAndFieldNameMap[collectionName].fields) || {}).limit(args.limit || 0).toArray();
     return { nextToken: null, items: this.idsToNames(collectionId, docs) };
   }
 
