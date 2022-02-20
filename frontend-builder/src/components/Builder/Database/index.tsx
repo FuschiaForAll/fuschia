@@ -190,7 +190,14 @@ const Database: React.FC = function Database() {
           ))}
       </TabPanel>
       <TabPanel value={selectedTab} index={2}>
-        <GraphQLDesigner />
+        {data && (
+          <GraphQLDesigner
+            sandboxEndpoint={
+              data.getProject.appConfig.apiConfig.sandboxEndpoint
+            }
+            liveEndpoint={data.getProject.appConfig.apiConfig.liveEndpoint}
+          />
+        )}
       </TabPanel>
       <TabPanel value={selectedTab} index={3}>
         {data && data.getProject.appConfig.authConfig && (

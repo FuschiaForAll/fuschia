@@ -173,7 +173,7 @@ function publish(project) {
         model._id.toString(),
         model.name.replace(" ", ""),
         parent,
-        args.input,
+        args,
         context,
         info
       );
