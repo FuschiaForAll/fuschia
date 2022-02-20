@@ -9,6 +9,14 @@ import { ProjectService } from "../../../Project.service";
 import { DataField } from "./DataField.entity";
 import { DataFieldInput } from "./DataField.input";
 
+const PRIMITIVE_DATA_TYPES = [
+  "ID",
+  "String",
+  "Boolean",
+  "Int",
+  "Float"
+]
+
 @Service()
 @Resolver()
 export class DataFieldResolver {
@@ -27,11 +35,25 @@ export class DataFieldResolver {
       })
       if (entityModel) {
         const newDataField = new DataField()
+        if (PRIMITIVE_DATA_TYPES.includes(dataField.dataType)) {
+          newDataField.dataType = dataField.dataType
+        } else {
+          const linkedEntity = project.appConfig.apiConfig.models.find(model => {
+            // @ts-ignore
+            return model._id.equals(dataField.dataType)
+          })
+          if (linkedEntity) {
+            newDataField.connection = true
+            newDataField.dataType = linkedEntity._id.toString()
+          } else {
+            throw new ApolloError("DataType does not exist")
+          }
+        }
         newDataField.fieldName = dataField.fieldName
         newDataField.isUnique = dataField.isUnique
         newDataField.isHashed = dataField.isHashed
-        newDataField.dataType = dataField.dataType
         newDataField.nullable = dataField.nullable
+        newDataField.isList = dataField.isList
         entityModel.fields.push(newDataField)
         project.save()
         return entityModel.fields.at(-1)
@@ -40,18 +62,6 @@ export class DataFieldResolver {
     return null
   }
 
-  @Query(() => Boolean, { nullable: true })
-  async retrieveEntityModel(@Ctx() ctx: Context) {
-    return true
-  }
-  @Query(() => Boolean, { nullable: true })
-  async listEntityModel(@Ctx() ctx: Context) {
-    return true
-  }
-  @Mutation(() => Boolean, { nullable: true })
-  async updateEntityModel(@Ctx() ctx: Context) {
-    return true
-  }
   @Mutation(() => ObjectIdScalar, { nullable: true })
   async deleteDataField(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('entityModelId', type => ObjectIdScalar) entityModelId: ObjectId, @Arg('dataFieldId', type => ObjectIdScalar) dataFieldId: ObjectId, @Ctx() ctx: Context) {
     if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}

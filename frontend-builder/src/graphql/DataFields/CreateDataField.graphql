@@ -12,7 +12,9 @@ mutation CreateDataField(
     fieldName
     isUnique
     isHashed
+    isList
     nullable
+    connection
     dataType
     rules {
       allow
@@ -26,10 +28,6 @@ mutation CreateDataField(
     }
     keys {
       name
-      fieldNames
-    }
-    connection {
-      keyName
       fieldNames
     }
   }

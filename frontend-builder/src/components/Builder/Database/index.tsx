@@ -123,7 +123,11 @@ const Database: React.FC = function Database() {
                   {model.name}
                 </AccordionSummary>
                 <AccordionDetails>
-                  <EntityModel projectId={projectId!} model={model} />
+                  <EntityModel
+                    projectId={projectId!}
+                    model={model}
+                    models={data.getProject.appConfig.apiConfig.models}
+                  />
                 </AccordionDetails>
               </Accordion>
             ))}
@@ -181,6 +185,7 @@ const Database: React.FC = function Database() {
             <div key={model._id}>
               <DataEditor
                 model={model}
+                models={data.getProject.appConfig.apiConfig.models}
                 sandboxEndpoint={
                   data.getProject.appConfig.apiConfig.sandboxEndpoint
                 }

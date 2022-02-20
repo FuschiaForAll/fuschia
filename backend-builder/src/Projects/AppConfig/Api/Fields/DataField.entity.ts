@@ -8,17 +8,6 @@ import { Key } from "../Key.entity";
 import { DataTypes } from "./DataField.enum";
 
 @ObjectType()
-export class Connection {
-
-    @Field()
-    @Property({ required: true })
-    keyName!: string
-
-    @Field(type => [String])
-    fieldNames!: string[]
-}
-
-@ObjectType()
 export class DataField {
 
     @Field(type => ObjectIdScalar)
@@ -35,6 +24,14 @@ export class DataField {
     @Field()
     @Property()
     isHashed!: boolean;
+
+    @Field({ nullable: true })
+    @Property()
+    isList!: boolean;
+
+    @Field({ nullable: true })
+    @Property()
+    connection!: boolean;
     
     @Field()
     @Property()
@@ -51,8 +48,4 @@ export class DataField {
     @Field(type => [Key])
     @Property({ type: () => [Key], default: [] })
     keys!: Key[]
-
-    @Field(type => [Connection], { nullable: true })
-    @Property({ type: () => Connection })
-    connection!: Connection
 }

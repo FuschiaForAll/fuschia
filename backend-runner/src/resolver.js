@@ -41,12 +41,29 @@ class Resolvers {
     return global.tableAndFieldIdMap[collectionId].name;
   }
 
-  async genericGetQueryResolver(collectionName, parent, args, context, info) {
+  async genericFieldResolver(parent, args, context, info, fieldName, entityId, collectionName) {
+    const docs = await this.db
+      .collection(entityId)
+      .find({ _id: new ObjectId(parent[fieldName]) })
+      .toArray();
+    return this.idsToNames(entityId, docs)[0];
+  }
+  
+  async genericFieldListResolver(parent, args, context, info, fieldName, entityId, collectionName) {
+    // todo: accept args to further filter the returned list
+    const docs = await this.db
+      .collection(entityId)
+      .find({ _id: { $in: (parent[fieldName] || []).map(id => new ObjectId(id))}})
+      .toArray();
+    return { nextToken: null, items: this.idsToNames(entityId, docs) };
+  }
+
+  async genericGetQueryResolver(collectionId, collectionName, parent, args, context, info) {
     const docs = await this.db
       .collection(collectionName)
       .find({ _id: new ObjectId(args._id) })
       .toArray();
-    return docs[0];
+    return this.idsToNames(collectionId, docs)[0];
   }
 
   async genericListQueryResolver(

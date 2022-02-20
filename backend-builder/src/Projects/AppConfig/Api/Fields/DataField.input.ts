@@ -13,6 +13,9 @@ export class DataFieldInput implements Partial<DataField> {
   isHashed!: boolean;
 
   @Field()
+  isList!: boolean;
+
+  @Field()
   nullable!: boolean;
 
   @Field()

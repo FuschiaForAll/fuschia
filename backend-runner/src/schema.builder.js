@@ -163,6 +163,7 @@ function publish(project) {
     resolverBuilder.Query[`get${name}`] = (parent, args, context, info) =>
       resolver.genericGetQueryResolver(
         model._id.toString(),
+        model.name.replace(" ", ""),
         parent,
         args,
         context,
@@ -234,13 +235,48 @@ function publish(project) {
         },
       };
       if (field.connection) {
-        modelBuilder.push(
-          `  ${field.fieldName.replaceAll(" ", "")}(filter: Model${
-            field.dataType
-          }FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${
-            field.dataType
-          }Connection`
-        );
+        if (!resolverBuilder[global.tableAndFieldIdMap[field.dataType].name]) {
+          resolverBuilder[global.tableAndFieldIdMap[field.dataType].name] = {};
+        }
+        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
+          field.fieldName.replaceAll(" ", "")
+        ] = (parent, args, context, info) =>
+          resolver.genericFieldResolver(
+            parent, 
+            args, 
+            context, 
+            info,
+            field.fieldName,
+            field.dataType,
+            model.name
+            );
+        if (field.isList) {
+        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
+          field.fieldName.replaceAll(" ", "")
+        ] = (parent, args, context, info) =>
+          resolver.genericFieldListResolver(
+            parent, 
+            args, 
+            context, 
+            info,
+            field.fieldName,
+            field.dataType,
+            model.name
+            );
+          modelBuilder.push(
+            `  ${field.fieldName.replaceAll(" ", "")}(filter: Model${
+              global.tableAndFieldIdMap[field.dataType].name
+            }FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${
+              global.tableAndFieldIdMap[field.dataType].name
+            }Connection`
+          );
+        } else {
+          modelBuilder.push(
+            `  ${field.fieldName.replaceAll(" ", "")}: ${
+              global.tableAndFieldIdMap[field.dataType].name
+            }${field.nullable ? "" : "!"}`
+          );
+        }
       } else {
         modelBuilder.push(
           `  ${field.fieldName.replaceAll(" ", "")}: ${field.dataType}${

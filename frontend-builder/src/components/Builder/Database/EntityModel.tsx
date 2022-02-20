@@ -17,16 +17,20 @@ interface EntityModelProps {
       fieldName: string
       isUnique: boolean
       isHashed: boolean
+      isList?: boolean | null
       nullable: boolean
       dataType: string
+      connected?: boolean | null
     }>
   }
+  models: Array<{ _id: string; name: string }>
 }
 
-export function EntityModel({ projectId, model }: EntityModelProps) {
+export function EntityModel({ projectId, model, models }: EntityModelProps) {
   const [fieldName, setFieldName] = useState('')
   const [dataType, setDataType] = useState('String')
   const [isHashed, setIsHashed] = useState(false)
+  const [isList, setIsList] = useState(false)
   const [isUnique, setIsUnique] = useState(false)
   const [nullable, setNullable] = useState(true)
   const [createDataField] = useCreateDataFieldMutation({
@@ -45,6 +49,7 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
             <th>Unique?</th>
             <th>Hashed?</th>
             <th>Nullable?</th>
+            <th>List?</th>
             <th></th>
           </tr>
         </thead>
@@ -61,6 +66,9 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
               </td>
               <td>
                 <input type="checkbox" readOnly checked={field.nullable} />
+              </td>
+              <td>
+                <input type="checkbox" readOnly checked={!!field.isList} />
               </td>
               <td>
                 <button
@@ -101,7 +109,14 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
                 }}
               >
                 {DATA_TYPES.map(type => (
-                  <option key={type}>{type}</option>
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+                {models.map(modelType => (
+                  <option key={modelType._id} value={modelType._id}>
+                    {modelType.name}
+                  </option>
                 ))}
               </select>
             </td>
@@ -136,6 +151,16 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
               />
             </td>
             <td>
+              <input
+                type="checkbox"
+                checked={isList}
+                onChange={e => {
+                  const value = e.target.checked
+                  setIsList(value)
+                }}
+              />
+            </td>
+            <td>
               <button
                 onClick={async () => {
                   await createDataField({
@@ -147,6 +172,7 @@ export function EntityModel({ projectId, model }: EntityModelProps) {
                         dataType,
                         isHashed,
                         isUnique,
+                        isList,
                         nullable,
                       },
                     },

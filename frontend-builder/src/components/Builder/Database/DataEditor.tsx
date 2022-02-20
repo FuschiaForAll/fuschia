@@ -3,6 +3,7 @@ import { EntityModel } from '../../../generated/graphql'
 
 interface DataEditorProps {
   model: EntityModel
+  models: EntityModel[]
   sandboxEndpoint?: string | null
   liveEndpoint?: string | null
 }
@@ -17,6 +18,7 @@ const defaultData = {
 
 const DataEditor: React.FC<DataEditorProps> = function DataEditor({
   model,
+  models,
   sandboxEndpoint,
   liveEndpoint,
 }) {
@@ -26,7 +28,11 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
   const [newData, setNewData] = useState<any>({})
   useEffect(() => {
     if (model) {
-      setKeys(model.fields.map(field => field.fieldName.replaceAll(' ', '')))
+      setKeys(
+        model.fields
+          .filter(field => !field.connection)
+          .map(field => field.fieldName.replaceAll(' ', ''))
+      )
       const newDataStructure = model.fields.reduce((acc, field) => {
         acc[field.fieldName.replaceAll(' ', '')] =
           defaultData[field.dataType as keyof typeof defaultData]
@@ -44,7 +50,38 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
                 items {
                     _id
                     ${model.fields
-                      .map(field => field.fieldName.replaceAll(' ', ''))
+                      .map(field => {
+                        if (field.connection) {
+                          const connectedModel = models.find(
+                            m => m._id === field.dataType
+                          )
+                          if (connectedModel) {
+                            const connectionBuilder = [] as string[]
+                            connectionBuilder.push(
+                              `${field.fieldName.replaceAll(' ', '')} {`
+                            )
+                            if (field.isList) {
+                              connectionBuilder.push(`nextToken\nitems {\n`)
+                            }
+                            connectedModel.fields.forEach(connectedField => {
+                              // for now just prevent recussion
+                              if (!connectedField.connection) {
+                                connectionBuilder.push(
+                                  connectedField.fieldName.replaceAll(' ', '')
+                                )
+                              }
+                            })
+                            if (field.isList) {
+                              connectionBuilder.push(`}`)
+                            }
+                            connectionBuilder.push('}')
+                            return connectionBuilder.join('\n')
+                          }
+                          return ''
+                        } else {
+                          return field.fieldName.replaceAll(' ', '')
+                        }
+                      })
                       .join('\n')}
                 }
             }
@@ -62,7 +99,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
         })
         .catch(e => console.log(e))
     }
-  }, [model, liveEndpoint, sandboxEndpoint, sandboxMode])
+  }, [model, liveEndpoint, sandboxEndpoint, sandboxMode, models])
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const field = e.target.name
     const value = e.target.value
