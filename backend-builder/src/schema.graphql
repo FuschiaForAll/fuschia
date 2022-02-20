@@ -64,11 +64,6 @@ input AuthInput {
   usernameFieldId: String
 }
 
-type Connection {
-  fieldNames: [String!]!
-  keyName: String!
-}
-
 type DataAuth {
   allow: String!
   groupClaim: String!
@@ -82,10 +77,11 @@ type DataAuth {
 
 type DataField {
   _id: ObjectId!
-  connection: [Connection!]
+  connection: Boolean
   dataType: String!
   fieldName: String!
   isHashed: Boolean!
+  isList: Boolean
   isUnique: Boolean!
   keys: [Key!]!
   nullable: Boolean!
@@ -96,6 +92,7 @@ input DataFieldInput {
   dataType: String!
   fieldName: String!
   isHashed: Boolean!
+  isList: Boolean!
   isUnique: Boolean!
   nullable: Boolean!
 }

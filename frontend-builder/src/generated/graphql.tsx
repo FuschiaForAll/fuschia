@@ -83,12 +83,6 @@ export type AuthInput = {
   usernameFieldId?: InputMaybe<Scalars['String']>;
 };
 
-export type Connection = {
-  __typename?: 'Connection';
-  fieldNames: Array<Scalars['String']>;
-  keyName: Scalars['String'];
-};
-
 export type DataAuth = {
   __typename?: 'DataAuth';
   allow: Scalars['String'];
@@ -104,10 +98,11 @@ export type DataAuth = {
 export type DataField = {
   __typename?: 'DataField';
   _id: Scalars['ObjectId'];
-  connection?: Maybe<Array<Connection>>;
+  connection?: Maybe<Scalars['Boolean']>;
   dataType: Scalars['String'];
   fieldName: Scalars['String'];
   isHashed: Scalars['Boolean'];
+  isList?: Maybe<Scalars['Boolean']>;
   isUnique: Scalars['Boolean'];
   keys: Array<Key>;
   nullable: Scalars['Boolean'];
@@ -118,6 +113,7 @@ export type DataFieldInput = {
   dataType: Scalars['String'];
   fieldName: Scalars['String'];
   isHashed: Scalars['Boolean'];
+  isList: Scalars['Boolean'];
   isUnique: Scalars['Boolean'];
   nullable: Scalars['Boolean'];
 };
@@ -530,7 +526,7 @@ export type CreateDataFieldMutationVariables = Exact<{
 }>;
 
 
-export type CreateDataFieldMutation = { __typename?: 'Mutation', createDataField?: { __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, nullable: boolean, dataType: string, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, connection?: Array<{ __typename?: 'Connection', keyName: string, fieldNames: Array<string> }> | null } | null };
+export type CreateDataFieldMutation = { __typename?: 'Mutation', createDataField?: { __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, connection?: boolean | null, dataType: string, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> } | null };
 
 export type DeleteDataFieldMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -615,7 +611,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', apiConfig: { __typename?: 'Api', sandboxEndpoint: string, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, nullable: boolean, dataType: string, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, connection?: Array<{ __typename?: 'Connection', keyName: string, fieldNames: Array<string> }> | null }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', apiConfig: { __typename?: 'Api', sandboxEndpoint: string, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -773,7 +769,9 @@ export const CreateDataFieldDocument = gql`
     fieldName
     isUnique
     isHashed
+    isList
     nullable
+    connection
     dataType
     rules {
       allow
@@ -787,10 +785,6 @@ export const CreateDataFieldDocument = gql`
     }
     keys {
       name
-      fieldNames
-    }
-    connection {
-      keyName
       fieldNames
     }
   }
@@ -1228,8 +1222,10 @@ export const GetProjectDocument = gql`
             fieldName
             isUnique
             isHashed
+            isList
             nullable
             dataType
+            connection
             rules {
               allow
               provider
@@ -1242,10 +1238,6 @@ export const GetProjectDocument = gql`
             }
             keys {
               name
-              fieldNames
-            }
-            connection {
-              keyName
               fieldNames
             }
           }

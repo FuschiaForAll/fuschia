@@ -29,8 +29,10 @@ query GetProject($projectId: ObjectId!) {
             fieldName
             isUnique
             isHashed
+            isList
             nullable
             dataType
+            connection
             rules {
               allow
               provider
@@ -43,10 +45,6 @@ query GetProject($projectId: ObjectId!) {
             }
             keys {
               name
-              fieldNames
-            }
-            connection {
-              keyName
               fieldNames
             }
           }
