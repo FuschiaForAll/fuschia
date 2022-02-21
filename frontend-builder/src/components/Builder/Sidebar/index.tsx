@@ -7,6 +7,7 @@ import Icon from '../../Shared/Icon'
 import AppsIcon from '@mui/icons-material/Apps'
 import FormatColorTextIcon from '@mui/icons-material/FormatColorText'
 import ImageIcon from '@mui/icons-material/Image'
+import { useNavigate } from 'react-router-dom'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -33,15 +34,17 @@ const buttonStyles = {
   margin: '0.5rem 0',
 }
 
-const Item: React.FC = function Item({ children }) {
-  return (
-    <IconButton color="primary" sx={buttonStyles}>
-      {children}
-    </IconButton>
-  )
-}
+const Item: React.FC<{ onClick?: React.MouseEventHandler<HTMLButtonElement> }> =
+  function Item({ children, onClick }) {
+    return (
+      <IconButton color="primary" sx={buttonStyles} onClick={onClick}>
+        {children}
+      </IconButton>
+    )
+  }
 
 const Sidebar: React.FC = function Sidebar() {
+  const navigate = useNavigate()
   return (
     <Wrapper>
       <Paper elevation={12} sx={cardStyles}>
@@ -65,7 +68,7 @@ const Sidebar: React.FC = function Sidebar() {
         </Item>
       </Paper>
       <Paper elevation={12} sx={cardStyles}>
-        <Item>
+        <Item onClick={() => navigate('database')}>
           <Icon icon="database" />
         </Item>
         <Item>

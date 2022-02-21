@@ -45,11 +45,10 @@ function generateCreateInput({ typename, keys, nullable }) {
 function generateUpdateInput({ typename, keys }) {
   const builder = [];
   builder.push(`input Update${typename}Input {`);
+  builder.push(`  _id: ID!`);
   keys.forEach((key) =>
     builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
-        key.nullable ? "" : "!"
-      }`
+      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`
     )
   );
   builder.push(`}`);
@@ -197,6 +196,15 @@ function publish(project) {
     mutationBuilder.push(
       `  update${name}(input: Update${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
+    resolverBuilder.Mutation[`update${name}`] = (parent, args, context, info) =>
+      resolver.genericUpdateResolver(
+        model._id.toString(),
+        model.name,
+        parent,
+        args,
+        context,
+        info
+      );
     mutationBuilder.push(
       `  delete${name}(input: Delete${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -204,7 +212,7 @@ function publish(project) {
       resolver.genericDeleteResolver(
         model._id.toString(),
         parent,
-        args.input,
+        args,
         context,
         info
       );
@@ -274,13 +282,13 @@ function publish(project) {
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}: ${
               global.tableAndFieldIdMap[field.dataType].name
-            }${field.nullable ? "" : "!"}`
+            }${field.isHashed || field.nullable ? "" : "!"}`
           );
         }
       } else {
         modelBuilder.push(
           `  ${field.fieldName.replaceAll(" ", "")}: ${field.dataType}${
-            field.nullable ? "" : "!"
+            field.isHashed || field.nullable ? "" : "!"
           }`
         );
       }
