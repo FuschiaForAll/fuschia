@@ -86,7 +86,14 @@ const Projects: React.FC = function Projects() {
         </button>
       </div>
       {projects?.listProjects.map(project => (
-        <div key={project._id}>{project.projectName}</div>
+        <div
+          key={project._id}
+          onClick={() => {
+            navigate(`/projects/${project._id}/builder`)
+          }}
+        >
+          {project.projectName}
+        </div>
       ))}
       <button onClick={() => navigate('/database-editor')}>
         Edit Database

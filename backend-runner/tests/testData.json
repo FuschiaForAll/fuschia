@@ -1,0 +1,206 @@
+{
+  "fuschia": [
+    {
+      "projects": {
+        "_id": { "$oid": "620ea4747e41372547be8461" },
+        "appId": "63f15d3d-219d-4221-8d4b-cb10bad4a9bb",
+        "projectName": "My New Project",
+        "organization": { "$oid": "620b132662e5560e44d55a42" },
+        "appConfig": {
+          "apiConfig": {
+            "queries": [],
+            "mutations": [],
+            "subscriptions": [],
+            "models": [
+              {
+                "name": "Users",
+                "_id": { "$oid": "620ea47c7e41372547be8470" },
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "email",
+                    "isUnique": true,
+                    "isHashed": false,
+                    "nullable": false,
+                    "dataType": "String",
+                    "_id": { "$oid": "620ea4967e41372547be847e" },
+                    "rules": [],
+                    "keys": []
+                  },
+                  {
+                    "fieldName": "password",
+                    "isUnique": false,
+                    "isHashed": true,
+                    "nullable": false,
+                    "dataType": "String",
+                    "_id": { "$oid": "620ea49e7e41372547be848e" },
+                    "rules": [],
+                    "keys": []
+                  },
+                  {
+                    "fieldName": "first name",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620f087c6d565d2d47d86d7f" },
+                    "rules": [],
+                    "keys": []
+                  },
+                  {
+                    "fieldName": "last name",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620f0b6c93d0eb96d0371aab" },
+                    "rules": [],
+                    "keys": []
+                  },
+                  {
+                    "fieldName": "supporter",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "isList": false,
+                    "connection": true,
+                    "nullable": true,
+                    "dataType": "620ea47c7e41372547be8470",
+                    "_id": { "$oid": "6212aee70a364eb904f675e5" },
+                    "rules": [],
+                    "keys": []
+                  },
+                  {
+                    "fieldName": "friends",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "isList": true,
+                    "connection": true,
+                    "nullable": true,
+                    "dataType": "620ea47c7e41372547be8470",
+                    "_id": { "$oid": "6212bcc2ba3bbc597b6194c7" },
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              },
+              {
+                "name": "Meetings",
+                "_id": { "$oid": "620ea9477e41372547be8518" },
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "qwer",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620f00236c184a801a169a6e" },
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              },
+              {
+                "name": "Schedule",
+                "_id": { "$oid": "620ea9917e41372547be852c" },
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "zxcv",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620f001e6c184a801a169a4e" },
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              },
+              {
+                "name": "Test",
+                "_id": { "$oid": "620ea9e27e41372547be854c" },
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "asdf",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620f00186c184a801a169a31" },
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              },
+              {
+                "name": "Again",
+                "_id": { "$oid": "620ea9e67e41372547be8564" },
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "this is a test field",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "nullable": true,
+                    "dataType": "String",
+                    "_id": { "$oid": "620eaf3f753e7886757e0a6e" },
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              }
+            ],
+            "sandboxEndpoint": "http://localhost:8000"
+          },
+          "authConfig": {
+            "requiresAuth": true,
+            "allowUnauthenticatedUsers": true,
+            "mfaEnabled": false,
+            "mfaConfiguration": "OFF",
+            "mfaTypes": "SMS",
+            "smsAuthenticationMessage": "Your verification code is {####}",
+            "smsVerificationMessage": "Your verification code is {####}",
+            "emailVerificationSubject": "Your verification code",
+            "emailVerificationMessage": "Your verification code is {####}",
+            "defaultPasswordPolicy": false,
+            "passwordPolicyMinLength": 10,
+            "passwordRequiresUppercase": false,
+            "passwordRequiresNumbers": true,
+            "passwordRequiresSymbols": false,
+            "requiredAttributes": [],
+            "clientRefreshTokenValidity": 10,
+            "usernameCaseSensitive": false,
+            "tableId": "620ea47c7e41372547be8470",
+            "usernameFieldId": "620ea4967e41372547be847e",
+            "passwordFieldId": "620ea49e7e41372547be848e",
+            "_id": { "$oid": "620ea4747e41372547be8462" }
+          },
+          "_id": { "$oid": "620ea4747e41372547be8463" },
+          "liveJwtSecret": "SECRET",
+          "sandboxJwtSecret": "SECRET"
+        },
+        "__v": 18
+      }
+    }
+  ],
+  "620ea4747e41372547be8461": [
+    {
+      "620ea47c7e41372547be8470": [
+        {
+          "_id": { "$oid": "621124878c6ceedaef327db8" },
+          "620ea4967e41372547be847e": "asdf",
+          "620ea49e7e41372547be848e": "asdf",
+          "620f087c6d565d2d47d86d7f": "asdf",
+          "620f0b6c93d0eb96d0371aab": "asdf"
+        }
+      ]
+    }
+  ]
+}

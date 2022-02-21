@@ -2,7 +2,6 @@ import React from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Login, Register } from '../Authentication'
 import Builder from '../Builder'
-import Database from '../Builder/Database'
 import Dashboard from '../Dashboard'
 import Projects from '../Projects'
 import NewProject from '../Projects/NewProject'
@@ -15,8 +14,7 @@ const App: React.FC = function App() {
       <Routes>
         <Route path="/" element={<Navigate replace to="/builder" />} />
         <Route path="/builder" element={<Builder />} />
-        <Route path="/builder/*" element={<Builder />} />
-        <Route path=":projectId/database-editor" element={<Database />} />
+        <Route path="/projects/:projectId/builder/*" element={<Builder />} />
         <Route path="/organizations" element={<Organizations />} />
         <Route path="/projects" element={<Projects />} />
         <Route path="/project/new" element={<NewProject />} />

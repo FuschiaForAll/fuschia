@@ -1,6 +1,8 @@
 const assert = require('assert');
 const parseQuery = require('../src/filter.builder')
 
+// run()
+
 const resolvers = {
   test1(parent) {
 		return { test1: !!parent.test1 }

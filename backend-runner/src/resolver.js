@@ -17,8 +17,12 @@ class Resolvers {
 
   namesToIds(collectionName, obj) {
     return Object.keys(obj).reduce((acc, key) => {
-      acc[global.tableAndFieldNameMap[collectionName].fields[key].id] =
-        obj[key];
+      if (key === '_id') {
+        acc._id = obj._id
+      } else {
+        acc[global.tableAndFieldNameMap[collectionName].fields[key].id] =
+          obj[key];
+      }
       return acc;
     }, {});
   }
@@ -48,9 +52,13 @@ class Resolvers {
   async hashRequiredFields(collectionId, obj) {
     const returnValue = {...obj}
     for (const key in obj) {
+      if (key === "_id") {
+        returnValue._id = obj._id;
+      } else {
       if (global.tableAndFieldIdMap[collectionId].fields[key].config.isHashed) {
         returnValue[key] = await argon2.hash(returnValue[key])
       }
+    }
     }
     return returnValue
   }
@@ -77,6 +85,7 @@ class Resolvers {
       .collection(collectionName)
       .find({ _id: new ObjectId(args._id) })
       .toArray();
+      docs.l
     return this.idsToNamesRemoveHashes(collectionId, docs)[0];
   }
 
@@ -113,8 +122,25 @@ class Resolvers {
   async genericDeleteResolver(collectionName, parent, args, context, info) {
     const doc = await this.db
       .collection(collectionName)
-      .findOneAndDelete({ _id: new ObjectId(args._id) });
+      .findOneAndDelete({ _id: new ObjectId(args.input._id) });
     return doc.value;
+  }
+
+  async genericUpdateResolver(collectionId, collectionName, parent, args, context, info) {
+    const updateValues = args.input
+    const remappedEntry = this.namesToIds(collectionName, updateValues);
+    const hashedEntry = await this.hashRequiredFields(collectionId, remappedEntry)
+    const filter = global.filterParser(args.filter, global.tableAndFieldNameMap[collectionName].fields) || {}
+    const id = remappedEntry._id
+    delete hashedEntry._id
+    console.log(`genericUpdateResolver`)
+    console.log(`_id: ${id}`)
+    console.log(`$set: ${JSON.stringify(hashedEntry)}`)
+    filter._id = new ObjectId(id)
+    const status = await this.db.collection(collectionId).findOneAndUpdate(filter, { $set: hashedEntry})
+    const doc = await this.db.collection(collectionId).find({ _id: filter._id }).toArray()
+    const ret = this.idsToNamesRemoveHashes(collectionId, doc)[0]
+    return ret
   }
 
   async loginResolver(
