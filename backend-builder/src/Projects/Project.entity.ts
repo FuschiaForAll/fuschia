@@ -29,7 +29,7 @@ export class Project {
     @Property({ type: () => AppConfig, required: true })
     appConfig!: AppConfig;
 
-    @Field({ nullable: true })
-    @Property({ required: false })
-    body!: AppBody
+    @Field(type => String, { nullable: true })
+    @Property({ required: false, default: null })
+    body!: String
 }

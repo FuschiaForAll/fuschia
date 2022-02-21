@@ -27,6 +27,8 @@ const Builder: React.FC = function Builder() {
     }
   `)
 
+  console.log('DATA:', currentProjectData)
+
   return (
     <>
       <Context.Provider value={{ body, setBody }}>

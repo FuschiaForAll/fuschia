@@ -169,11 +169,13 @@ type Project {
   _id: ObjectId!
   appConfig: AppConfig!
   appId: String!
+  body: String
   organization: Organization!
   projectName: String!
 }
 
 input ProjectInput {
+  body: String!
   organizationId: ObjectId!
   projectName: String!
 }
