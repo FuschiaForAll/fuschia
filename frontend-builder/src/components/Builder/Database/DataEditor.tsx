@@ -1,9 +1,36 @@
+import styled from '@emotion/styled'
 import React, { useEffect, useState } from 'react'
 import { EntityModel } from '../../../generated/graphql'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { IconButton } from '@mui/material'
+
+const StyledTable = styled.table`
+  border-spacing: 0;
+  > tbody > tr > td {
+    border-top: solid 1px #c7c7c7;
+    border-left: solid 1px #c7c7c7;
+    padding: 0.25rem;
+  }
+  > tbody > tr:last-child > td {
+    border-bottom: solid 1px #c7c7c7;
+  }
+  > tbody > tr > td:last-child {
+    border-right: solid 1px #c7c7c7;
+  }
+  > thead > tr > th {
+    background-color: #fafbfb;
+    padding: 0.25rem;
+    border-top: solid 1px #c7c7c7;
+    border-left: solid 1px #c7c7c7;
+  }
+  > thead > tr > th:last-child {
+    border-right: solid 1px #c7c7c7;
+  }
+`
 
 interface DataEditorProps {
-  model: EntityModel
-  models: EntityModel[]
+  model?: EntityModel
+  models?: EntityModel[]
   sandboxEndpoint?: string | null
   liveEndpoint?: string | null
 }
@@ -27,7 +54,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
   const [keys, setKeys] = useState<any[]>([])
   const [newData, setNewData] = useState<any>({})
   useEffect(() => {
-    if (model) {
+    if (model && models) {
       setKeys(
         model.fields
           .filter(field => !field.connection)
@@ -105,10 +132,11 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
     const value = e.target.value
     setNewData((data: any) => ({ ...data, [field]: value }))
   }
+  if (!model) {
+    return <div>Please select a model</div>
+  }
   return (
     <div>
-      <h1>Edit {model.name} Data</h1>
-
       <label htmlFor="sandboxMode">Use Sandbox Mode?</label>
       <input
         name="sandboxMode"
@@ -120,10 +148,10 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
         }}
       />
       {data && (
-        <table>
+        <StyledTable>
           <thead>
             <tr>
-              <td>ID</td>
+              <th>ID</th>
               {keys.map(key => (
                 <th key={key}>{key}</th>
               ))}
@@ -140,7 +168,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
                       <td key={key}>{item[key]}</td>
                     ))}
                     <td>
-                      <button
+                      <IconButton
                         onClick={() => {
                           fetch(
                             sandboxMode
@@ -175,8 +203,8 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
                             .catch(e => console.log(e))
                         }}
                       >
-                        Delete
-                      </button>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
                     </td>
                   </tr>
                 )
@@ -249,7 +277,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
               </td>
             </tr>
           </tfoot>
-        </table>
+        </StyledTable>
       )}
     </div>
   )

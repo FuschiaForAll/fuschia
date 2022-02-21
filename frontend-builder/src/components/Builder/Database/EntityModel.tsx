@@ -1,13 +1,14 @@
-import { AccordionDetails, AccordionSummary, Button } from '@mui/material'
+import { AccordionDetails, AccordionSummary, IconButton } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
-import { Lock } from '@mui/icons-material'
+import { Lock, AddCircle } from '@mui/icons-material'
 import React, { useState } from 'react'
 import {
   GetProjectDocument,
   useCreateDataFieldMutation,
   useDeleteDataFieldMutation,
 } from '../../../generated/graphql'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const DATA_TYPES = ['String', 'Date', 'Int', 'Float', 'Boolean']
 
@@ -68,8 +69,11 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
             margin: '0.25rem',
             marginRight: 0,
             background: '#F7F6F6',
-            color: '#DD1C74',
-            border: 'dashed 1px black',
+            color: expanded === field._id.toString() ? '#DD1C74' : 'black',
+            borderStyle: 'dashed',
+            borderWidth: '1px',
+            borderColor:
+              expanded === field._id.toString() ? '#F24726' : 'black',
             borderRadius: 5,
           }}
         >
@@ -128,7 +132,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                   checked={!!field.isList}
                 />
               </div>
-              <Button
+              <IconButton
                 onClick={() => {
                   deleteDataField({
                     variables: {
@@ -139,18 +143,41 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                   })
                 }}
               >
-                Delete
-              </Button>
+                <DeleteIcon />
+              </IconButton>
             </div>
           </AccordionDetails>
         </Accordion>
       ))}
       <Accordion
-        sx={{ display: expanded === 'new' ? 'initial' : 'none' }}
         expanded={expanded === 'new'}
+        onChange={handleAccordianChange('new')}
         elevation={0}
+        sx={{
+          margin: '0.25rem',
+          marginRight: 0,
+          background: '#F7F6F6',
+          color: '#DD1C74',
+          border: 'dashed 1px #F24726',
+          borderRadius: 5,
+        }}
       >
-        <AccordionSummary>Add New Field</AccordionSummary>
+        <AccordionSummary>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'auto auto',
+              justifyContent: 'space-between',
+              width: '100%',
+              alignItems: 'center',
+            }}
+          >
+            <span>Add new field</span>
+            <span>
+              <AddCircle />
+            </span>
+          </div>
+        </AccordionSummary>
         <AccordionDetails>
           <div>
             <input
@@ -239,11 +266,6 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
           </div>
         </AccordionDetails>
       </Accordion>
-      <div>
-        <Button onClick={e => handleAccordianChange('new')(e, true)}>
-          Add New Field
-        </Button>
-      </div>
     </div>
   )
 }

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
+import { Add } from '@mui/icons-material'
 import {
   useCreateEntityModelMutation,
   useGetProjectQuery,
@@ -14,9 +15,16 @@ import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
 import GraphQLDesigner from './GraphQLDesigner'
 import { GetProjectDocument } from '../../../generated/graphql'
-import { AccordionDetails, AccordionSummary, Box } from '@mui/material'
+import {
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  IconButton,
+} from '@mui/material'
 import { ExpandMore } from '@mui/icons-material'
 import Modal from '@mui/material/Modal'
+import PlayCircleIcon from '@mui/icons-material/PlayCircle'
+import RestartAltIcon from '@mui/icons-material/RestartAlt'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -51,20 +59,49 @@ function TabPanel(props: TabPanelProps) {
   )
 }
 
-function StatusChip({ label, status }: { label: string; status?: boolean }) {
+function StatusChip({
+  label,
+  status,
+  onClick,
+}: {
+  label: string
+  status?: boolean
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
+}) {
   return (
     <Box
       sx={{
-        color: status ? 'success.main' : 'error.main',
+        color: status ? 'black' : 'white',
         borderColor: status ? 'success.main' : 'error.main',
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 5,
         width: 125,
-        padding: '0.5rem',
       }}
     >
-      {label}
+      <Box
+        sx={{
+          margin: '2px',
+          backgroundColor: status ? 'success.main' : 'error.main',
+          borderRadius: 4,
+          padding: '0.5rem',
+        }}
+      >
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'auto auto',
+            justifyContent: 'space-between',
+            width: '100%',
+            alignItems: 'center',
+          }}
+        >
+          <span>{label}</span>
+          <IconButton onClick={onClick}>
+            {status ? <RestartAltIcon /> : <PlayCircleIcon />}
+          </IconButton>
+        </div>
+      </Box>
     </Box>
   )
 }
@@ -136,19 +173,48 @@ const Database: React.FC = function Database() {
           }}
         >
           <Typography>Database Collections</Typography>
-          <div style={{ display: 'grid', gridTemplateColumns: 'auto auto' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'auto auto',
+              gap: '0.5rem',
+            }}
+          >
             <StatusChip
               label="Sandbox"
               status={sandboxServerStatusData?.getServerStatus}
+              onClick={() => {
+                publishApi({
+                  variables: {
+                    projectId,
+                    sandbox: true,
+                  },
+                })
+              }}
             />
             <StatusChip
               label="Live"
               status={liveServerStatusData?.getServerStatus}
+              onClick={() => {
+                publishApi({
+                  variables: {
+                    projectId,
+                    sandbox: false,
+                  },
+                })
+              }}
             />
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '250px 1fr' }}>
-          <div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '250px 1fr',
+            gap: '1.5rem',
+            overflow: 'hidden',
+          }}
+        >
+          <div style={{ overflow: 'auto' }}>
             {data?.getProject && (
               <div>
                 {data.getProject.appConfig.apiConfig.models.map(model => (
@@ -163,8 +229,16 @@ const Database: React.FC = function Database() {
                       sx={{
                         margin: '0.25rem',
                         background: '#F7F6F6',
-                        color: '#DD1C74',
-                        border: 'dashed 1px black',
+                        color:
+                          expanded === model._id.toString()
+                            ? '#DD1C74'
+                            : 'black',
+                        borderStyle: 'dashed',
+                        borderWidth: '1px',
+                        borderColor:
+                          expanded === model._id.toString()
+                            ? '#F24726'
+                            : 'black',
                         borderRadius: 5,
                       }}
                     >
@@ -179,82 +253,86 @@ const Database: React.FC = function Database() {
                     </AccordionDetails>
                   </Accordion>
                 ))}
-                <input
-                  type="text"
-                  value={newModelName}
-                  onChange={e => {
-                    const name = e.currentTarget.value
-                    setNewModelName(name)
-                  }}
-                />
-                <button
-                  onClick={async () => {
-                    await createNewEntityModel({
-                      variables: {
-                        name: newModelName,
-                        projectId,
-                      },
-                    })
-                    setNewModelName('')
+                <Accordion
+                  expanded={expanded === 'new'}
+                  onChange={handleAccordianChange('new')}
+                  elevation={0}
+                  sx={{
+                    margin: '0.25rem',
+                    background: '#F7F6F6',
+                    color: '#DD1C74',
+                    border: 'dashed 1px #F24726',
+                    borderRadius: 5,
                   }}
                 >
-                  Create New Model
-                </button>
-                <button
-                  onClick={() =>
-                    publishApi({
-                      variables: {
-                        projectId,
-                        sandbox: true,
-                      },
-                    })
-                  }
-                >
-                  Publish Sandbox
-                </button>
-                <button
-                  onClick={() =>
-                    publishApi({
-                      variables: {
-                        projectId,
-                        sandbox: false,
-                      },
-                    })
-                  }
-                >
-                  Publish Live
-                </button>
+                  <AccordionSummary sx={{}}>
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'auto auto',
+                        justifyContent: 'space-between',
+                        width: '100%',
+                        alignItems: 'center',
+                      }}
+                    >
+                      <span>Create New Data Collection</span>
+                      <span style={{ color: 'black' }}>
+                        <Add />
+                      </span>
+                    </div>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <div>
+                      <input
+                        type="text"
+                        value={newModelName}
+                        onChange={e => {
+                          const name = e.currentTarget.value
+                          setNewModelName(name)
+                        }}
+                      />
+                      <button
+                        onClick={async () => {
+                          await createNewEntityModel({
+                            variables: {
+                              name: newModelName,
+                              projectId,
+                            },
+                          })
+                          setNewModelName('')
+                        }}
+                      >
+                        Create New Model
+                      </button>
+                    </div>
+                  </AccordionDetails>
+                </Accordion>
               </div>
             )}
           </div>
-          <div>
+          <div style={{ overflow: 'auto' }}>
             <Tabs value={selectedTab} onChange={handleChange}>
-              <Tab label="Database Editor" />
               <Tab label="Data Editor" />
               <Tab label="GraphQL Designer" />
               <Tab label="Auth" />
             </Tabs>
             <TabPanel value={selectedTab} index={0}>
-              <div />
+              {data && (
+                <DataEditor
+                  model={data.getProject.appConfig.apiConfig.models.find(
+                    model => model._id.toString() === expanded
+                  )}
+                  models={data.getProject.appConfig.apiConfig.models}
+                  sandboxEndpoint={
+                    data.getProject.appConfig.apiConfig.sandboxEndpoint
+                  }
+                  liveEndpoint={
+                    data.getProject.appConfig.apiConfig.liveEndpoint
+                  }
+                />
+              )}
             </TabPanel>
             <TabPanel value={selectedTab} index={1}>
-              {data &&
-                data.getProject.appConfig.apiConfig.models.map(model => (
-                  <div key={model._id}>
-                    <DataEditor
-                      model={model}
-                      models={data.getProject.appConfig.apiConfig.models}
-                      sandboxEndpoint={
-                        data.getProject.appConfig.apiConfig.sandboxEndpoint
-                      }
-                      liveEndpoint={
-                        data.getProject.appConfig.apiConfig.liveEndpoint
-                      }
-                    />
-                  </div>
-                ))}
-            </TabPanel>
-            <TabPanel value={selectedTab} index={2}>
               {data && (
                 <GraphQLDesigner
                   sandboxEndpoint={
@@ -266,7 +344,7 @@ const Database: React.FC = function Database() {
                 />
               )}
             </TabPanel>
-            <TabPanel value={selectedTab} index={3}>
+            <TabPanel value={selectedTab} index={2}>
               {data && data.getProject.appConfig.authConfig && (
                 <AuthConfig projectId={projectId} />
               )}
