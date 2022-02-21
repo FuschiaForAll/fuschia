@@ -47,9 +47,7 @@ function generateUpdateInput({ typename, keys }) {
   builder.push(`input Update${typename}Input {`);
   keys.forEach((key) =>
     builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
-        key.nullable ? "" : "!"
-      }`
+      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`
     )
   );
   builder.push(`}`);
@@ -274,13 +272,13 @@ function publish(project) {
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}: ${
               global.tableAndFieldIdMap[field.dataType].name
-            }${field.nullable ? "" : "!"}`
+            }${field.isHashed || field.nullable ? "" : "!"}`
           );
         }
       } else {
         modelBuilder.push(
           `  ${field.fieldName.replaceAll(" ", "")}: ${field.dataType}${
-            field.nullable ? "" : "!"
+            field.isHashed || field.nullable ? "" : "!"
           }`
         );
       }

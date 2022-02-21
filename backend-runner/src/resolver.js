@@ -23,14 +23,18 @@ class Resolvers {
     }, {});
   }
 
-  idsToNames(collectionId, objArray) {
+  idsToNamesRemoveHashes(collectionId, objArray) {
     return objArray.map((doc) =>
       Object.keys(doc).reduce((acc, key) => {
         if (key === "_id") {
           acc._id = doc._id;
         } else {
-          acc[global.tableAndFieldIdMap[collectionId].fields[key].name] =
-            doc[key];
+          if (global.tableAndFieldIdMap[collectionId].fields[key].config.isHashed) {
+            acc[global.tableAndFieldIdMap[collectionId].fields[key].name] = null
+          } else {
+            acc[global.tableAndFieldIdMap[collectionId].fields[key].name] =
+              doc[key];
+          }
         }
         return acc;
       }, {})
@@ -41,12 +45,22 @@ class Resolvers {
     return global.tableAndFieldIdMap[collectionId].name;
   }
 
+  async hashRequiredFields(collectionId, obj) {
+    const returnValue = {...obj}
+    for (const key in obj) {
+      if (global.tableAndFieldIdMap[collectionId].fields[key].config.isHashed) {
+        returnValue[key] = await argon2.hash(returnValue[key])
+      }
+    }
+    return returnValue
+  }
+
   async genericFieldResolver(parent, args, context, info, fieldName, entityId, collectionName) {
     const docs = await this.db
       .collection(entityId)
       .find({ _id: new ObjectId(parent[fieldName]) })
       .toArray();
-    return this.idsToNames(entityId, docs)[0];
+    return this.idsToNamesRemoveHashes(entityId, docs)[0];
   }
   
   async genericFieldListResolver(parent, args, context, info, fieldName, entityId, collectionName) {
@@ -55,7 +69,7 @@ class Resolvers {
       .collection(entityId)
       .find({ _id: { $in: (parent[fieldName] || []).map(id => new ObjectId(id))}})
       .toArray();
-    return { nextToken: null, items: this.idsToNames(entityId, docs) };
+    return { nextToken: null, items: this.idsToNamesRemoveHashes(entityId, docs) };
   }
 
   async genericGetQueryResolver(collectionId, collectionName, parent, args, context, info) {
@@ -63,7 +77,7 @@ class Resolvers {
       .collection(collectionName)
       .find({ _id: new ObjectId(args._id) })
       .toArray();
-    return this.idsToNames(collectionId, docs)[0];
+    return this.idsToNamesRemoveHashes(collectionId, docs)[0];
   }
 
   async genericListQueryResolver(
@@ -75,7 +89,7 @@ class Resolvers {
     info
   ) {
     const docs = await this.db.collection(collectionId).find(global.filterParser(args.filter, global.tableAndFieldNameMap[collectionName].fields) || {}).limit(args.limit || 0).toArray();
-    return { nextToken: null, items: this.idsToNames(collectionId, docs) };
+    return { nextToken: null, items: this.idsToNamesRemoveHashes(collectionId, docs) };
   }
 
   async genericCreateResolver(
@@ -87,8 +101,13 @@ class Resolvers {
     info
   ) {
     const remappedEntry = this.namesToIds(collectionName, args);
-    const doc = await this.db.collection(collectionId).insertOne(remappedEntry);
-    return { _id: doc.insertedId, ...args };
+    const hashedEntry = await this.hashRequiredFields(collectionId, remappedEntry)
+    const status = await this.db.collection(collectionId).insertOne(hashedEntry);
+    const doc = await this.db.collection(collectionId).find({ _id: status.insertedId }).toArray()
+    console.log(doc)
+    const ret = this.idsToNamesRemoveHashes(collectionId, doc)[0]
+    console.log(ret)
+    return ret
   }
 
   async genericDeleteResolver(collectionName, parent, args, context, info) {
