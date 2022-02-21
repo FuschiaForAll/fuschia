@@ -12,12 +12,11 @@ const App: React.FC = function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate replace to="/builder" />} />
-        <Route path="/builder" element={<Builder />} />
-        <Route path="/projects/:projectId/builder/*" element={<Builder />} />
-        <Route path="/organizations" element={<Organizations />} />
-        <Route path="/projects" element={<Projects />} />
+        <Route path="/" element={<Navigate replace to="/projects" />} />
         <Route path="/project/new" element={<NewProject />} />
+        <Route path="/projects/:projectId/builder/*" element={<Builder />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/organizations" element={<Organizations />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />

@@ -1,6 +1,7 @@
 import { gql } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+
 import {
   useCreateProjectMutation,
   useListOrganizationsQuery,
@@ -8,11 +9,11 @@ import {
 } from '../../generated/graphql'
 
 const Projects: React.FC = function Projects() {
-  const navigate = useNavigate()
   const [selectedOrganization, setSelectedOrganization] = useState('')
   const [projectName, setProjectName] = useState('')
   const { data: organizations } = useListOrganizationsQuery()
   const { data: projects } = useListProjectsQuery()
+
   const [createProject] = useCreateProjectMutation({
     update(cache, { data }) {
       cache.modify({
@@ -34,11 +35,13 @@ const Projects: React.FC = function Projects() {
       })
     },
   })
+
   useEffect(() => {
     if (organizations && organizations.listOrganizations.length > 0) {
       setSelectedOrganization(organizations.listOrganizations[0]._id)
     }
   }, [organizations])
+
   return (
     <div>
       <h1>Projects</h1>
@@ -86,18 +89,10 @@ const Projects: React.FC = function Projects() {
         </button>
       </div>
       {projects?.listProjects.map(project => (
-        <div
-          key={project._id}
-          onClick={() => {
-            navigate(`/projects/${project._id}/builder`)
-          }}
-        >
+        <Link key={project._id} to={`/projects/${project._id}/builder`}>
           {project.projectName}
-        </div>
+        </Link>
       ))}
-      <button onClick={() => navigate('/database-editor')}>
-        Edit Database
-      </button>
     </div>
   )
 }
