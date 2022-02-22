@@ -20,6 +20,7 @@ import HistoryIcon from '@mui/icons-material/History'
 interface TopbarProps {
   projects?: Partial<Project>[]
   currentProject?: string
+  projectName: string
 }
 const buttonStyles = {
   margin: '0 0.5rem',
@@ -50,6 +51,7 @@ const Wrapper = styled.div`
 const Topbar: React.FC<TopbarProps> = function Topbar({
   projects,
   currentProject,
+  projectName,
 }: TopbarProps) {
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const [open, setOpen] = React.useState(false)
@@ -72,7 +74,7 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           <Item>
             <RedditIcon />
           </Item>
-          <Typography>ProjectName</Typography>
+          <Typography>{projectName}</Typography>
           <Item>
             <SettingsIcon />
           </Item>

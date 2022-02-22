@@ -175,7 +175,7 @@ type Project {
 }
 
 input ProjectInput {
-  body: String!
+  body: String
   organizationId: ObjectId!
   projectName: String!
 }

@@ -13,6 +13,6 @@ export class ProjectInput {
   @Field(type => ObjectIdScalar)
   organizationId!: ObjectId;
 
-  @Field(type => String)
-  body!: string;
+  @Field(type => String, { nullable: true })
+  body?: string;
 }

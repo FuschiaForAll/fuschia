@@ -38,13 +38,18 @@ export class ProjectResolver {
   @Mutation(returns => Project)
   async createProject(@Arg("project") project: ProjectInput, @Ctx() ctx: Context) {
     if (!ctx.req.session.userId) { throw new ApolloError('Unauthorized') }
+
     const organization = await this.organizationService.getOrganization(project.organizationId, ctx.req.session.userId)
+
     const newProject = await new ProjectModel({
       projectName: project.projectName,
       organization,
-      appConfig: new AppConfig()
+      appConfig: new AppConfig(),
+      body: '{"objects": []}',
     }).save()
+
     await OrganizationModel.findByIdAndUpdate(project.organizationId, { $push: { projects: newProject._id }})
+
     return newProject
   }
 

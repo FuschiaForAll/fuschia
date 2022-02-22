@@ -31,5 +31,5 @@ export class Project {
 
     @Field(type => String, { nullable: true })
     @Property({ required: false, default: null })
-    body!: String
+    body?: String
 }

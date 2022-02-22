@@ -263,11 +263,13 @@ export type Project = {
   _id: Scalars['ObjectId'];
   appConfig: AppConfig;
   appId: Scalars['String'];
+  body?: Maybe<Scalars['String']>;
   organization: Organization;
   projectName: Scalars['String'];
 };
 
 export type ProjectInput = {
+  body?: InputMaybe<Scalars['String']>;
   organizationId: Scalars['ObjectId'];
   projectName: Scalars['String'];
 };
