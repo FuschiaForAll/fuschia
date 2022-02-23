@@ -1,5 +1,6 @@
 import { ObjectType, Field } from "type-graphql";
 import { prop as Property } from "@typegoose/typegoose";
+import { AppBody } from "@fuchsia/types";
 import { Organization } from "../Organizations/Organization.entity";
 import { Ref } from "../utils/ref-type";
 import { AppConfig } from "./AppConfig/AppConfig.entity";
@@ -27,4 +28,8 @@ export class Project {
     @Field(type => AppConfig)
     @Property({ type: () => AppConfig, required: true })
     appConfig!: AppConfig;
+
+    @Field(type => String, { nullable: true })
+    @Property({ required: false, default: null })
+    body?: String
 }

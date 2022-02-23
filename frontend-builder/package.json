@@ -26,6 +26,7 @@
     "react-dom": "^17.0.2",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
+    "short-uuid": "^4.2.0",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
   },
@@ -35,7 +36,8 @@
     "test": "react-app-rewired test --passWithNoTests",
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
     "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",
-    "gen": "graphql-codegen --config codegen.yaml"
+    "gen": "graphql-codegen --config codegen.yaml",
+    "types": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": [

@@ -120,8 +120,8 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
     },
   });
   const server = https.createServer({ key: key, cert: cert }, app);
-  server.listen(4001, () => {
-    console.log(`Server is running on port 4001`);
+  server.listen(4003, () => {
+    console.log(`Server is running on port 4003`);
     new SubscriptionServer({
       execute,
       subscribe,
@@ -133,7 +133,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       server
     })
   });
-  app.listen(4000, () => {
-    console.log(`Server is running on port 4000`);
+  app.listen(4002, () => {
+    console.log(`Server is running on port 4002`);
   });
 })().catch((err) => console.error(err));

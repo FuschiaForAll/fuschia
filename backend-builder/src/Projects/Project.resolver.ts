@@ -7,7 +7,7 @@ import { Context } from "../types";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
 import { AppConfig } from "./AppConfig/AppConfig.entity";
 import { Project } from "./Project.entity";
-import { ProjectInput } from "./Project.input";
+import { ProjectInput, UpdateProjectInput } from "./Project.input";
 import { ObjectId } from 'mongoose'
 import { ProjectService } from "./Project.service";
 
@@ -38,14 +38,31 @@ export class ProjectResolver {
   @Mutation(returns => Project)
   async createProject(@Arg("project") project: ProjectInput, @Ctx() ctx: Context) {
     if (!ctx.req.session.userId) { throw new ApolloError('Unauthorized') }
+
     const organization = await this.organizationService.getOrganization(project.organizationId, ctx.req.session.userId)
+
     const newProject = await new ProjectModel({
       projectName: project.projectName,
       organization,
-      appConfig: new AppConfig()
+      appConfig: new AppConfig(),
+      body: '{"objects": []}',
     }).save()
+
     await OrganizationModel.findByIdAndUpdate(project.organizationId, { $push: { projects: newProject._id }})
+
     return newProject
+  }
+
+  @Mutation(returns => Project)
+  async updateProject(@Arg("projectId", type => ObjectIdScalar) projectId: ObjectId, @Arg("project") project: UpdateProjectInput, @Ctx() ctx: Context) {
+    if (!ctx.req.session.userId) { throw new ApolloError('Unauthorized') }
+
+    const projectModel = await ProjectModel.findByIdAndUpdate(projectId, {
+      projectName: project.projectName,
+      body: project.body,
+    })
+
+    return { _id: projectId, ...project }
   }
 
   @Mutation(returns => ObjectIdScalar)

@@ -11,7 +11,7 @@ export const currentProjectIdVar = makeVar(
 )
 
 const httpLink = createHttpLink({
-  uri: 'https://localhost:4001/graphql',
+  uri: 'https://localhost:4003/graphql',
   credentials: 'include',
 })
 const appLink = createHttpLink({

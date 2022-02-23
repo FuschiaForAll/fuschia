@@ -1,4 +1,3 @@
-
 import { ObjectId } from "mongoose";
 import { Field, InputType } from "type-graphql";
 import { Organization } from "../Organizations/Organization.entity";
@@ -13,4 +12,16 @@ export class ProjectInput {
 
   @Field(type => ObjectIdScalar)
   organizationId!: ObjectId;
+
+  @Field(type => String, { nullable: true })
+  body?: string;
+}
+
+@InputType()
+export class UpdateProjectInput {
+  @Field({ nullable: true })
+  projectName?: string;
+
+  @Field()
+  body?: string;
 }
