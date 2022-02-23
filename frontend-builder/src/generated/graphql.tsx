@@ -165,6 +165,7 @@ export type Mutation = {
   updateAuth?: Maybe<Auth>;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
   updateMutation?: Maybe<Scalars['Boolean']>;
+  updateProject: Project;
   updateQuery?: Maybe<Scalars['Boolean']>;
   updateRelationship?: Maybe<Scalars['Boolean']>;
   updateSubscription?: Maybe<Scalars['Boolean']>;
@@ -245,6 +246,12 @@ export type MutationUpdateAuthArgs = {
   projectId: Scalars['ObjectId'];
 };
 
+
+export type MutationUpdateProjectArgs = {
+  project: UpdateProjectInput;
+  projectId: Scalars['ObjectId'];
+};
+
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ObjectId'];
@@ -308,6 +315,11 @@ export type QueryGetProjectArgs = {
 export type QueryGetServerStatusArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+};
+
+export type UpdateProjectInput = {
+  body: Scalars['String'];
+  projectName: Scalars['String'];
 };
 
 export type User = {

@@ -20,6 +20,17 @@ import CanvasContext, {
   DEFAULT_CANVAS_STATE,
 } from './canvas-context'
 
+const GET_PROJECT = gql`
+  query GetBuilderProject($projectId: ObjectId!) {
+    project: getProject(projectId: $projectId) {
+      _id
+      appId
+      projectName
+      body
+    }
+  }
+`
+
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
 
@@ -27,26 +38,14 @@ const Builder: React.FC = function Builder() {
     useState<CanvasState>(DEFAULT_CANVAS_STATE)
 
   const { data: projects } = useListProjectsQuery()
-
-  const { data, loading } = useQuery(
-    gql`
-      query GetBuilderProject($projectId: ObjectId!) {
-        project: getProject(projectId: $projectId) {
-          _id
-          appId
-          projectName
-          body
-        }
-      }
-    `,
-    { variables: { projectId } }
-  )
+  const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
 
   const project = data?.project
 
   const [updateBody] = useMutation(gql`
-    mutation UpdateBody($projectId: ObjectId!, $input: ProjectInput!) {
-      updateProject(projectId: $projectId, input: $input) {
+    mutation UpdateBody($projectId: ObjectId!, $input: UpdateProjectInput!) {
+      updateProject(projectId: $projectId, project: $input) {
+        _id
         body
       }
     }
@@ -57,7 +56,14 @@ const Builder: React.FC = function Builder() {
       updateBody({
         variables: {
           projectId,
-          input: { body },
+          input: { body: JSON.stringify(body) },
+        },
+        optimisticResponse: {
+          updateProject: {
+            _id: projectId,
+            __typename: 'Project',
+            body: JSON.stringify(body),
+          },
         },
       })
     },

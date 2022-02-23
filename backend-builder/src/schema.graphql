@@ -145,6 +145,7 @@ type Mutation {
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateEntityModel: Boolean
   updateMutation: Boolean
+  updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
   updateSubscription: Boolean
@@ -197,6 +198,11 @@ type Query {
   retrieveQuery: Boolean
   retrieveRelationship: Boolean
   retrieveSubscription: Boolean
+}
+
+input UpdateProjectInput {
+  body: String!
+  projectName: String
 }
 
 type User {

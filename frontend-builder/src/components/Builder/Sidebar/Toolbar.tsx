@@ -79,17 +79,13 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   useEffect(() => {
     document.body.addEventListener('mousemove', onDrag)
 
-    return () => {
-      document.body.removeEventListener('mousemove', onDrag)
-    }
+    return () => document.body.removeEventListener('mousemove', onDrag)
   }, [onDrag])
 
   useEffect(() => {
     document.body.addEventListener('mouseup', onDragEnd)
 
-    return () => {
-      document.body.removeEventListener('mouseup', onDragEnd)
-    }
+    return () => document.body.removeEventListener('mouseup', onDragEnd)
   }, [onDragEnd])
 
   if (!drag.position) {
@@ -119,10 +115,13 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
 }
 
 const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
+  const [dragActive, setDragActive] = useState<boolean>(false)
   const [drag, setDrag] = useState<DragEvent | null>(null)
+  const dragging = !!drag && dragActive
 
   const startDrag = useCallback(() => {
     setDrag({ position: null })
+    setDragActive(true)
   }, [])
 
   const { body, setBody } = useContext(AppContext)
@@ -130,14 +129,19 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   const { onChange: setCanvasState, state: canvasState } =
     useContext(CanvasContext)
 
-  const handleDrag = useCallback((evt: MouseEvent) => {
-    const x = evt.clientX
-    const y = evt.clientY
+  const handleDrag = useCallback(
+    (evt: MouseEvent) => {
+      const x = evt.clientX
+      const y = evt.clientY
 
-    setDrag({
-      position: [x, y],
-    })
-  }, [])
+      if (dragging) {
+        setDrag({
+          position: [x, y],
+        })
+      }
+    },
+    [dragging]
+  )
 
   const handleDragEnd = useCallback(() => {
     if (drag?.position) {
@@ -164,13 +168,13 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
       })
     }
 
-    setDrag(null)
+    setDragActive(false)
   }, [drag, body, setBody, defaultLayer, canvasState, setCanvasState])
 
   return (
     <>
       <Item onDrag={startDrag}>{children}</Item>
-      {drag && (
+      {dragging && (
         <DragItem
           drag={drag}
           layer={defaultLayer}

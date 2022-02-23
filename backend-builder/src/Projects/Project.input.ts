@@ -16,3 +16,12 @@ export class ProjectInput {
   @Field(type => String, { nullable: true })
   body?: string;
 }
+
+@InputType()
+export class UpdateProjectInput {
+  @Field({ nullable: true })
+  projectName?: string;
+
+  @Field()
+  body?: string;
+}
