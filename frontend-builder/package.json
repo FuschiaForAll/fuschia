@@ -36,7 +36,8 @@
     "test": "react-app-rewired test --passWithNoTests",
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
     "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",
-    "gen": "graphql-codegen --config codegen.yaml"
+    "gen": "graphql-codegen --config codegen.yaml",
+    "types": "tsc --noEmit"
   },
   "eslintConfig": {
     "extends": [

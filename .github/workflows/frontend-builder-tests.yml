@@ -14,7 +14,7 @@ jobs:
       - uses: c-hive/gha-yarn-cache@v2
       - run: yarn install --frozen-lockfile --ignore-optional
       - name: Typescript
-        run: yarn tsc
+        run: yarn types
         working-directory: ./frontend-builder
       - name: Running tests
         run: yarn test
