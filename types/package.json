@@ -5,7 +5,8 @@
   "version": "0.0.1",
   "license": "UNLICENSED",
   "scripts": {
-    "types": "tsc --noEmit"
+    "types": "tsc --noEmit",
+    "build": "tsc"
   },
   "dependencies": {
     "@types/node": "^17.0.18",

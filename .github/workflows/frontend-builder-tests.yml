@@ -13,6 +13,8 @@ jobs:
           node-version: 16
       - uses: c-hive/gha-yarn-cache@v2
       - run: yarn install --frozen-lockfile --ignore-optional
+      - name: Build common code
+        run: yarn workspace @fuchsia/types build
       - name: Typescript
         run: yarn types
         working-directory: ./frontend-builder
