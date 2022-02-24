@@ -8,17 +8,18 @@ import {
   // useGetProjectQuery,
 } from '../../generated/graphql'
 
+import Context from '../../utils/app-context'
+
+import CanvasContext, {
+  CanvasState,
+  DEFAULT_CANVAS_STATE,
+} from '../../utils/canvas-context'
+
 import Canvas from './Canvas'
 import Database from './Database'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
-import Context from './context'
-
-import CanvasContext, {
-  CanvasState,
-  DEFAULT_CANVAS_STATE,
-} from './canvas-context'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -81,8 +82,6 @@ const Builder: React.FC = function Builder() {
   }
 
   const body = JSON.parse(project.body) as any as AppBody
-
-  console.log('BODY:', body)
 
   return (
     <>

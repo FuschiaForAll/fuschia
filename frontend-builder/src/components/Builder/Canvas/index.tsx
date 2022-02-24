@@ -2,8 +2,8 @@ import React, { useContext, useCallback } from 'react'
 import styled from '@emotion/styled'
 import type { Layer as LayerType } from '@fuchsia/types'
 
-import CanvasContext from '../canvas-context'
-import AppContext from '../context'
+import { useSelection } from '../../../utils/hooks'
+import AppContext from '../../../utils/app-context'
 import Layer from './Layer'
 import KeyboardEvents from './KeyboardEvents'
 
@@ -37,17 +37,11 @@ const Canvas: React.FC = function Canvas() {
   const { body } = useContext(AppContext)
   const { objects } = body
 
-  const { state: canvasState, onChange: setCanvasState } =
-    useContext(CanvasContext)
+  const { setSelection } = useSelection()
 
   const handleDeselect = useCallback(() => {
-    console.log('CLICKING!!')
-
-    setCanvasState({
-      ...canvasState,
-      selection: [],
-    })
-  }, [canvasState, setCanvasState])
+    setSelection(undefined)
+  }, [setSelection])
 
   return (
     <Wrapper>

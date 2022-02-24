@@ -8,13 +8,11 @@ import FormatColorTextIcon from '@mui/icons-material/FormatColorText'
 import ImageIcon from '@mui/icons-material/Image'
 import type { Layer as LayerType, Page } from '@fuchsia/types'
 
-// import CanvasContext from '../canvas-context'
-// import AppContext from '../context'
+import AppContext from '../../../utils/app-context'
+import CanvasContext from '../../../utils/canvas-context'
 import Icon from '../../Shared/Icon'
 import Item from './Item'
 import Layer from '../Canvas/Layer'
-import AppContext from '../context'
-import CanvasContext from '../canvas-context'
 
 interface ToolProps {
   defaultLayer: LayerType

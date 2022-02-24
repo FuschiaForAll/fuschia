@@ -1,29 +1,17 @@
-import React, { useEffect, useContext, useCallback } from 'react'
-import AppContext from '../context'
-import CanvasContext from '../canvas-context'
+import React, { useEffect, useCallback } from 'react'
+import { useDelete, useSelection } from '../../../utils/hooks'
 
 const DELETE = 8
 
 const KeyboardEvents: React.FC = function KeyboardEvents() {
-  const { state: canvasState, onChange: setCanvasState } =
-    useContext(CanvasContext)
-
-  const { body, setBody } = useContext(AppContext)
+  const { selection } = useSelection()
+  const deleteLayers = useDelete()
 
   const handleDelete = useCallback(() => {
-    const { selection } = canvasState
-
     if (!selection) return
 
-    const newBody = {
-      ...body,
-      objects: body.objects.filter(obj => !selection.includes(obj.id)),
-    }
-
-    setBody(newBody)
-
-    setCanvasState({ ...canvasState, selection: undefined })
-  }, [body, canvasState, setBody, setCanvasState])
+    deleteLayers(...selection)
+  }, [selection, deleteLayers])
 
   const keyDown = useCallback(
     (e: KeyboardEvent) => {
