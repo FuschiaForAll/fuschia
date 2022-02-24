@@ -4,7 +4,6 @@ import type { Page as PageType } from '@fuchsia/types'
 
 interface PageProps {
   layer: PageType
-  selected?: boolean
 }
 
 const Wrapper = styled.div`
@@ -17,7 +16,7 @@ const Wrapper = styled.div`
   bottom: 0;
 `
 
-const Page: React.FC<PageProps> = function Page({ layer, selected }) {
+const Page: React.FC<PageProps> = function Page({ layer }) {
   return <Wrapper />
 }
 

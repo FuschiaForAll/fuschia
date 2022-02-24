@@ -5,9 +5,11 @@ import type {
   Layer as LayerType,
   Page as PageType,
   Frame,
+  TextType,
 } from '@fuchsia/types'
 
 import Page from './Page'
+import TextLayer from './Text'
 import { useSelection, Selection } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
 
@@ -100,6 +102,12 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
         >
           <Page layer={layer as PageType} />
         </FrameLayer>
+      )
+    case 'text':
+      return (
+        <InlineLayer selected={selected} onClick={onSelect}>
+          <TextLayer layer={layer as TextType} />
+        </InlineLayer>
       )
     default:
       return (

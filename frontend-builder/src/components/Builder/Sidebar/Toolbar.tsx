@@ -6,7 +6,7 @@ import AppsIcon from '@mui/icons-material/Apps'
 import Crop32Icon from '@mui/icons-material/Crop32'
 import FormatColorTextIcon from '@mui/icons-material/FormatColorText'
 import ImageIcon from '@mui/icons-material/Image'
-import type { Layer as LayerType, Page } from '@fuchsia/types'
+import type { Layer as LayerType, Page, TextType } from '@fuchsia/types'
 
 import AppContext from '../../../utils/app-context'
 import CanvasContext from '../../../utils/canvas-context'
@@ -38,6 +38,16 @@ const PAGE: Page = {
   y: 0,
   width: 375,
   height: 667,
+}
+
+const TEXT: TextType = {
+  id: '',
+  type: 'layer',
+  layerType: 'text',
+  name: '',
+  options: {
+    text: 'Enter Text',
+  },
 }
 
 const DragContainer = styled.div`
@@ -190,9 +200,9 @@ const Toolbar: React.FC = function Toolbar() {
       <Item>
         <AppsIcon />
       </Item>
-      <Item>
+      <Tool defaultLayer={TEXT}>
         <FormatColorTextIcon />
-      </Item>
+      </Tool>
       <Item>
         <ImageIcon />
       </Item>
