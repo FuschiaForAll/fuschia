@@ -2,6 +2,14 @@
   --canvasBg: #f5f5f5;
   --black: #000;
   --primary: #1976d2;
+  --white: #fff;
+  --error: #dc7c7c;
+  --warning: #f0c766;
+  --success: #7fb58a;
+  --info: #66c4eb;
+  --text: #2c2c2c;
+  --accent: #dd1c74;
+  --attention: #f24726;
 }
 
 * {
@@ -14,4 +22,26 @@ body {
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
   color: var(--black);
+}
+
+.spaced-and-centered {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+}
+
+.outlined-accent-button {
+  border: solid 1px var(--accent);
+  color: var(--accent);
+  padding: 8px;
+  border-radius: 8px;
+  background-color: var(--white);
+  cursor: pointer;
+}
+
+.outlined-accent-button:hover {
+  background-color: var(--accent);
+  color: var(--white);
 }

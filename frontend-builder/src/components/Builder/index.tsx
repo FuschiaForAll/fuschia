@@ -2,11 +2,8 @@ import React, { useState, useCallback } from 'react'
 import { useQuery, useMutation, gql } from '@apollo/client'
 import { Route, Routes, useParams } from 'react-router-dom'
 import type { AppBody } from '@fuchsia/types'
-
-import {
-  useListProjectsQuery,
-  // useGetProjectQuery,
-} from '../../generated/graphql'
+import { useListProjectsQuery } from '../../generated/graphql'
+import Settings from '../App/Settings'
 
 import Context from '../../utils/app-context'
 
@@ -102,6 +99,7 @@ const Builder: React.FC = function Builder() {
       </Context.Provider>
       <Routes>
         <Route path="database" element={<Database />} />
+        <Route path="app-settings" element={<Settings />} />
       </Routes>
     </>
   )

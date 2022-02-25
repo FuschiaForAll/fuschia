@@ -10,7 +10,6 @@ import {
   useGetServerStatusQuery,
   usePublishApiMutation,
 } from '../../../generated/graphql'
-import { AuthConfig } from './AuthConfig'
 import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
 import GraphQLDesigner from './GraphQLDesigner'
@@ -25,6 +24,7 @@ import { ExpandMore } from '@mui/icons-material'
 import Modal from '@mui/material/Modal'
 import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
+import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -72,7 +72,7 @@ function StatusChip({
     <Box
       sx={{
         color: status ? 'black' : 'white',
-        borderColor: status ? 'success.main' : 'error.main',
+        borderColor: status ? 'var(--success)' : 'var(--error)',
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 5,
@@ -82,7 +82,7 @@ function StatusChip({
       <Box
         sx={{
           margin: '2px',
-          backgroundColor: status ? 'success.main' : 'error.main',
+          backgroundColor: status ? 'var(--success)' : 'var(--error)',
           borderRadius: 4,
           padding: '0.5rem',
         }}
@@ -266,15 +266,7 @@ const Database: React.FC = function Database() {
                   }}
                 >
                   <AccordionSummary sx={{}}>
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'auto auto',
-                        justifyContent: 'space-between',
-                        width: '100%',
-                        alignItems: 'center',
-                      }}
-                    >
+                    <div className="spaced-and-centered">
                       <span>Create New Data Collection</span>
                       <span style={{ color: 'black' }}>
                         <Add />
@@ -283,7 +275,8 @@ const Database: React.FC = function Database() {
                   </AccordionSummary>
                   <AccordionDetails>
                     <div>
-                      <input
+                      <LabeledTextInput
+                        label="Collection Name"
                         type="text"
                         value={newModelName}
                         onChange={e => {
@@ -292,6 +285,7 @@ const Database: React.FC = function Database() {
                         }}
                       />
                       <button
+                        className="outlined-accent-button"
                         onClick={async () => {
                           await createNewEntityModel({
                             variables: {
@@ -314,7 +308,6 @@ const Database: React.FC = function Database() {
             <Tabs value={selectedTab} onChange={handleChange}>
               <Tab label="Data Editor" />
               <Tab label="GraphQL Designer" />
-              <Tab label="Auth" />
             </Tabs>
             <TabPanel value={selectedTab} index={0}>
               {data && (
@@ -342,11 +335,6 @@ const Database: React.FC = function Database() {
                     data.getProject.appConfig.apiConfig.liveEndpoint
                   }
                 />
-              )}
-            </TabPanel>
-            <TabPanel value={selectedTab} index={2}>
-              {data && data.getProject.appConfig.authConfig && (
-                <AuthConfig projectId={projectId} />
               )}
             </TabPanel>
           </div>

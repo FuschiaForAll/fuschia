@@ -18,6 +18,7 @@ export class EntityModelResolver {
   @Mutation(() => EntityModel, { nullable: true })
   async createEntityModel(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('name') name: string, @Ctx() ctx: Context) {
     if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
+    if (!name) { throw new ApolloError('Name required')}
     const project = await ProjectModel.findById(projectId)
     if (project) {
       const entityModel = new EntityModel

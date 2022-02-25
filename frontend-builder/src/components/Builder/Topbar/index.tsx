@@ -16,6 +16,7 @@ import RedditIcon from '@mui/icons-material/Reddit'
 import UndoIcon from '@mui/icons-material/Undo'
 import RedoIcon from '@mui/icons-material/Redo'
 import HistoryIcon from '@mui/icons-material/History'
+import { useNavigate, useParams } from 'react-router-dom'
 
 interface TopbarProps {
   projects?: Partial<Project>[]
@@ -53,6 +54,8 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
   currentProject,
   projectName,
 }: TopbarProps) {
+  const { projectId } = useParams<{ projectId: string }>()
+  const navigate = useNavigate()
   const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
   const [open, setOpen] = React.useState(false)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -74,8 +77,13 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           <Item>
             <RedditIcon />
           </Item>
-          <Typography>{projectName}</Typography>
-          <Item>
+          <Typography>
+            {projects?.find(project => project._id === projectId)
+              ? projects?.find(project => project._id === projectId)
+                  ?.projectName
+              : 'ProjectName'}
+          </Typography>
+          <Item onClick={() => navigate('app-settings')}>
             <SettingsIcon />
           </Item>
           <Item>

@@ -9,6 +9,7 @@ import {
   useDeleteDataFieldMutation,
 } from '../../../generated/graphql'
 import DeleteIcon from '@mui/icons-material/Delete'
+import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 
 const DATA_TYPES = ['String', 'Date', 'Int', 'Float', 'Boolean']
 
@@ -163,15 +164,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
         }}
       >
         <AccordionSummary>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto auto',
-              justifyContent: 'space-between',
-              width: '100%',
-              alignItems: 'center',
-            }}
-          >
+          <div className="spaced-and-centered">
             <span>Add new field</span>
             <span>
               <AddCircle />
@@ -180,7 +173,8 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
         </AccordionSummary>
         <AccordionDetails>
           <div>
-            <input
+            <LabeledTextInput
+              label="Field Name"
               type="text"
               value={fieldName}
               onChange={e => {
@@ -239,6 +233,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
               }}
             />
             <button
+              className="outlined-accent-button"
               onClick={async () => {
                 await createDataField({
                   variables: {

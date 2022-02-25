@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react'
 import { EntityModel } from '../../../generated/graphql'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { IconButton } from '@mui/material'
+import { TextInput } from '../../Shared/primitives/TextInput'
+import { Add } from '@mui/icons-material'
 
 const StyledTable = styled.table`
   border-spacing: 0;
@@ -24,6 +26,14 @@ const StyledTable = styled.table`
     border-left: solid 1px #c7c7c7;
   }
   > thead > tr > th:last-child {
+    border-right: solid 1px #c7c7c7;
+  }
+  > tfoot > tr > td {
+    border-bottom: solid 1px #c7c7c7;
+    border-left: solid 1px #c7c7c7;
+    padding: 0.25rem;
+  }
+  > tfoot > tr > td:last-child {
     border-right: solid 1px #c7c7c7;
   }
 `
@@ -215,7 +225,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
               <td></td>
               {keys.map(key => (
                 <td key={key}>
-                  <input
+                  <TextInput
                     type="text"
                     name={key}
                     value={newData[key]}
@@ -224,7 +234,7 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
                 </td>
               ))}
               <td>
-                <button
+                <IconButton
                   onClick={() => {
                     fetch(
                       sandboxMode ? sandboxEndpoint || '' : liveEndpoint || '',
@@ -272,8 +282,8 @@ const DataEditor: React.FC<DataEditorProps> = function DataEditor({
                       .catch((e: any) => console.log(e))
                   }}
                 >
-                  Add
-                </button>
+                  <Add />
+                </IconButton>
               </td>
             </tr>
           </tfoot>
