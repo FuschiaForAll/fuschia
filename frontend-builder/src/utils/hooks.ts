@@ -2,19 +2,27 @@ import { useContext, useCallback } from 'react'
 import { Layer } from '@fuchsia/types'
 
 import AppContext from './app-context'
-import CanvasContext from './canvas-context'
+import CanvasContext, { Position, DragParams } from './canvas-context'
 import { insertLayer, updateLayer, deleteLayer, getLocation } from './updating'
 
 export type Selection = string[] | undefined
 
-type SelectionResponse = {
+interface SelectionResponse {
   selection: Selection
   setSelection: (selection?: string[]) => void
+}
+
+interface DragResponse extends DragParams {
+  onStartDrag: (dragLayer: string | Layer) => void
+  onDrag: (position: Position) => void
+  onDrop: () => void
 }
 
 type UpdateFunc = (id: string, value: Layer) => void
 type InsertFunc = (id: string, value: Layer, insertAfter?: boolean) => void
 type DeleteFunc = (...ids: string[]) => void
+
+// Selection
 
 export const useSelection = (): SelectionResponse => {
   const { state: canvasState, onChange } = useContext(CanvasContext)
@@ -32,6 +40,59 @@ export const useSelection = (): SelectionResponse => {
   return { selection, setSelection }
 }
 
+// Dragging
+
+export const useDrag = (): DragResponse => {
+  const { state: canvasState, onChange } = useContext(CanvasContext)
+
+  const { dragActive, dragPosition, dragLayer, dropTarget, dropInside } =
+    canvasState
+
+  const onStartDrag = useCallback(
+    (dragLayer: string | Layer) => {
+      onChange({
+        ...canvasState,
+        dragLayer,
+        dragActive: true,
+      })
+    },
+    [canvasState, onChange]
+  )
+
+  const onDrag = useCallback(
+    (position: Position) => {
+      onChange({
+        ...canvasState,
+        dragPosition: position,
+      })
+    },
+    [canvasState, onChange]
+  )
+
+  const onDrop = useCallback(() => {
+    onChange({
+      ...canvasState,
+      dragActive: false,
+      dragPosition: undefined,
+      dragLayer: undefined,
+      dropTarget: undefined,
+      dropInside: undefined,
+    })
+  }, [canvasState, onChange])
+
+  return {
+    dragActive,
+    dragPosition,
+    dragLayer,
+    dropTarget,
+    dropInside,
+    onStartDrag,
+    onDrag,
+    onDrop,
+  }
+}
+
+// Update / Insert / Delete
 export const useUpdate = (): UpdateFunc => {
   const { body, setBody } = useContext(AppContext)
 
