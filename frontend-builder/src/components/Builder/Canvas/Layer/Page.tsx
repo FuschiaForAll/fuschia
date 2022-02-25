@@ -4,30 +4,20 @@ import type { Page as PageType } from '@fuchsia/types'
 
 interface PageProps {
   layer: PageType
-  selected?: boolean
 }
 
 const Wrapper = styled.div`
   background: #fff;
-  box-shadow: 0 0 0 1px #ccc;
+  box-shadow: inset 0 0 0 1px #ccc;
   position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
 `
 
-const Page: React.FC<PageProps> = function Page({ layer, selected }) {
-  const { x, y, width, height } = layer
-
-  const styles: React.CSSProperties = {
-    width,
-    height,
-    left: x,
-    top: y,
-  }
-
-  if (selected) {
-    styles.boxShadow = '0 0 0 2px var(--primary)'
-  }
-
-  return <Wrapper style={styles}></Wrapper>
+const Page: React.FC<PageProps> = function Page({ layer }) {
+  return <Wrapper />
 }
 
 export default Page

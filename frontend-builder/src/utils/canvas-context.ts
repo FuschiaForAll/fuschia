@@ -1,9 +1,19 @@
 import { createContext } from 'react'
+import { Layer } from '@fuchsia/types'
 
-export interface CanvasState {
+export type Position = [x: number, y: number]
+
+export interface DragParams {
+  dragActive?: boolean
+  dragPosition?: Position
+  dragLayer?: string | Layer // id or new layer
+  dropTarget?: string // ID of layer
+  dropInside?: boolean // Drop before or inside
+}
+
+export interface CanvasState extends DragParams {
   scale: number
-  x: number
-  y: number
+  position: Position
   selection?: Array<string>
 }
 
@@ -14,8 +24,7 @@ interface CanvasContext {
 
 export const DEFAULT_CANVAS_STATE: CanvasState = {
   scale: 1,
-  x: 0,
-  y: 0,
+  position: [0, 0],
   selection: undefined,
 }
 

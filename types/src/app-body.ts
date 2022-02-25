@@ -28,3 +28,19 @@ export interface Page extends Frame {
 export interface Component extends Frame {
   layerType: 'component'
 }
+
+export interface InlineLayer extends Layer {
+  options: any
+}
+
+export interface TextOptions {
+  text: string
+  style?: 'h1' | 'h2' | 'h3'
+  fontSize?: number
+  fontColor?: string
+}
+
+export interface TextType extends InlineLayer {
+  layerType: 'text'
+  options: TextOptions
+}
