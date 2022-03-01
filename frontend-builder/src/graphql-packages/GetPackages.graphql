@@ -1,0 +1,16 @@
+query GetPackages {
+  getPackages {
+    _id
+    packageName
+    repositoryUrl
+    version
+    bundle
+    components {
+      _id
+      name
+      props
+    }
+    authorId
+    scope
+  }
+}

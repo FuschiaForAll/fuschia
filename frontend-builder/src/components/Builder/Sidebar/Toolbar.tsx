@@ -13,6 +13,7 @@ import CanvasContext from '../../../utils/canvas-context'
 import Icon from '../../Shared/Icon'
 import Item from './Item'
 import Layer from '../Canvas/Layer'
+import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 
 interface ToolProps {
   defaultLayer: LayerType
@@ -195,6 +196,11 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
 }
 
 const Toolbar: React.FC = function Toolbar() {
+  const { data: packageData } = useGetPackagesQuery({
+    context: {
+      clientName: 'package-manager',
+    },
+  })
   return (
     <Paper elevation={12} sx={cardStyles}>
       <Item>
@@ -203,6 +209,22 @@ const Toolbar: React.FC = function Toolbar() {
       <Tool defaultLayer={TEXT}>
         <FormatColorTextIcon />
       </Tool>
+      {packageData &&
+        packageData.getPackages.flatMap(_package => {
+          return _package.components.map(component => (
+            <Tool
+              key={component._id}
+              defaultLayer={{
+                name: component.name,
+                layerType: _package.packageName,
+                id: '',
+                type: 'LAYER',
+              }}
+            >
+              <AppsIcon />
+            </Tool>
+          ))
+        })}
       <Item>
         <ImageIcon />
       </Item>

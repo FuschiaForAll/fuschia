@@ -110,9 +110,19 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
         </InlineLayer>
       )
     default:
+      // @ts-ignore
+      if (!window[layer.layerType]) {
+        return (
+          <InlineLayer selected={selected} onClick={onSelect}>
+            <div>Missing Bundle</div>
+          </InlineLayer>
+        )
+      }
+      // @ts-ignore
+      const InlineComponent = window[layer.layerType].components[layer.name]
       return (
         <InlineLayer selected={selected} onClick={onSelect}>
-          <h2>Hello Layer</h2>
+          <InlineComponent title="Hello World" text="Hello World" />
         </InlineLayer>
       )
   }

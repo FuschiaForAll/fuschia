@@ -6,6 +6,7 @@
     "@apollo/client": "^3.5.8",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
+    "@fuchsia-for-all/primitives": "^1.0.1",
     "@mui/icons-material": "^5.4.1",
     "@mui/material": "^5.4.1",
     "@mui/styles": "^5.4.2",
@@ -20,6 +21,8 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "graphql": "^15.0.0",
+    "live-plugin-manager": "^0.17.1",
+    "path-browserify": "^1.0.1",
     "prettier": "^2.5.1",
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.11",
@@ -37,6 +40,7 @@
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
     "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",
     "gen": "graphql-codegen --config codegen.yaml",
+    "gen:packages": "graphql-codegen --config codegen-packages.yaml",
     "types": "tsc --noEmit"
   },
   "eslintConfig": {
