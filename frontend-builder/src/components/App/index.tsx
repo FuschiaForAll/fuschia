@@ -16,7 +16,6 @@ const App: React.FC = function App() {
     },
   })
   useEffect(() => {
-    debugger
     if (packageData) {
       // eslint-disable-next-line no-eval
       packageData.getPackages.forEach(_package => eval(_package.bundle))
