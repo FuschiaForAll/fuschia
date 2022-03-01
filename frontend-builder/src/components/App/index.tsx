@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { useGetPackagesQuery } from '../../generated/graphql-packages'
 import { Login, Register } from '../Authentication'
@@ -18,6 +18,7 @@ const App: React.FC = function App() {
   useEffect(() => {
     debugger
     if (packageData) {
+      // eslint-disable-next-line no-eval
       packageData.getPackages.forEach(_package => eval(_package.bundle))
       setLoaded(true)
     }
@@ -26,20 +27,18 @@ const App: React.FC = function App() {
     return <div>Loading</div>
   }
   return (
-    <div>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Navigate replace to="/projects" />} />
-          <Route path="/project/new" element={<NewProject />} />
-          <Route path="/projects/:projectId/builder/*" element={<Builder />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/organizations" element={<Organizations />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Navigate replace to="/projects" />} />
+        <Route path="/project/new" element={<NewProject />} />
+        <Route path="/projects/:projectId/builder/*" element={<Builder />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/organizations" element={<Organizations />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
