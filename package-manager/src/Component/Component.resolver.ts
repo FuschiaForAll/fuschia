@@ -9,10 +9,10 @@ import { ComponentInput } from "./Component.input";
 export class ComponentResolver {
   @Query(() => [Component])
   async getComponents() {
-    const packages = await PackageModel.find()
+    const packages = await PackageModel.find();
     if (packages) {
-      return packages.flatMap(_package => _package.components)
+      return packages.flatMap((_package) => _package.components);
     }
-    return []
+    return [];
   }
 }

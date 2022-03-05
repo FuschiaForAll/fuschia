@@ -1,11 +1,8 @@
-import React, { useState, useCallback } from 'react'
-import { useQuery, useMutation, gql } from '@apollo/client'
+import React, { useState } from 'react'
+import { useQuery, gql } from '@apollo/client'
 import { Route, Routes, useParams } from 'react-router-dom'
-import type { AppBody } from '@fuchsia/types'
 import { useListProjectsQuery } from '../../generated/graphql'
 import Settings from '../App/Settings'
-
-import Context from '../../utils/app-context'
 
 import CanvasContext, {
   CanvasState,
@@ -40,34 +37,6 @@ const Builder: React.FC = function Builder() {
 
   const project = data?.project
 
-  const [updateBody] = useMutation(gql`
-    mutation UpdateBody($projectId: ObjectId!, $input: UpdateProjectInput!) {
-      updateProject(projectId: $projectId, project: $input) {
-        _id
-        body
-      }
-    }
-  `)
-
-  const setBody = useCallback(
-    (body: AppBody) => {
-      updateBody({
-        variables: {
-          projectId,
-          input: { body: JSON.stringify(body) },
-        },
-        optimisticResponse: {
-          updateProject: {
-            _id: projectId,
-            __typename: 'Project',
-            body: JSON.stringify(body),
-          },
-        },
-      })
-    },
-    [updateBody, projectId]
-  )
-
   if (!data && loading) {
     return <FullScreenLoader />
   } else if (!data) {
@@ -78,25 +47,21 @@ const Builder: React.FC = function Builder() {
     )
   }
 
-  const body = JSON.parse(project.body) as any as AppBody
-
   return (
     <>
-      <Context.Provider value={{ body, setBody }}>
-        <CanvasContext.Provider
-          value={{ state: canvasState, onChange: setCanvasState }}
-        >
-          <div>
-            <Canvas />
-            <Topbar
-              projects={projects?.listProjects}
-              currentProject={projectId}
-              projectName={project.projectName}
-            />
-            <Sidebar />
-          </div>
-        </CanvasContext.Provider>
-      </Context.Provider>
+      <CanvasContext.Provider
+        value={{ state: canvasState, onChange: setCanvasState }}
+      >
+        <div>
+          <Canvas />
+          <Topbar
+            projects={projects?.listProjects}
+            currentProject={projectId}
+            projectName={project.projectName}
+          />
+          <Sidebar />
+        </div>
+      </CanvasContext.Provider>
       <Routes>
         <Route path="database" element={<Database />} />
         <Route path="app-settings" element={<Settings />} />

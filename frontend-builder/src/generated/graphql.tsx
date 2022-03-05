@@ -83,6 +83,28 @@ export type AuthInput = {
   usernameFieldId?: InputMaybe<Scalars['String']>;
 };
 
+export type Component = {
+  __typename?: 'Component';
+  _id: Scalars['ObjectId'];
+  children?: Maybe<Array<Component>>;
+  package: Scalars['String'];
+  parent?: Maybe<Component>;
+  props?: Maybe<Scalars['String']>;
+  type: Scalars['String'];
+  x?: Maybe<Scalars['Float']>;
+  y?: Maybe<Scalars['Float']>;
+};
+
+export type ComponentInput = {
+  children?: InputMaybe<Array<Scalars['ObjectId']>>;
+  package?: InputMaybe<Scalars['String']>;
+  parent?: InputMaybe<Scalars['ObjectId']>;
+  props?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+  x?: InputMaybe<Scalars['Float']>;
+  y?: InputMaybe<Scalars['Float']>;
+};
+
 export type DataAuth = {
   __typename?: 'DataAuth';
   allow: Scalars['String'];
@@ -141,6 +163,7 @@ export type Key = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createComponent: Component;
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
   createMutation?: Maybe<Scalars['Boolean']>;
@@ -150,6 +173,7 @@ export type Mutation = {
   createRelationship?: Maybe<Scalars['Boolean']>;
   createSubscription?: Maybe<Scalars['Boolean']>;
   createUser: User;
+  deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
   deleteEntityModel?: Maybe<Scalars['ObjectId']>;
   deleteMutations?: Maybe<Scalars['Boolean']>;
@@ -163,12 +187,19 @@ export type Mutation = {
   publishApi: Scalars['Boolean'];
   register: UserResponse;
   updateAuth?: Maybe<Auth>;
+  updateComponent: Component;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
   updateMutation?: Maybe<Scalars['Boolean']>;
   updateProject: Project;
   updateQuery?: Maybe<Scalars['Boolean']>;
   updateRelationship?: Maybe<Scalars['Boolean']>;
   updateSubscription?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationCreateComponentArgs = {
+  componentInput: ComponentInput;
+  projectId: Scalars['ObjectId'];
 };
 
 
@@ -197,6 +228,12 @@ export type MutationCreateProjectArgs = {
 
 export type MutationCreateUserArgs = {
   user: UserInput;
+};
+
+
+export type MutationDeleteComponentsArgs = {
+  componentIds: Array<Scalars['ObjectId']>;
+  projectId: Scalars['ObjectId'];
 };
 
 
@@ -247,6 +284,12 @@ export type MutationUpdateAuthArgs = {
 };
 
 
+export type MutationUpdateComponentArgs = {
+  componentId: Scalars['ObjectId'];
+  componentInput: ComponentInput;
+};
+
+
 export type MutationUpdateProjectArgs = {
   project: UpdateProjectInput;
   projectId: Scalars['ObjectId'];
@@ -271,6 +314,7 @@ export type Project = {
   appConfig: AppConfig;
   appId: Scalars['String'];
   body?: Maybe<Scalars['String']>;
+  components: Array<Component>;
   organization: Organization;
   projectName: Scalars['String'];
 };
@@ -284,6 +328,7 @@ export type ProjectInput = {
 export type Query = {
   __typename?: 'Query';
   getAuth?: Maybe<Auth>;
+  getComponents: Array<Component>;
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
   listEntityModel?: Maybe<Scalars['Boolean']>;
@@ -307,6 +352,11 @@ export type QueryGetAuthArgs = {
 };
 
 
+export type QueryGetComponentsArgs = {
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type QueryGetProjectArgs = {
   projectId: Scalars['ObjectId'];
 };
@@ -319,7 +369,7 @@ export type QueryGetServerStatusArgs = {
 
 export type UpdateProjectInput = {
   body: Scalars['String'];
-  projectName: Scalars['String'];
+  projectName?: InputMaybe<Scalars['String']>;
 };
 
 export type User = {
@@ -533,6 +583,39 @@ export enum __TypeKind {
   NonNull = 'NON_NULL'
 }
 
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null };
+
+export type CreateComponentMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  componentInput: ComponentInput;
+}>;
+
+
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+
+export type DeleteComponentsMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  componentIds: Array<Scalars['ObjectId']> | Scalars['ObjectId'];
+}>;
+
+
+export type DeleteComponentsMutation = { __typename?: 'Mutation', deleteComponents: Array<any> };
+
+export type GetComponentsQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
+
+export type UpdateComponentMutationVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+  componentInput: ComponentInput;
+}>;
+
+
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null } };
+
 export type CreateDataFieldMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   entityModelId: Scalars['ObjectId'];
@@ -672,6 +755,19 @@ export type RegisterMutationVariables = Exact<{
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null, user?: { __typename?: 'User', email: string, userRole: string } | null } };
 
+export const ComponentFragmentFragmentDoc = gql`
+    fragment ComponentFragment on Component {
+  _id
+  package
+  type
+  x
+  y
+  props
+  parent {
+    _id
+  }
+}
+    `;
 export const TypeRefFragmentDoc = gql`
     fragment TypeRef on __Type {
   kind
@@ -772,6 +868,168 @@ export const AuthFragmentFragmentDoc = gql`
   passwordFieldId
 }
     `;
+export const CreateComponentDocument = gql`
+    mutation CreateComponent($projectId: ObjectId!, $componentInput: ComponentInput!) {
+  createComponent(projectId: $projectId, componentInput: $componentInput) {
+    ...ComponentFragment
+    children {
+      ...ComponentFragment
+    }
+  }
+}
+    ${ComponentFragmentFragmentDoc}`;
+export type CreateComponentMutationFn = Apollo.MutationFunction<CreateComponentMutation, CreateComponentMutationVariables>;
+
+/**
+ * __useCreateComponentMutation__
+ *
+ * To run a mutation, you first call `useCreateComponentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateComponentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createComponentMutation, { data, loading, error }] = useCreateComponentMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      componentInput: // value for 'componentInput'
+ *   },
+ * });
+ */
+export function useCreateComponentMutation(baseOptions?: Apollo.MutationHookOptions<CreateComponentMutation, CreateComponentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateComponentMutation, CreateComponentMutationVariables>(CreateComponentDocument, options);
+      }
+export type CreateComponentMutationHookResult = ReturnType<typeof useCreateComponentMutation>;
+export type CreateComponentMutationResult = Apollo.MutationResult<CreateComponentMutation>;
+export type CreateComponentMutationOptions = Apollo.BaseMutationOptions<CreateComponentMutation, CreateComponentMutationVariables>;
+export const DeleteComponentsDocument = gql`
+    mutation DeleteComponents($projectId: ObjectId!, $componentIds: [ObjectId!]!) {
+  deleteComponents(projectId: $projectId, componentIds: $componentIds)
+}
+    `;
+export type DeleteComponentsMutationFn = Apollo.MutationFunction<DeleteComponentsMutation, DeleteComponentsMutationVariables>;
+
+/**
+ * __useDeleteComponentsMutation__
+ *
+ * To run a mutation, you first call `useDeleteComponentsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteComponentsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteComponentsMutation, { data, loading, error }] = useDeleteComponentsMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      componentIds: // value for 'componentIds'
+ *   },
+ * });
+ */
+export function useDeleteComponentsMutation(baseOptions?: Apollo.MutationHookOptions<DeleteComponentsMutation, DeleteComponentsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteComponentsMutation, DeleteComponentsMutationVariables>(DeleteComponentsDocument, options);
+      }
+export type DeleteComponentsMutationHookResult = ReturnType<typeof useDeleteComponentsMutation>;
+export type DeleteComponentsMutationResult = Apollo.MutationResult<DeleteComponentsMutation>;
+export type DeleteComponentsMutationOptions = Apollo.BaseMutationOptions<DeleteComponentsMutation, DeleteComponentsMutationVariables>;
+export const GetComponentsDocument = gql`
+    query GetComponents($projectId: ObjectId!) {
+  getComponents(projectId: $projectId) {
+    ...ComponentFragment
+    children {
+      ...ComponentFragment
+      children {
+        ...ComponentFragment
+        children {
+          ...ComponentFragment
+          children {
+            ...ComponentFragment
+            children {
+              ...ComponentFragment
+              children {
+                ...ComponentFragment
+                children {
+                  ...ComponentFragment
+                  children {
+                    ...ComponentFragment
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    ${ComponentFragmentFragmentDoc}`;
+
+/**
+ * __useGetComponentsQuery__
+ *
+ * To run a query within a React component, call `useGetComponentsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetComponentsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetComponentsQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useGetComponentsQuery(baseOptions: Apollo.QueryHookOptions<GetComponentsQuery, GetComponentsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetComponentsQuery, GetComponentsQueryVariables>(GetComponentsDocument, options);
+      }
+export function useGetComponentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetComponentsQuery, GetComponentsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetComponentsQuery, GetComponentsQueryVariables>(GetComponentsDocument, options);
+        }
+export type GetComponentsQueryHookResult = ReturnType<typeof useGetComponentsQuery>;
+export type GetComponentsLazyQueryHookResult = ReturnType<typeof useGetComponentsLazyQuery>;
+export type GetComponentsQueryResult = Apollo.QueryResult<GetComponentsQuery, GetComponentsQueryVariables>;
+export const UpdateComponentDocument = gql`
+    mutation UpdateComponent($componentId: ObjectId!, $componentInput: ComponentInput!) {
+  updateComponent(componentId: $componentId, componentInput: $componentInput) {
+    ...ComponentFragment
+  }
+}
+    ${ComponentFragmentFragmentDoc}`;
+export type UpdateComponentMutationFn = Apollo.MutationFunction<UpdateComponentMutation, UpdateComponentMutationVariables>;
+
+/**
+ * __useUpdateComponentMutation__
+ *
+ * To run a mutation, you first call `useUpdateComponentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateComponentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateComponentMutation, { data, loading, error }] = useUpdateComponentMutation({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *      componentInput: // value for 'componentInput'
+ *   },
+ * });
+ */
+export function useUpdateComponentMutation(baseOptions?: Apollo.MutationHookOptions<UpdateComponentMutation, UpdateComponentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateComponentMutation, UpdateComponentMutationVariables>(UpdateComponentDocument, options);
+      }
+export type UpdateComponentMutationHookResult = ReturnType<typeof useUpdateComponentMutation>;
+export type UpdateComponentMutationResult = Apollo.MutationResult<UpdateComponentMutation>;
+export type UpdateComponentMutationOptions = Apollo.BaseMutationOptions<UpdateComponentMutation, UpdateComponentMutationVariables>;
 export const CreateDataFieldDocument = gql`
     mutation CreateDataField($projectId: ObjectId!, $entityModelId: ObjectId!, $dataField: DataFieldInput!) {
   createDataField(

@@ -5,11 +5,15 @@
 
 type Component {
   _id: ObjectId!
+  icon: String!
+  isRootElement: Boolean!
   name: String!
   props: String!
 }
 
 input ComponentInput {
+  icon: String!
+  isRootElement: Boolean!
   name: String!
   props: String!
 }
@@ -33,7 +37,7 @@ type Package {
 }
 
 input PackageInput {
-  authorId: String!
+  authorId: ObjectId!
   bundle: String!
   components: [ComponentInput!]!
   packageName: String!

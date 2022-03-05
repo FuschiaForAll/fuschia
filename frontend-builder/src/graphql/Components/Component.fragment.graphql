@@ -1,0 +1,11 @@
+fragment ComponentFragment on Component {
+  _id
+  package
+  type
+  x
+  y
+  props
+  parent {
+    _id
+  }
+}

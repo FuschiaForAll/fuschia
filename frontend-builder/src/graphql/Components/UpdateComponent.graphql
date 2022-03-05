@@ -1,0 +1,9 @@
+#import "./Component.fragment.graphql"
+mutation UpdateComponent(
+  $componentId: ObjectId!
+  $componentInput: ComponentInput!
+) {
+  updateComponent(componentId: $componentId, componentInput: $componentInput) {
+    ...ComponentFragment
+  }
+}

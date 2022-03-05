@@ -1,6 +1,11 @@
 import session from "express-session";
 import connectRedis from "connect-redis";
-import { REDIS_URL, MONGO_DB_URL, SESSION_SECRET, REDIS_PORT } from "./utils/config";
+import {
+  REDIS_URL,
+  MONGO_DB_URL,
+  SESSION_SECRET,
+  REDIS_PORT,
+} from "./utils/config";
 import Redis from "ioredis";
 import { connect } from "mongoose";
 import { buildSchema } from "type-graphql";
@@ -25,10 +30,11 @@ import { EntityModelResolver } from "./Projects/AppConfig/Api/Models/EntityModel
 import { DataFieldResolver } from "./Projects/AppConfig/Api/Fields/DataField.resolver";
 import { ApiResolver } from "./Projects/AppConfig/Api/Api.resolver";
 import fs from "fs";
-import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { execute, subscribe } from 'graphql';
+import { RedisPubSub } from "graphql-redis-subscriptions";
+import { execute, subscribe } from "graphql";
 import { SubscriptionServer } from "subscriptions-transport-ws";
 import { AuthResolver } from "./Projects/AppConfig/Auth/Auth.resolver";
+import { ComponentResolver } from "./Projects/AppConfig/Components/Component.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -43,11 +49,11 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
     port: REDIS_PORT,
     retryStrategy: (times: number) => {
       return Math.min(times * 50, 2000);
-    }
+    },
   };
   const pubSub = new RedisPubSub({
     publisher: new Redis(options),
-    subscriber: new Redis(options)
+    subscriber: new Redis(options),
   });
   const schema = await buildSchema({
     resolvers: [
@@ -57,7 +63,8 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       EntityModelResolver,
       DataFieldResolver,
       ApiResolver,
-      AuthResolver
+      AuthResolver,
+      ComponentResolver,
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],
@@ -65,7 +72,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
     validate: true,
     authChecker,
     container: Container,
-    pubSub
+    pubSub,
   });
 
   const app = express();
@@ -91,7 +98,8 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
         httpOnly: true,
         sameSite: "none", // csrf
         secure: true,
-        domain: process.env.NODE_ENV === "production" ? "fuschia.com" : undefined,
+        domain:
+          process.env.NODE_ENV === "production" ? "fuschia.com" : undefined,
       },
       saveUninitialized: true,
       secret: SESSION_SECRET,
@@ -109,7 +117,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
         res,
         redis,
       };
-    }
+    },
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({
@@ -122,16 +130,17 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
   const server = https.createServer({ key: key, cert: cert }, app);
   server.listen(4003, () => {
     console.log(`Server is running on port 4003`);
-    new SubscriptionServer({
-      execute,
-      subscribe,
-      schema,
-      onConnect: (connectionParams: any) => {
-  
+    new SubscriptionServer(
+      {
+        execute,
+        subscribe,
+        schema,
+        onConnect: (connectionParams: any) => {},
+      },
+      {
+        server,
       }
-    }, {
-      server
-    })
+    );
   });
   app.listen(4002, () => {
     console.log(`Server is running on port 4002`);

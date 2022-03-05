@@ -1,11 +1,10 @@
-import React, { useContext, useCallback } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import styled from '@emotion/styled'
-import type { Layer as LayerType } from '@fuchsia/types'
-
-import { useSelection } from '../../../utils/hooks'
-import AppContext from '../../../utils/app-context'
+import { useParams } from 'react-router-dom'
+import { useDragDrop, useSelection } from '../../../utils/hooks'
 import Layer from './Layer'
 import KeyboardEvents from './KeyboardEvents'
+import { useGetComponentsQuery } from '../../../generated/graphql'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -34,22 +33,40 @@ const Objects = styled.div`
 `
 
 const Canvas: React.FC = function Canvas() {
-  const { body } = useContext(AppContext)
-  const { objects } = body
-
+  const { projectId } = useParams()
+  const [update, setUpdate] = useState(0)
+  const { data: componentData } = useGetComponentsQuery({
+    variables: {
+      projectId,
+    },
+  })
   const { setSelection } = useSelection()
-
+  useEffect(() => {
+    setUpdate(i => i + 1)
+  }, [componentData])
+  console.log(`Rerenders: ${update}`)
+  const { ref } = useDragDrop('main-canvas', {
+    droppable: {
+      dropClass: '.droppable',
+      onDrop: () => {},
+    },
+  })
   const handleDeselect = useCallback(() => {
     setSelection(undefined)
   }, [setSelection])
-
+  if (!componentData) {
+    return <div>Loading...</div>
+  }
+  console.log('Canvas')
+  console.log(componentData.getComponents)
   return (
-    <Wrapper>
+    <Wrapper id="main-canvas" ref={ref}>
       <KeyboardEvents />
       <Backdrop onMouseDown={handleDeselect} />
-      <Objects>
-        {objects.map(obj => (
-          <Layer key={obj.id} layer={obj as LayerType} />
+      <Objects id="objectCollection">
+        {componentData.getComponents.map(obj => (
+          // @ts-ignore
+          <Layer key={obj._id} layer={obj} />
         ))}
       </Objects>
     </Wrapper>

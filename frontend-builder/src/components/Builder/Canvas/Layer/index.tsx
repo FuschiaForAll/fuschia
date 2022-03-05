@@ -1,33 +1,29 @@
 import React, { useCallback } from 'react'
 import styled from '@emotion/styled'
 
-import type {
-  Layer as LayerType,
-  Page as PageType,
-  Frame,
-  TextType,
-} from '@fuchsia/types'
-
-import Page from './Page'
-import TextLayer from './Text'
-import { useSelection, Selection } from '../../../../utils/hooks'
+import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
+import {
+  Component,
+  useUpdateComponentMutation,
+} from '../../../../generated/graphql'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
 interface LayerProps {
-  layer: LayerType
+  layer: Component
   selection?: Selection
   onSelect?: ClickHandler
 }
 
 interface InlineProps {
+  layer: Component
   selected: boolean
   onClick?: ClickHandler
 }
 
 interface FrameProps extends InlineProps {
-  layer: Frame
+  layer: Component
 }
 
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
@@ -39,6 +35,7 @@ const FrameWrapper = styled.div`
 
 const InlineWrapper = styled.div`
   pointer-events: all;
+  position: 'absolute';
 `
 
 const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
@@ -47,13 +44,59 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   selected,
   onClick,
 }) {
-  const { x, y, width, height } = layer
+  const { x, y, props } = layer
+  const jsonProps = JSON.parse(props || '{}')
+  console.log(`FrameLayer here for: ${layer._id}`)
+  const [updateComponent] = useUpdateComponentMutation()
+  const { ref } = useDragDrop(layer._id, {
+    draggable: {
+      onDragEnd: (id, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+            },
+          },
+        })
+      },
+    },
+    resizable: {
+      onResizeEnd: (id, { width, height }, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+              props: JSON.stringify({
+                ...jsonProps,
+                style: { width, height },
+              }),
+            },
+          },
+        })
+      },
+    },
+    droppable: {
+      dropClass: '#droppable',
+      onDrop: () => {},
+    },
+  })
 
   const styles: React.CSSProperties = {
-    width,
-    height,
-    left: x,
-    top: y,
+    width: 50,
+    height: 50,
+    left: x || 0,
+    top: y || 0,
+    pointerEvents: 'all',
+    position: 'absolute',
+  }
+
+  if (jsonProps.style) {
+    styles.width = jsonProps.style.width
+    styles.height = jsonProps.style.height
   }
 
   if (selected) {
@@ -61,27 +104,82 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   }
 
   return (
-    <FrameWrapper style={styles} onClick={onClick}>
+    <FrameWrapper
+      id={layer._id}
+      className="droppable"
+      style={styles}
+      ref={ref}
+      onClick={onClick}
+    >
       {children}
     </FrameWrapper>
   )
 }
 
-const InlineLayer: React.FC<InlineProps> = function InlineLayer({
+export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
+  layer,
   children,
   selected,
   onClick,
 }) {
-  const styles: React.CSSProperties = {}
-
+  const [updateComponent] = useUpdateComponentMutation()
+  const { ref } = useDragDrop(layer._id, {
+    draggable: {
+      onDragEnd: (id, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+            },
+          },
+        })
+      },
+    },
+    resizable: {
+      onResizeEnd: (id, { width, height }, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+              props: JSON.stringify({
+                ...jsonProps,
+                style: { width, height },
+              }),
+            },
+          },
+        })
+      },
+    },
+  })
+  const { x, y, props } = layer
+  const styles: React.CSSProperties = {
+    width: 50,
+    height: 50,
+    pointerEvents: 'all',
+  }
+  const jsonProps = JSON.parse(props || '{}')
+  if (jsonProps.style) {
+    styles.width = jsonProps.style.width
+    styles.height = jsonProps.style.height
+  }
   if (selected) {
     styles.boxShadow = BOX_SHADOW
   }
 
   return (
-    <InlineWrapper style={styles} onClick={onClick}>
+    <div
+      className="droppable"
+      id={layer._id}
+      ref={ref}
+      style={styles}
+      onClick={onClick}
+    >
       {children}
-    </InlineWrapper>
+    </div>
   )
 }
 
@@ -90,42 +188,34 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   selection,
   onSelect,
 }) {
-  const selected = !!selection?.includes(layer.id)
+  const selected = !!selection?.includes(layer._id)
 
-  switch (layer.layerType) {
-    case 'page':
-      return (
-        <FrameLayer
-          layer={layer as Frame}
-          selected={selected}
-          onClick={onSelect}
-        >
-          <Page layer={layer as PageType} />
-        </FrameLayer>
-      )
-    case 'text':
-      return (
-        <InlineLayer selected={selected} onClick={onSelect}>
-          <TextLayer layer={layer as TextType} />
-        </InlineLayer>
-      )
-    default:
-      // @ts-ignore
-      if (!window[layer.layerType]) {
-        return (
-          <InlineLayer selected={selected} onClick={onSelect}>
-            <div>Missing Bundle</div>
-          </InlineLayer>
-        )
-      }
-      // @ts-ignore
-      const InlineComponent = window[layer.layerType].components[layer.name]
-      return (
-        <InlineLayer selected={selected} onClick={onSelect}>
-          <InlineComponent title="Hello World" text="Hello World" />
-        </InlineLayer>
-      )
+  // @ts-ignore
+  if (!window[layer.package]) {
+    return (
+      <InlineLayer layer={layer} selected={selected} onClick={onSelect}>
+        <div>Missing Package</div>
+      </InlineLayer>
+    )
   }
+  // @ts-ignore
+  const InlineComponent = window[layer.package].components[layer.type]
+  const WrapperType = layer.parent ? InlineLayer : FrameLayer
+
+  const { props } = layer
+  const jsonProps = JSON.parse(props || '{}')
+  return (
+    <WrapperType layer={layer} selected={selected} onClick={onSelect}>
+      <InlineComponent
+        {...jsonProps}
+        style={{ ...jsonProps.style, width: '100%', height: '100%' }}
+      >
+        {layer.children?.map(child => (
+          <LayerSub layer={child} selection={selection} onSelect={onSelect} />
+        ))}
+      </InlineComponent>
+    </WrapperType>
+  )
 }
 
 const Layer: React.FC<LayerProps> = function Layer({ layer }) {
@@ -134,14 +224,13 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
   const handleSelect = useCallback<ClickHandler>(
     e => {
       if (e.shiftKey) {
-        setSelection(arrayXor(selection, layer.id))
-      } else if (!selection?.includes(layer.id)) {
-        setSelection([layer.id])
+        setSelection(arrayXor(selection, layer._id))
+      } else if (!selection?.includes(layer._id)) {
+        setSelection([layer._id])
       }
     },
-    [layer.id, selection, setSelection]
+    [layer._id, selection, setSelection]
   )
-
   return (
     <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
   )

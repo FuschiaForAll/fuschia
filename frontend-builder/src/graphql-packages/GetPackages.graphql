@@ -9,6 +9,8 @@ query GetPackages {
       _id
       name
       props
+      icon
+      isRootElement
     }
     authorId
     scope

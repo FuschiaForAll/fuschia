@@ -21,6 +21,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "graphql": "^15.0.0",
+    "interactjs": "^1.10.11",
     "live-plugin-manager": "^0.17.1",
     "path-browserify": "^1.0.1",
     "prettier": "^2.5.1",
@@ -67,6 +68,7 @@
     "@graphql-codegen/cli": "^2.6.1",
     "@graphql-codegen/typescript": "^2.4.3",
     "@graphql-codegen/typescript-operations": "^2.3.0",
-    "@graphql-codegen/typescript-react-apollo": "^3.2.6"
+    "@graphql-codegen/typescript-react-apollo": "^3.2.6",
+    "@interactjs/types": "^1.10.11"
   }
 }

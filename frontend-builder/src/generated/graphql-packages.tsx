@@ -20,11 +20,15 @@ export type Scalars = {
 export type Component = {
   __typename?: 'Component';
   _id: Scalars['ObjectId'];
+  icon: Scalars['String'];
+  isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
   props: Scalars['String'];
 };
 
 export type ComponentInput = {
+  icon: Scalars['String'];
+  isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
   props: Scalars['String'];
 };
@@ -52,7 +56,7 @@ export type Package = {
 };
 
 export type PackageInput = {
-  authorId: Scalars['String'];
+  authorId: Scalars['ObjectId'];
   bundle: Scalars['String'];
   components: Array<ComponentInput>;
   packageName: Scalars['String'];
@@ -77,7 +81,7 @@ export type Query = {
 export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, props: string }> }> };
+export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, props: string, icon: string, isRootElement: boolean }> }> };
 
 
 export const GetPackagesDocument = gql`
@@ -92,6 +96,8 @@ export const GetPackagesDocument = gql`
       _id
       name
       props
+      icon
+      isRootElement
     }
     authorId
     scope

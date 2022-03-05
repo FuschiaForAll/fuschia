@@ -40,13 +40,13 @@ const Sidebar: React.FC = function Sidebar() {
       <Inner>
         <Toolbar />
         <Paper elevation={12} sx={cardStyles}>
-          <Item onClick={() => navigate('database')}>
+          <Item title="Database" onClick={() => navigate('database')}>
             <Icon icon="database" />
           </Item>
-          <Item>
+          <Item title="Styles">
             <Icon icon="styles" />
           </Item>
-          <Item>
+          <Item title="Analytics">
             <Icon icon="analytics" />
           </Item>
         </Paper>
