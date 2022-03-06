@@ -19,6 +19,12 @@ export class ComponentInput {
   @Field({ nullable: true })
   props?: string;
 
+  @Field({ nullable: true })
+  isContainer!: boolean;
+
+  @Field({ nullable: true })
+  isRootElement!: boolean;
+
   @Field((type) => ObjectIdScalar, { nullable: true })
   parent!: ObjectId;
 

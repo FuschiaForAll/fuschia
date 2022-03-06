@@ -18,6 +18,10 @@ export class Component {
 
   @Field()
   @Property({ required: true })
+  isContainer!: boolean;
+
+  @Field()
+  @Property({ required: true })
   props!: String;
 
   @Field()

@@ -4,6 +4,8 @@ fragment ComponentFragment on Component {
   type
   x
   y
+  isContainer
+  isRootElement
   props
   parent {
     _id

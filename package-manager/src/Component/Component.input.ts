@@ -16,5 +16,8 @@ export class ComponentInput implements Partial<Component> {
   isRootElement!: boolean;
 
   @Field()
+  isContainer!: boolean;
+
+  @Field()
   icon!: String;
 }

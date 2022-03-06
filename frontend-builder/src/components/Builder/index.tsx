@@ -14,6 +14,8 @@ import Database from './Database'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
+import { useSelection } from '../../utils/hooks'
+import PropertyWindow from './Properties'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -31,7 +33,7 @@ const Builder: React.FC = function Builder() {
 
   const [canvasState, setCanvasState] =
     useState<CanvasState>(DEFAULT_CANVAS_STATE)
-
+  const { selection } = useSelection()
   const { data: projects } = useListProjectsQuery()
   const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
 
@@ -60,6 +62,7 @@ const Builder: React.FC = function Builder() {
             projectName={project.projectName}
           />
           <Sidebar />
+          <PropertyWindow />
         </div>
       </CanvasContext.Provider>
       <Routes>

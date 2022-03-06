@@ -7,13 +7,14 @@ import AppContext from './app-context'
 import CanvasContext, { DragParams } from './canvas-context'
 import { insertLayer, updateLayer, deleteLayer, getLocation } from './updating'
 import {
+  GetComponentsDocument,
   useCreateComponentMutation,
   useDeleteComponentsMutation,
   useUpdateComponentMutation,
 } from '../generated/graphql'
 import Layer from '../components/Builder/Canvas/Layer'
 import ReactDOM from 'react-dom'
-import { gql } from '@apollo/client'
+import { gql, useApolloClient } from '@apollo/client'
 
 export type Selection = string[] | undefined
 
@@ -94,36 +95,21 @@ export const useDragDrop = (
   id: string,
   options?: DragDropOptions
 ): DragResponse => {
-  const [updateComponent] = useUpdateComponentMutation()
   const { projectId } = useParams()
+  const [updateComponent] = useUpdateComponentMutation({
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
+  })
   const [createComponent] = useCreateComponentMutation({
-    update(cache, { data }) {
-      cache.modify({
-        fields: {
-          getComponents(existingComponents = []) {
-            const newComponentRef = cache.writeFragment({
-              data: data?.createComponent,
-              fragment: gql`
-                fragment ComponentFragment on Component {
-                  _id
-                  type
-                  x
-                  y
-                  props
-                  parent {
-                    _id
-                  }
-                  children {
-                    _id
-                  }
-                }
-              `,
-            })
-            return [...existingComponents, newComponentRef]
-          },
-        },
-      })
-    },
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
+  })
+  const [deleteComponents] = useDeleteComponentsMutation({
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
   })
   const ref = useRef<HTMLDivElement>(null)
   const { state: canvasState } = useContext(CanvasContext)
@@ -137,6 +123,9 @@ export const useDragDrop = (
           interaction
             .on('dragend', (event: InteractEvent) => {
               var target = event.target
+              if (target.classList.contains('deleted')) {
+                return
+              }
               const x =
                 (parseFloat(target.style.left) || 0) +
                   parseFloat(target.getAttribute('data-x')!) || 0
@@ -154,6 +143,21 @@ export const useDragDrop = (
               inertia: true,
               autoScroll: true,
               listeners: {
+                start: event => {
+                  const target = event.target
+                  if (event.target.classList.contains('root-element')) {
+                    return
+                  }
+                  target.parentElement.id = 'drag-and-drop-origin'
+                  document.getElementById('main-canvas')?.appendChild(target)
+                  var x = event.x0
+                  var y = event.y0
+                  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+                  target.setAttribute('data-x', x)
+                  target.setAttribute('data-y', y)
+                  target.style.left = 0
+                  target.style.top = 0
+                },
                 move: event => {
                   var target = event.target
                   var x =
@@ -251,31 +255,103 @@ export const useDragDrop = (
               event.relatedTarget.classList.remove('can-drop')
             },
             ondrop: function (event) {
+              event.relatedTarget.classList.remove('can-drop')
               const parentId = event.target.id
               // temp
               if (parentId === 'main-canvas') {
+                // if a non-root element is dropped on the main canvas, delete it
+                if (!event.relatedTarget.classList.contains('root-element')) {
+                  const parentdnd = document.getElementById(
+                    'drag-and-drop-origin'
+                  )
+                  if (parentdnd) {
+                    parentdnd.id = ''
+                    parentdnd.appendChild(event.relatedTarget)
+                  }
+                  event.relatedTarget.classList.add('deleted')
+                  if (event.relatedTarget.id !== 'new-element') {
+                    deleteComponents({
+                      variables: {
+                        projectId,
+                        componentIds: [event.relatedTarget.id],
+                      },
+                    })
+                  }
+                }
                 return
               }
               if (event.relatedTarget.id === 'new-element') {
                 // insert component
                 const layer = event.relatedTarget.dataset['layer']
-                debugger
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
+                  // calculate relative x and y
+                  const parentX = parseFloat(event.target.style.left) || 0
+                  const parentY = parseFloat(event.target.style.top) || 0
+                  const x =
+                    (parseFloat(event.relatedTarget.style.left) || 0) +
+                    (parseFloat(event.relatedTarget.getAttribute('data-x')!) ||
+                      0) -
+                    parentX
+                  const y =
+                    (parseFloat(event.relatedTarget.style.top) || 0) +
+                    (parseFloat(event.relatedTarget.getAttribute('data-y')!) ||
+                      0) -
+                    parentY
+                  event.relatedTarget.style.transform =
+                    'translate(' + 0 + 'px, ' + 0 + 'px)'
+                  event.relatedTarget.setAttribute('data-x', `${0}px`)
+                  event.relatedTarget.setAttribute('data-y', `${0}px`)
+                  event.relatedTarget.style.left = `${x}px`
+                  event.relatedTarget.style.top = `${y}px`
+
                   createComponent({
                     variables: {
                       projectId,
                       componentInput: {
+                        isRootElement: jsonLayer.isRootElement,
+                        isContainer: jsonLayer.isContainer,
                         package: jsonLayer.package,
                         type: jsonLayer.type,
                         parent: parentId,
                         props: jsonLayer.props,
+                        x,
+                        y,
                       },
                     },
                   })
                 }
               } else {
                 // update component
+                console.warn(
+                  `This will refetch the entire component tree, this is wickedly inefficient`
+                )
+                const parentdnd = document.getElementById(
+                  'drag-and-drop-origin'
+                )
+                if (parentdnd) {
+                  parentdnd.id = ''
+                  parentdnd.appendChild(event.relatedTarget)
+                }
+                // adjust to be relative to drop parent
+                const parentX = parseFloat(event.target.style.left) || 0
+                const parentY = parseFloat(event.target.style.top) || 0
+                const x =
+                  (parseFloat(event.relatedTarget.style.left) || 0) +
+                  (parseFloat(event.relatedTarget.getAttribute('data-x')!) ||
+                    0) -
+                  parentX
+                const y =
+                  (parseFloat(event.relatedTarget.style.top) || 0) +
+                  (parseFloat(event.relatedTarget.getAttribute('data-y')!) ||
+                    0) -
+                  parentY
+                event.relatedTarget.style.transform =
+                  'translate(' + 0 + 'px, ' + 0 + 'px)'
+                event.relatedTarget.setAttribute('data-x', `${0}px`)
+                event.relatedTarget.setAttribute('data-y', `${0}px`)
+                event.relatedTarget.style.left = `${x}px`
+                event.relatedTarget.style.top = `${y}px`
                 updateComponent({
                   variables: {
                     componentId: event.relatedTarget.id,
@@ -285,7 +361,6 @@ export const useDragDrop = (
                   },
                 })
               }
-              event.relatedTarget.classList.remove('can-drop')
             },
             ondropdeactivate: function (event) {
               // remove active dropzone feedback

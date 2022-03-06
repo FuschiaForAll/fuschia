@@ -87,6 +87,8 @@ export type Component = {
   __typename?: 'Component';
   _id: Scalars['ObjectId'];
   children?: Maybe<Array<Component>>;
+  isContainer: Scalars['Boolean'];
+  isRootElement: Scalars['Boolean'];
   package: Scalars['String'];
   parent?: Maybe<Component>;
   props?: Maybe<Scalars['String']>;
@@ -97,6 +99,8 @@ export type Component = {
 
 export type ComponentInput = {
   children?: InputMaybe<Array<Scalars['ObjectId']>>;
+  isContainer?: InputMaybe<Scalars['Boolean']>;
+  isRootElement?: InputMaybe<Scalars['Boolean']>;
   package?: InputMaybe<Scalars['String']>;
   parent?: InputMaybe<Scalars['ObjectId']>;
   props?: InputMaybe<Scalars['String']>;
@@ -583,7 +587,7 @@ export enum __TypeKind {
   NonNull = 'NON_NULL'
 }
 
-export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null };
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null };
 
 export type CreateComponentMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -591,7 +595,7 @@ export type CreateComponentMutationVariables = Exact<{
 }>;
 
 
-export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type DeleteComponentsMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -606,7 +610,7 @@ export type GetComponentsQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
 
 export type UpdateComponentMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -614,7 +618,7 @@ export type UpdateComponentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type CreateDataFieldMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -762,6 +766,8 @@ export const ComponentFragmentFragmentDoc = gql`
   type
   x
   y
+  isContainer
+  isRootElement
   props
   parent {
     _id

@@ -67,6 +67,8 @@ input AuthInput {
 type Component {
   _id: ObjectId!
   children: [Component!]
+  isContainer: Boolean!
+  isRootElement: Boolean!
   package: String!
   parent: Component
   props: String
@@ -77,6 +79,8 @@ type Component {
 
 input ComponentInput {
   children: [ObjectId!]
+  isContainer: Boolean
+  isRootElement: Boolean
   package: String
   parent: ObjectId
   props: String

@@ -6,6 +6,7 @@
 type Component {
   _id: ObjectId!
   icon: String!
+  isContainer: Boolean!
   isRootElement: Boolean!
   name: String!
   props: String!
@@ -13,6 +14,7 @@ type Component {
 
 input ComponentInput {
   icon: String!
+  isContainer: Boolean!
   isRootElement: Boolean!
   name: String!
   props: String!

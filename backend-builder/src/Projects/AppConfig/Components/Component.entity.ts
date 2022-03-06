@@ -31,6 +31,14 @@ export class Component {
   @Property()
   y?: number;
 
+  @Field()
+  @Property()
+  isContainer!: boolean;
+
+  @Field()
+  @Property()
+  isRootElement!: boolean;
+
   @Field({ nullable: true })
   @Property()
   props?: string;

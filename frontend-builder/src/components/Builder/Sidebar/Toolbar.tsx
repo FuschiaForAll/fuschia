@@ -91,6 +91,8 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
                   x
                   y
                   props
+                  isRootElement
+                  isContainer
                   parent {
                     _id
                   }
@@ -131,6 +133,8 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
                 componentInput: {
                   package: layer.package,
                   type: layer.type,
+                  isRootElement: layer.isRootElement,
+                  isContainer: layer.isContainer,
                   x,
                   y,
                   props: layer.props,
@@ -200,10 +204,9 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   }
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
-
   return (
     <div
-      className="droppable"
+      className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
       id="new-element"
       ref={ref}
       style={styles}
@@ -311,6 +314,7 @@ const Toolbar: React.FC = function Toolbar() {
               <Tool
                 key={component._id}
                 defaultLayer={{
+                  isContainer: component.isContainer,
                   isRootElement: component.isRootElement,
                   package: _package.packageName,
                   _id: '',
