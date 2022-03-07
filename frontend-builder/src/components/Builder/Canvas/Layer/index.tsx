@@ -7,7 +7,6 @@ import {
   Component,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
-import { locatedError } from 'graphql'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
@@ -32,11 +31,6 @@ const BOX_SHADOW = '0 0 0 2px var(--primary)'
 const FrameWrapper = styled.div`
   pointer-events: all;
   position: absolute;
-`
-
-const InlineWrapper = styled.div`
-  pointer-events: all;
-  position: 'absolute';
 `
 
 const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
@@ -276,7 +270,7 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
         setSelection([e.currentTarget.id])
       }
     },
-    [layer._id, selection, setSelection]
+    [selection, setSelection]
   )
   return (
     <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />

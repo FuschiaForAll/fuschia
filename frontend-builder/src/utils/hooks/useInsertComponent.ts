@@ -1,23 +1,36 @@
-import { useContext, useCallback } from 'react'
-import { Layer as LayerType } from '@fuchsia/types'
-import AppContext from '../app-context'
-import { insertLayer, updateLayer, getLocation } from '../updating'
+import { useCallback } from 'react'
 import { useSelection } from '../hooks/useSelection'
+import { useParams } from 'react-router-dom'
+import {
+  ComponentInput,
+  useCreateComponentMutation,
+  GetComponentsDocument,
+} from '../../generated/graphql'
 
-type InsertFunc = (id: string, value: LayerType, insertAfter?: boolean) => void
+type InsertFunc = (value: ComponentInput) => void
 
-export const useInsert = (): InsertFunc => {
-  const { body, setBody } = useContext(AppContext)
+export const useInsertComponent = (): InsertFunc => {
+  const { projectId } = useParams()
+  const [createComponent] = useCreateComponentMutation({
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
+  })
   const { setSelection } = useSelection()
 
   const insertFunc = useCallback<InsertFunc>(
-    (id, value, insertAfter = false) => {
-      const location = getLocation(body, id)
-      const result = insertLayer(body, location, value, insertAfter)
-      setBody(result)
-      setSelection([value.id])
+    async componentInput => {
+      const newComponent = await createComponent({
+        variables: {
+          projectId,
+          componentInput,
+        },
+      })
+      if (newComponent.data) {
+        setSelection([newComponent.data.createComponent._id])
+      }
     },
-    [body, setBody, setSelection]
+    [createComponent, projectId, setSelection]
   )
 
   return insertFunc

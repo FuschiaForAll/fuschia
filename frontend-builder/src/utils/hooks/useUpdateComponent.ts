@@ -1,20 +1,31 @@
-import { useContext, useCallback } from 'react'
-import { updateLayer, getLocation } from '../updating'
-import { Layer as LayerType } from '@fuchsia/types'
-import AppContext from '../app-context'
+import { useCallback } from 'react'
+import { useParams } from 'react-router-dom'
+import {
+  ComponentInput,
+  GetComponentsDocument,
+  useUpdateComponentMutation,
+} from '../../generated/graphql'
 
-type UpdateFunc = (id: string, value: LayerType) => void
+type UpdateFunc = (id: string, value: ComponentInput) => void
 
 export const useUpdateComponent = (): UpdateFunc => {
-  const { body, setBody } = useContext(AppContext)
+  const { projectId } = useParams()
+  const [updateComponent] = useUpdateComponentMutation({
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
+  })
 
   const updateFunc = useCallback<UpdateFunc>(
     (id, value) => {
-      const location = getLocation(body, id)
-      const result = updateLayer(body, location, value)
-      setBody(result)
+      updateComponent({
+        variables: {
+          componentId: id,
+          componentInput: value,
+        },
+      })
     },
-    [body, setBody]
+    [updateComponent]
   )
 
   return updateFunc

@@ -1,14 +1,11 @@
-import React, { useContext, useRef, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 import interact from 'interactjs'
-import { Interactable, InteractEvent } from '@interactjs/types'
+import { Interactable, InteractEvent, Element } from '@interactjs/types'
 import { useParams } from 'react-router-dom'
-import CanvasContext, { DragParams } from '../canvas-context'
-import {
-  GetComponentsDocument,
-  useCreateComponentMutation,
-  useDeleteComponentsMutation,
-  useUpdateComponentMutation,
-} from '../../generated/graphql'
+import { DragParams } from '../canvas-context'
+import { useDeleteComponents } from './useDeleteComponents'
+import { useUpdateComponent } from './useUpdateComponent'
+import { useInsertComponent } from './useInsertComponent'
 
 interface DragResponse extends DragParams {
   ref: React.RefObject<HTMLDivElement>
@@ -32,28 +29,37 @@ interface DragDropOptions {
   }
 }
 
+function updateAttribues(target: Element, x: number, y: number) {
+  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+  target.setAttribute('data-x', `${x}`)
+  target.setAttribute('data-y', `${y}`)
+}
+
+function updatePosition(target: Element, left: number, top: number) {
+  target.style.left = `${left}px`
+  target.style.top = `${top}px`
+}
+
+function getDataAttributes(target: Element) {
+  return [
+    parseFloat(target.getAttribute('data-x')!) || 0,
+    parseFloat(target.getAttribute('data-y')!) || 0,
+  ]
+}
+
+function getPosition(target: Element) {
+  return [parseFloat(target.style.left) || 0, parseFloat(target.style.top) || 0]
+}
+
 export const useDragDrop = (
   id: string,
   options?: DragDropOptions
 ): DragResponse => {
   const { projectId } = useParams()
-  const [updateComponent] = useUpdateComponentMutation({
-    refetchQueries: [
-      { query: GetComponentsDocument, variables: { projectId } },
-    ],
-  })
-  const [createComponent] = useCreateComponentMutation({
-    refetchQueries: [
-      { query: GetComponentsDocument, variables: { projectId } },
-    ],
-  })
-  const [deleteComponents] = useDeleteComponentsMutation({
-    refetchQueries: [
-      { query: GetComponentsDocument, variables: { projectId } },
-    ],
-  })
+  const createComponent = useInsertComponent()
+  const deleteComponents = useDeleteComponents()
+  const updateComponent = useUpdateComponent()
   const ref = useRef<HTMLDivElement>(null)
-  const { state: canvasState } = useContext(CanvasContext)
   useEffect(() => {
     let interaction: Interactable
     if (ref.current) {
@@ -67,18 +73,10 @@ export const useDragDrop = (
               if (target.classList.contains('deleted')) {
                 return
               }
-              const x =
-                (parseFloat(target.style.left) || 0) +
-                  parseFloat(target.getAttribute('data-x')!) || 0
-              const y =
-                (parseFloat(target.style.top) || 0) +
-                  parseFloat(target.getAttribute('data-y')!) || 0
-              target.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)'
-              target.setAttribute('data-x', '0px')
-              target.setAttribute('data-y', '0px')
-              target.style.left = `${x}px`
-              target.style.top = `${y}px`
-              draggable.onDragEnd(id, { x, y })
+              const [x, y] = getDataAttributes(target)
+              const [left, top] = getPosition(target)
+              updatePosition(target, x + left, y + top)
+              updateComponent(id, { x, y })
             })
             .draggable({
               inertia: true,
@@ -86,28 +84,19 @@ export const useDragDrop = (
               listeners: {
                 start: event => {
                   const target = event.target
+                  updateAttribues(target, 0, 0)
                   if (event.target.classList.contains('root-element')) {
                     return
                   }
                   target.parentElement.id = 'drag-and-drop-origin'
                   document.getElementById('main-canvas')?.appendChild(target)
-                  var x = event.x0
-                  var y = event.y0
-                  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-                  target.setAttribute('data-x', x)
-                  target.setAttribute('data-y', y)
+                  updateAttribues(target, event.x0, event.y0)
                   target.style.left = 0
                   target.style.top = 0
                 },
                 move: event => {
-                  var target = event.target
-                  var x =
-                    (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
-                  var y =
-                    (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-                  target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-                  target.setAttribute('data-x', x)
-                  target.setAttribute('data-y', y)
+                  const [x, y] = getDataAttributes(event.target)
+                  updateAttribues(event.target, x + event.dx, y + event.dy)
                 },
               },
             })
@@ -116,17 +105,10 @@ export const useDragDrop = (
           interaction
             .on('resizeend', (event: InteractEvent) => {
               var target = event.target
-              const x =
-                (parseFloat(target.style.left) || 0) +
-                  parseFloat(target.getAttribute('data-x')!) || 0
-              const y =
-                (parseFloat(target.style.top) || 0) +
-                  parseFloat(target.getAttribute('data-y')!) || 0
-              target.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)'
-              target.setAttribute('data-x', '0px')
-              target.setAttribute('data-y', '0px')
-              target.style.left = `${x}px`
-              target.style.top = `${y}px`
+              const [x, y] = getDataAttributes(target)
+              const [left, top] = getPosition(target)
+              updateAttribues(target, 0, 0)
+              updatePosition(target, x + left, y + top)
               resizable.onResizeEnd(
                 id,
                 { width: target.style.width, height: target.style.height },
@@ -139,8 +121,7 @@ export const useDragDrop = (
               listeners: {
                 move(event) {
                   var target = event.target
-                  var x = parseFloat(target.getAttribute('data-x')) || 0
-                  var y = parseFloat(target.getAttribute('data-y')) || 0
+                  let [x, y] = getDataAttributes(target)
 
                   // update the element's style
                   target.style.width = event.rect.width + 'px'
@@ -150,10 +131,7 @@ export const useDragDrop = (
                   x += event.deltaRect.left
                   y += event.deltaRect.top
 
-                  target.style.transform = 'translate(' + x + 'px,' + y + 'px)'
-
-                  target.setAttribute('data-x', x)
-                  target.setAttribute('data-y', y)
+                  updateAttribues(target, x, y)
                 },
               },
               modifiers: [
@@ -211,12 +189,7 @@ export const useDragDrop = (
                   }
                   event.relatedTarget.classList.add('deleted')
                   if (event.relatedTarget.id !== 'new-element') {
-                    deleteComponents({
-                      variables: {
-                        projectId,
-                        componentIds: [event.relatedTarget.id],
-                      },
-                    })
+                    deleteComponents(event.relatedTarget.id)
                   }
                 }
                 return
@@ -226,40 +199,26 @@ export const useDragDrop = (
                 const layer = event.relatedTarget.dataset['layer']
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
-                  // calculate relative x and y
-                  const parentX = parseFloat(event.target.style.left) || 0
-                  const parentY = parseFloat(event.target.style.top) || 0
-                  const x =
-                    (parseFloat(event.relatedTarget.style.left) || 0) +
-                    (parseFloat(event.relatedTarget.getAttribute('data-x')!) ||
-                      0) -
-                    parentX
-                  const y =
-                    (parseFloat(event.relatedTarget.style.top) || 0) +
-                    (parseFloat(event.relatedTarget.getAttribute('data-y')!) ||
-                      0) -
-                    parentY
-                  event.relatedTarget.style.transform =
-                    'translate(' + 0 + 'px, ' + 0 + 'px)'
-                  event.relatedTarget.setAttribute('data-x', `${0}px`)
-                  event.relatedTarget.setAttribute('data-y', `${0}px`)
-                  event.relatedTarget.style.left = `${x}px`
-                  event.relatedTarget.style.top = `${y}px`
 
+                  const [parentX, parentY] = getPosition(event.target)
+                  const [x, y] = getDataAttributes(event.relatedTarget)
+                  const [left, top] = getPosition(event.relatedTarget)
+
+                  updateAttribues(event.relatedTarget, 0, 0)
+                  updatePosition(
+                    event.relatedTarget,
+                    x + left - parentX,
+                    y + top - parentY
+                  )
                   createComponent({
-                    variables: {
-                      projectId,
-                      componentInput: {
-                        isRootElement: jsonLayer.isRootElement,
-                        isContainer: jsonLayer.isContainer,
-                        package: jsonLayer.package,
-                        type: jsonLayer.type,
-                        parent: parentId,
-                        props: jsonLayer.props,
-                        x,
-                        y,
-                      },
-                    },
+                    isRootElement: jsonLayer.isRootElement,
+                    isContainer: jsonLayer.isContainer,
+                    package: jsonLayer.package,
+                    type: jsonLayer.type,
+                    parent: parentId,
+                    props: jsonLayer.props,
+                    x,
+                    y,
                   })
                 }
               } else {
@@ -275,31 +234,16 @@ export const useDragDrop = (
                   parentdnd.appendChild(event.relatedTarget)
                 }
                 // adjust to be relative to drop parent
-                const parentX = parseFloat(event.target.style.left) || 0
-                const parentY = parseFloat(event.target.style.top) || 0
-                const x =
-                  (parseFloat(event.relatedTarget.style.left) || 0) +
-                  (parseFloat(event.relatedTarget.getAttribute('data-x')!) ||
-                    0) -
-                  parentX
-                const y =
-                  (parseFloat(event.relatedTarget.style.top) || 0) +
-                  (parseFloat(event.relatedTarget.getAttribute('data-y')!) ||
-                    0) -
-                  parentY
-                event.relatedTarget.style.transform =
-                  'translate(' + 0 + 'px, ' + 0 + 'px)'
-                event.relatedTarget.setAttribute('data-x', `${0}px`)
-                event.relatedTarget.setAttribute('data-y', `${0}px`)
-                event.relatedTarget.style.left = `${x}px`
-                event.relatedTarget.style.top = `${y}px`
-                updateComponent({
-                  variables: {
-                    componentId: event.relatedTarget.id,
-                    componentInput: {
-                      parent: parentId,
-                    },
-                  },
+                const [parentX, parentY] = getPosition(event.target)
+                const [x, y] = getDataAttributes(event.relatedTarget)
+                const [left, top] = getPosition(event.relatedTarget)
+                updatePosition(
+                  event.relatedTarget,
+                  x + left - parentX,
+                  y + top - parentY
+                )
+                updateComponent(event.relatedTarget.id, {
+                  parent: parentId,
                 })
               }
             },
@@ -321,15 +265,7 @@ export const useDragDrop = (
     projectId,
     updateComponent,
   ])
-  const { dragActive, dragPosition, dragLayer, dropTarget, dropInside } =
-    canvasState
-
   return {
-    dragActive,
-    dragPosition,
-    dragLayer,
-    dropTarget,
-    dropInside,
     ref,
   }
 }
