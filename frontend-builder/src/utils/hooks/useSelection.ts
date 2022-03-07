@@ -1,5 +1,6 @@
-import { useContext, useCallback } from 'react'
-import CanvasContext from '../canvas-context'
+import { gql, useQuery } from '@apollo/client'
+import { useCallback } from 'react'
+import { selectionVar } from '../../apolloClient'
 
 export type Selection = string[] | undefined
 
@@ -8,18 +9,18 @@ interface SelectionResponse {
   setSelection: (selection?: string[]) => void
 }
 
+const selectionQuery = gql`
+  query getSelection {
+    selection @client
+  }
+`
+
 export const useSelection = (): SelectionResponse => {
-  const { state: canvasState, onChange } = useContext(CanvasContext)
-  const { selection } = canvasState
+  const { data: selectionData } = useQuery(selectionQuery)
+  const setSelection = useCallback(selection => {
+    const newSelection = selection?.length === 0 ? undefined : selection
+    selectionVar(newSelection)
+  }, [])
 
-  const setSelection = useCallback(
-    selection => {
-      const newSelection = selection?.length === 0 ? undefined : selection
-
-      onChange({ ...canvasState, selection: newSelection })
-    },
-    [canvasState, onChange]
-  )
-
-  return { selection, setSelection }
+  return { selection: selectionData?.selection, setSelection }
 }

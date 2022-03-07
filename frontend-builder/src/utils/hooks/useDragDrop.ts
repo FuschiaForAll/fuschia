@@ -2,12 +2,11 @@ import React, { useRef, useEffect } from 'react'
 import interact from 'interactjs'
 import { Interactable, InteractEvent, Element } from '@interactjs/types'
 import { useParams } from 'react-router-dom'
-import { DragParams } from '../canvas-context'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
 
-interface DragResponse extends DragParams {
+interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
 }
 

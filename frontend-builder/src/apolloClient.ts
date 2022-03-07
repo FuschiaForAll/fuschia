@@ -10,6 +10,8 @@ export const currentProjectIdVar = makeVar(
   localStorage.getItem('currentProjectId')
 )
 
+export const selectionVar = makeVar<string[]>([])
+
 const httpLink = createHttpLink({
   uri: 'https://localhost:4003/graphql',
   credentials: 'include',
@@ -29,6 +31,11 @@ const cache = new InMemoryCache({
         currentProjectId: {
           read() {
             return currentProjectIdVar()
+          },
+        },
+        selection: {
+          read() {
+            return selectionVar()
           },
         },
       },
