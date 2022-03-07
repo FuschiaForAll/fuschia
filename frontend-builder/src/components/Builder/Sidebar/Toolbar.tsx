@@ -1,28 +1,16 @@
-import React, {
-  useState,
-  useCallback,
-  useEffect,
-  useContext,
-  useRef,
-} from 'react'
-import shortUUID from 'short-uuid'
-import styled from '@emotion/styled'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Paper from '@mui/material/Paper'
 import AppsIcon from '@mui/icons-material/Apps'
 import ImageIcon from '@mui/icons-material/Image'
 import { useParams } from 'react-router-dom'
-import AppContext from '../../../utils/app-context'
-import CanvasContext from '../../../utils/canvas-context'
 import Icon from '../../Shared/Icon'
 import Item from './Item'
-import Layer from '../Canvas/Layer'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 import {
   Component,
   useCreateComponentMutation,
 } from '../../../generated/graphql'
 import { gql } from '@apollo/client'
-import { useDragDrop } from '../../../utils/hooks'
 import interact from 'interactjs'
 import { Interactable, InteractEvent } from '@interactjs/types'
 import * as MaterialIcons from '@mui/icons-material'
@@ -41,25 +29,6 @@ interface DragItemProps {
   onDragEnd: () => void
 }
 
-const DragContainer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  pointer-events: none;
-`
-
-const DragLayer = styled.div`
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: -150px;
-  margin-top: -150px;
-`
-
 const cardStyles = {
   padding: '0.5rem 0',
   margin: '1rem 0',
@@ -77,6 +46,8 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
 }) {
   const ref = useRef<HTMLDivElement>(null)
   const { projectId } = useParams()
+  const { props } = layer
+  const jsonProps = JSON.parse(props || '{}')
   const [createComponent] = useCreateComponentMutation({
     update(cache, { data }) {
       cache.modify({
@@ -181,9 +152,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
         })
     }
     return () => interaction.unset()
-  }, [createComponent, layer, projectId, onDragEnd])
-
-  const { props } = layer
+  }, [createComponent, jsonProps, layer, projectId, onDragEnd])
 
   const styles: React.CSSProperties = {
     width: 50,
@@ -191,7 +160,6 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     pointerEvents: 'all',
     position: 'fixed',
   }
-  const jsonProps = JSON.parse(props || '{}')
   if (jsonProps.style) {
     styles.width = jsonProps.style.width
     styles.height = jsonProps.style.height
@@ -248,31 +216,6 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   )
 
   const handleDragEnd = useCallback(() => {
-    // if (drag?.position) {
-    //   let [x, y] = drag.position
-    //   const id = shortUUID.generate()
-    //   const { props } = defaultLayer
-    //   const jsonProps = JSON.parse(props || '{}')
-    //   x -= parseFloat(jsonProps.style.width || '0') / 2
-    //   y -= parseFloat(jsonProps.style.height || '0') / 2
-    //   createComponent({
-    //     variables: {
-    //       projectId,
-    //       componentInput: {
-    //         package: defaultLayer.package,
-    //         type: defaultLayer.type,
-    //         x,
-    //         y,
-    //         props,
-    //       },
-    //     },
-    //   })
-
-    //   setCanvasState({
-    //     ...canvasState,
-    //     selection: [id],
-    //   })
-    // }
     setDragActive(false)
   }, [])
 
@@ -304,9 +247,6 @@ const Toolbar: React.FC = function Toolbar() {
       <Item title="Something">
         <AppsIcon />
       </Item>
-      {/* <Tool defaultLayer={TEXT}>
-        <FormatColorTextIcon />
-      </Tool> */}
       {packageData &&
         packageData.getPackages.flatMap(_package => {
           return _package.components.map(component => {
@@ -344,9 +284,6 @@ const Toolbar: React.FC = function Toolbar() {
       <Item title="input">
         <Icon icon="input" />
       </Item>
-      {/* <Tool defaultLayer={PAGE}>
-        <Crop32Icon />
-      </Tool> */}
     </Paper>
   )
 }
