@@ -75,7 +75,7 @@ export const useDragDrop = (
               const [x, y] = getDataAttributes(target)
               const [left, top] = getPosition(target)
               updatePosition(target, x + left, y + top)
-              updateComponent(id, { x, y })
+              updateComponent(id, { x: x + left, y: y + top })
             })
             .draggable({
               inertia: true,
@@ -111,7 +111,7 @@ export const useDragDrop = (
               resizable.onResizeEnd(
                 id,
                 { width: target.style.width, height: target.style.height },
-                { x, y }
+                { x: x + left, y: y + top }
               )
             })
             .resizable({
@@ -173,6 +173,7 @@ export const useDragDrop = (
               event.relatedTarget.classList.remove('can-drop')
             },
             ondrop: function (event) {
+              debugger
               event.relatedTarget.classList.remove('can-drop')
               const parentId = event.target.id
               // temp
@@ -190,6 +191,12 @@ export const useDragDrop = (
                   if (event.relatedTarget.id !== 'new-element') {
                     deleteComponents(event.relatedTarget.id)
                   }
+                } else {
+                  // it is a root element, update location
+                  const [x, y] = getDataAttributes(event.relatedTarget)
+                  const [left, top] = getPosition(event.relatedTarget)
+                  updateAttribues(event.relatedTarget, 0, 0)
+                  updatePosition(event.relatedTarget, x + left, y + top)
                 }
                 return
               }
@@ -202,13 +209,10 @@ export const useDragDrop = (
                   const [parentX, parentY] = getPosition(event.target)
                   const [x, y] = getDataAttributes(event.relatedTarget)
                   const [left, top] = getPosition(event.relatedTarget)
-
+                  const newX = x + left - parentX
+                  const newY = y + top - parentY
                   updateAttribues(event.relatedTarget, 0, 0)
-                  updatePosition(
-                    event.relatedTarget,
-                    x + left - parentX,
-                    y + top - parentY
-                  )
+                  updatePosition(event.relatedTarget, newX, newY)
                   createComponent({
                     isRootElement: jsonLayer.isRootElement,
                     isContainer: jsonLayer.isContainer,
@@ -216,15 +220,11 @@ export const useDragDrop = (
                     type: jsonLayer.type,
                     parent: parentId,
                     props: jsonLayer.props,
-                    x,
-                    y,
+                    x: newX,
+                    y: newY,
                   })
                 }
               } else {
-                // update component
-                console.warn(
-                  `This will refetch the entire component tree, this is wickedly inefficient`
-                )
                 const parentdnd = document.getElementById(
                   'drag-and-drop-origin'
                 )
@@ -241,6 +241,7 @@ export const useDragDrop = (
                   x + left - parentX,
                   y + top - parentY
                 )
+                updateAttribues(event.relatedTarget, 0, 0)
                 updateComponent(event.relatedTarget.id, {
                   parent: parentId,
                 })
