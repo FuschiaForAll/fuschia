@@ -1,4 +1,4 @@
-import type { AppBody, Layer } from '@fuchsia/types'
+import type { AppBody, LayerType } from '@fuchsia/types'
 
 export type Location = number[]
 export type OptionalLocation = Location | undefined
@@ -10,7 +10,10 @@ export const getLocation = (body: AppBody, id: string): OptionalLocation => {
 }
 
 // Recursive function
-const getLocationSub = (layers: Array<Layer>, id: string): OptionalLocation => {
+const getLocationSub = (
+  layers: Array<LayerType>,
+  id: string
+): OptionalLocation => {
   for (let i = 0; i < layers.length; i += 1) {
     const layer = layers[i]
 
@@ -30,7 +33,7 @@ const getLocationSub = (layers: Array<Layer>, id: string): OptionalLocation => {
 export const updateLayer = (
   body: AppBody,
   location: OptionalLocation,
-  value: Layer
+  value: LayerType
 ): AppBody => {
   if (!location) return body
 
@@ -41,14 +44,14 @@ export const updateLayer = (
 }
 
 const updateSub = (
-  layers: Layer[],
+  layers: LayerType[],
   location: Location,
-  value: Layer
-): Layer[] => {
+  value: LayerType
+): LayerType[] => {
   const result = layers.slice()
   const index = location[0]
 
-  let newValue: Layer | undefined
+  let newValue: LayerType | undefined
 
   if (location.length === 0) {
     return layers
@@ -81,7 +84,7 @@ export const deleteLayer = (
   }
 }
 
-const deleteSub = (layers: Layer[], location: Location): Layer[] => {
+const deleteSub = (layers: LayerType[], location: Location): LayerType[] => {
   const result = layers.slice()
   const index = location[0]
 
@@ -107,7 +110,7 @@ const deleteSub = (layers: Layer[], location: Location): Layer[] => {
 export const insertLayer = (
   body: AppBody,
   location: OptionalLocation,
-  value: Layer,
+  value: LayerType,
   insertAfter: boolean = false
 ): AppBody => {
   if (!location) return body
@@ -119,11 +122,11 @@ export const insertLayer = (
 }
 
 const insertSub = (
-  layers: Layer[],
+  layers: LayerType[],
   location: Location,
-  value: Layer,
+  value: LayerType,
   insertAfter: boolean
-): Layer[] => {
+): LayerType[] => {
   const result = layers.slice()
   const index = location[0]
 

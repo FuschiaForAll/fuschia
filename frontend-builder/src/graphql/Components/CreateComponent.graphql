@@ -1,0 +1,12 @@
+#import "./Component.fragment.graphql"
+mutation CreateComponent(
+  $projectId: ObjectId!
+  $componentInput: ComponentInput!
+) {
+  createComponent(projectId: $projectId, componentInput: $componentInput) {
+    ...ComponentFragment
+    children {
+      ...ComponentFragment
+    }
+  }
+}

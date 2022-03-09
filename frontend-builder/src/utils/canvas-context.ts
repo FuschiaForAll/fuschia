@@ -1,12 +1,12 @@
 import { createContext } from 'react'
-import { Layer } from '@fuchsia/types'
+import { LayerType } from '@fuchsia/types'
 
 export type Position = [x: number, y: number]
 
 export interface DragParams {
   dragActive?: boolean
   dragPosition?: Position
-  dragLayer?: string | Layer // id or new layer
+  dragLayer?: string | LayerType // id or new layer
   dropTarget?: string // ID of layer
   dropInside?: boolean // Drop before or inside
 }

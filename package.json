@@ -1,4 +1,13 @@
 {
   "private": true,
-  "workspaces": ["backend-builder", "frontend-builder", "backend-runner", "types"]
+  "scripts": {
+    "start": "(cd frontend-builder && yarn start) & (cd backend-builder && yarn start) & (cd package-manager && yarn start);"
+  },
+  "workspaces": [
+    "backend-builder",
+    "frontend-builder",
+    "backend-runner",
+    "types",
+    "package-manager"
+  ]
 }

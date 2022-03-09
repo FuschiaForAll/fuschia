@@ -1,73 +1,33 @@
-import React, { useState, useCallback, useEffect, useContext } from 'react'
-import shortUUID from 'short-uuid'
-import styled from '@emotion/styled'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Paper from '@mui/material/Paper'
 import AppsIcon from '@mui/icons-material/Apps'
-import Crop32Icon from '@mui/icons-material/Crop32'
-import FormatColorTextIcon from '@mui/icons-material/FormatColorText'
 import ImageIcon from '@mui/icons-material/Image'
-import type { Layer as LayerType, Page, TextType } from '@fuchsia/types'
-
-import AppContext from '../../../utils/app-context'
-import CanvasContext from '../../../utils/canvas-context'
+import { useParams } from 'react-router-dom'
 import Icon from '../../Shared/Icon'
 import Item from './Item'
-import Layer from '../Canvas/Layer'
-
+import { useGetPackagesQuery } from '../../../generated/graphql-packages'
+import {
+  Component,
+  useCreateComponentMutation,
+} from '../../../generated/graphql'
+import { gql } from '@apollo/client'
+import interact from 'interactjs'
+import { Interactable, InteractEvent } from '@interactjs/types'
+import * as MaterialIcons from '@mui/icons-material'
 interface ToolProps {
-  defaultLayer: LayerType
+  defaultLayer: Component & { isRootElement: boolean }
 }
 
 interface DragEvent {
-  position: [number, number] | null
+  position: [number, number]
 }
 
 interface DragItemProps {
   drag: DragEvent
-  layer: LayerType
+  layer: Component & { isRootElement: boolean }
   onDrag: (evt: MouseEvent) => void
-  onDragEnd: (evt: MouseEvent) => void
+  onDragEnd: () => void
 }
-
-const PAGE: Page = {
-  id: '',
-  type: 'layer',
-  layerType: 'page',
-  name: 'Screen 1',
-  x: 0,
-  y: 0,
-  width: 375,
-  height: 667,
-}
-
-const TEXT: TextType = {
-  id: '',
-  type: 'layer',
-  layerType: 'text',
-  name: '',
-  options: {
-    text: 'Enter Text',
-  },
-}
-
-const DragContainer = styled.div`
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 2;
-  pointer-events: none;
-`
-
-const DragLayer = styled.div`
-  position: absolute;
-  width: 300px;
-  height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-left: -150px;
-  margin-top: -150px;
-`
 
 const cardStyles = {
   padding: '0.5rem 0',
@@ -79,63 +39,170 @@ const cardStyles = {
 }
 
 const DragItem: React.FC<DragItemProps> = function DragItem({
-  drag,
   layer,
+  drag,
   onDrag,
   onDragEnd,
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+  const { projectId } = useParams()
+  const { props } = layer
+  const jsonProps = JSON.parse(props || '{}')
+  const [createComponent] = useCreateComponentMutation({
+    update(cache, { data }) {
+      cache.modify({
+        fields: {
+          getComponents(existingComponents = []) {
+            const newComponentRef = cache.writeFragment({
+              data: data?.createComponent,
+              fragment: gql`
+                fragment ComponentFragment on Component {
+                  _id
+                  type
+                  x
+                  y
+                  props
+                  isRootElement
+                  isContainer
+                  parent {
+                    _id
+                  }
+                  children {
+                    _id
+                  }
+                }
+              `,
+            })
+            return [...existingComponents, newComponentRef]
+          },
+        },
+      })
+    },
+  })
   useEffect(() => {
-    document.body.addEventListener('mousemove', onDrag)
+    let interaction: Interactable
+    if (ref.current) {
+      interaction = interact(ref.current)
+      interaction
+        .on('dragend', async (event: InteractEvent) => {
+          if (layer.isRootElement) {
+            var target = event.target
+            let x =
+              (parseFloat(target.style.left) || 0) +
+                parseFloat(target.getAttribute('data-x')!) || 0
+            let y =
+              (parseFloat(target.style.top) || 0) +
+                parseFloat(target.getAttribute('data-y')!) || 0
+            target.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)'
+            target.setAttribute('data-x', '0px')
+            target.setAttribute('data-y', '0px')
+            target.style.left = `${x}px`
+            target.style.top = `${y}px`
+            await createComponent({
+              variables: {
+                projectId,
+                componentInput: {
+                  package: layer.package,
+                  type: layer.type,
+                  isRootElement: layer.isRootElement,
+                  isContainer: layer.isContainer,
+                  x,
+                  y,
+                  props: layer.props,
+                },
+              },
+            })
+          }
+          onDragEnd()
+        })
+        .on('move', (event: InteractEvent) => {
+          var interaction = event.interaction
+          if (!interaction.interacting()) {
+            const x = event.x0 + parseFloat(jsonProps.style.width || '0') / 2
+            const y = event.y0 + parseFloat(jsonProps.style.height || '0') / 2
 
-    return () => document.body.removeEventListener('mousemove', onDrag)
-  }, [onDrag])
+            event.target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+            event.target.setAttribute('data-x', `${x}`)
+            event.target.setAttribute('data-y', `${y}`)
+            interaction.start(
+              { name: 'drag' },
+              event.interactable,
+              event.currentTarget
+            )
+          }
+        })
+        .draggable({
+          manualStart: true,
+          inertia: true,
+          modifiers: [],
+          autoScroll: true,
+          listeners: {
+            start: event => {
+              document.getElementById('drag-holder')?.appendChild(event.target)
+            },
+            move: event => {
+              var target = event.target
+              var x =
+                (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
+              var y =
+                (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
 
-  useEffect(() => {
-    document.body.addEventListener('mouseup', onDragEnd)
+              target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
+              target.setAttribute('data-x', x)
+              target.setAttribute('data-y', y)
+            },
+          },
+        })
+    }
+    return () => interaction.unset()
+  }, [createComponent, jsonProps, layer, projectId, onDragEnd])
 
-    return () => document.body.removeEventListener('mouseup', onDragEnd)
-  }, [onDragEnd])
-
-  if (!drag.position) {
-    return null
+  const styles: React.CSSProperties = {
+    width: 50,
+    height: 50,
+    pointerEvents: 'all',
+    position: 'fixed',
   }
-
-  const [x, y] = drag.position
-
-  const styles: React.CSSProperties = { left: x, top: y }
-
-  if (layer.layerType === 'page') {
-    const { width, height } = layer as Page
-
-    styles.width = width
-    styles.height = height
-    styles.marginLeft = -width / 2
-    styles.marginTop = -height / 2
+  if (jsonProps.style) {
+    styles.width = jsonProps.style.width
+    styles.height = jsonProps.style.height
+    styles.left = `${
+      drag.position[0] - parseFloat(jsonProps.style.width || '0') / 2
+    }px`
+    styles.top = `${
+      drag.position[1] - parseFloat(jsonProps.style.height || '0') / 2
+    }px`
   }
-
+  // @ts-ignore
+  const InlineComponent = window[layer.package].components[layer.type]
   return (
-    <DragContainer>
-      <DragLayer style={styles}>
-        <Layer layer={layer} />
-      </DragLayer>
-    </DragContainer>
+    <div
+      className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
+      id="new-element"
+      ref={ref}
+      style={styles}
+      data-layer={JSON.stringify(layer)}
+    >
+      <InlineComponent
+        {...jsonProps}
+        style={{ ...jsonProps.style, width: '100%', height: '100%' }}
+      />
+    </div>
   )
 }
 
 const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   const [dragActive, setDragActive] = useState<boolean>(false)
-  const [drag, setDrag] = useState<DragEvent | null>(null)
+  const [drag, setDrag] = useState<DragEvent>({ position: [0, 0] })
   const dragging = !!drag && dragActive
 
-  const startDrag = useCallback(() => {
-    setDrag({ position: null })
-    setDragActive(true)
-  }, [])
-
-  const { body, setBody } = useContext(AppContext)
-
-  const { onChange: setCanvasState, state: canvasState } =
-    useContext(CanvasContext)
+  const startDrag = useCallback(
+    (event: React.MouseEvent<HTMLButtonElement>) => {
+      setDrag({ position: [event.clientX, event.clientY] })
+      setDragActive(true)
+    },
+    []
+  )
 
   const handleDrag = useCallback(
     (evt: MouseEvent) => {
@@ -152,37 +219,15 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   )
 
   const handleDragEnd = useCallback(() => {
-    if (drag?.position) {
-      let [x, y] = drag.position
-      const id = shortUUID.generate()
-
-      if (defaultLayer.layerType === 'page') {
-        const { width, height } = defaultLayer as Page
-
-        x -= width / 2
-        y -= height / 2
-      }
-
-      setBody({
-        ...body,
-        objects: body.objects.concat([
-          { ...defaultLayer, id, x, y } as LayerType,
-        ]),
-      })
-
-      setCanvasState({
-        ...canvasState,
-        selection: [id],
-      })
-    }
-
     setDragActive(false)
-  }, [drag, body, setBody, defaultLayer, canvasState, setCanvasState])
+  }, [])
 
   return (
     <>
-      <Item onDrag={startDrag}>{children}</Item>
-      {dragging && (
+      <Item title={defaultLayer.type} onDrag={startDrag}>
+        <>{children}</>
+      </Item>
+      {dragActive && (
         <DragItem
           drag={drag}
           layer={defaultLayer}
@@ -195,29 +240,53 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
 }
 
 const Toolbar: React.FC = function Toolbar() {
+  const { data: packageData } = useGetPackagesQuery({
+    context: {
+      clientName: 'package-manager',
+    },
+  })
   return (
     <Paper elevation={12} sx={cardStyles}>
-      <Item>
+      <Item title="Something">
         <AppsIcon />
       </Item>
-      <Tool defaultLayer={TEXT}>
-        <FormatColorTextIcon />
-      </Tool>
-      <Item>
+      {packageData &&
+        packageData.getPackages.flatMap(_package => {
+          return _package.components.map(component => {
+            return (
+              <Tool
+                key={component._id}
+                defaultLayer={{
+                  isContainer: component.isContainer,
+                  isRootElement: component.isRootElement,
+                  package: _package.packageName,
+                  _id: '',
+                  type: component.name,
+                  props: component.props,
+                }}
+              >
+                {/* @ts-ignore */}
+                {MaterialIcons[component.icon] &&
+                  // @ts-ignore
+                  React.createElement(MaterialIcons[component.icon], {
+                    color: 'primary',
+                  })}
+              </Tool>
+            )
+          })
+        })}
+      <Item title="image">
         <ImageIcon />
       </Item>
-      <Item>
+      <Item title="shapes">
         <Icon icon="shapes" />
       </Item>
-      <Item>
+      <Item title="expandRight">
         <Icon icon="expandRight" />
       </Item>
-      <Item>
+      <Item title="input">
         <Icon icon="input" />
       </Item>
-      <Tool defaultLayer={PAGE}>
-        <Crop32Icon />
-      </Tool>
     </Paper>
   )
 }

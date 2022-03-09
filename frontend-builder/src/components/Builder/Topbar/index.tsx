@@ -125,25 +125,6 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           <MenuItem value={'editingMode'}>Editing Mode</MenuItem>
         </Select>
         <Button variant="contained">Preview</Button>
-        <Box>
-          {/* {projects && (
-            <Select
-              sx={{ width: 150 }}
-              value={selectedProject}
-              onChange={e => {
-                const proj = e.target.value as string
-                setSelectedProject(proj)
-                localStorage.setItem('currentProjectId', proj)
-              }}
-            >
-              {projects.map(project => (
-                <MenuItem key={project._id} value={project._id}>
-                  {project.projectName}
-                </MenuItem>
-              ))}
-            </Select>
-          )} */}
-        </Box>
         <Paper
           elevation={12}
           sx={{

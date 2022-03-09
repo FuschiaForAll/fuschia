@@ -1,0 +1,3 @@
+mutation DeleteComponents($projectId: ObjectId!, $componentIds: [ObjectId!]!) {
+  deleteComponents(projectId: $projectId, componentIds: $componentIds)
+}

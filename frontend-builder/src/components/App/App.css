@@ -45,3 +45,11 @@ body {
   background-color: var(--accent);
   color: var(--white);
 }
+
+.drop-active {
+  border: var(--accent) dashed 1px;
+}
+
+.drop-target {
+  border: var(--accent) solid 1px;
+}

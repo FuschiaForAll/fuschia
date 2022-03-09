@@ -1,23 +1,23 @@
 import React, { useEffect, useCallback } from 'react'
-import { useDelete, useSelection } from '../../../utils/hooks'
+import { useDeleteComponents, useSelection } from '../../../utils/hooks'
 
-const DELETE = 8
+const DELETE = 'Delete'
+const BACKSPACE = 'Backspace'
 
 const KeyboardEvents: React.FC = function KeyboardEvents() {
-  const { selection } = useSelection()
-  const deleteLayers = useDelete()
+  const { selection, setSelection } = useSelection()
+  const deleteLayers = useDeleteComponents()
 
   const handleDelete = useCallback(() => {
     if (!selection) return
-
     deleteLayers(...selection)
-  }, [selection, deleteLayers])
+    setSelection([])
+  }, [selection, deleteLayers, setSelection])
 
   const keyDown = useCallback(
     (e: KeyboardEvent) => {
-      const key = e.which
-
-      if (key === DELETE) {
+      const key = e.key
+      if (key === DELETE || key === BACKSPACE) {
         handleDelete()
       }
     },

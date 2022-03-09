@@ -64,6 +64,31 @@ input AuthInput {
   usernameFieldId: String
 }
 
+type Component {
+  _id: ObjectId!
+  children: [Component!]
+  isContainer: Boolean!
+  isRootElement: Boolean!
+  package: String!
+  parent: Component
+  props: String
+  type: String!
+  x: Float
+  y: Float
+}
+
+input ComponentInput {
+  children: [ObjectId!]
+  isContainer: Boolean
+  isRootElement: Boolean
+  package: String
+  parent: ObjectId
+  props: String
+  type: String
+  x: Float
+  y: Float
+}
+
 type DataAuth {
   allow: String!
   groupClaim: String!
@@ -121,6 +146,7 @@ type Key {
 }
 
 type Mutation {
+  createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
   createMutation: Boolean
@@ -130,6 +156,7 @@ type Mutation {
   createRelationship: Boolean
   createSubscription: Boolean
   createUser(user: UserInput!): User!
+  deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteMutations: Boolean
@@ -143,6 +170,7 @@ type Mutation {
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   register(email: String!, password: String!): UserResponse!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
+  updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateEntityModel: Boolean
   updateMutation: Boolean
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
@@ -171,6 +199,7 @@ type Project {
   appConfig: AppConfig!
   appId: String!
   body: String
+  components: [Component!]!
   organization: Organization!
   projectName: String!
 }
@@ -183,6 +212,7 @@ input ProjectInput {
 
 type Query {
   getAuth(projectId: ObjectId!): Auth
+  getComponents(projectId: ObjectId!): [Component!]!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean

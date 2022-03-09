@@ -1,5 +1,5 @@
 export interface AppBody {
-  objects: Array<Layer>
+  objects: Array<LayerType>
 }
 
 export interface BaseObject {
@@ -8,13 +8,13 @@ export interface BaseObject {
   children?: Array<BaseObject>
 }
 
-export interface Layer extends BaseObject {
+export interface LayerType extends BaseObject {
   name: string
   layerType: string
-  children?: Array<Layer>
+  children?: Array<LayerType>
 }
 
-export interface Frame extends Layer {
+export interface Frame extends LayerType {
   x: number
   y: number
   width: number
@@ -29,7 +29,7 @@ export interface Component extends Frame {
   layerType: 'component'
 }
 
-export interface InlineLayer extends Layer {
+export interface InlineLayer extends LayerType {
   options: any
 }
 
