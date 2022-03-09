@@ -88,14 +88,35 @@ export const useDragDrop = (
                     return
                   }
                   target.parentElement.id = 'drag-and-drop-origin'
-                  document.getElementById('main-canvas')?.appendChild(target)
-                  updateAttribues(target, event.x0, event.y0)
+                  document.getElementById('drag-holder')?.appendChild(target)
+                  const z = parseFloat(
+                    document
+                      .getElementById('objectCollection')
+                      ?.getAttribute('data-z') || '1'
+                  )
+                  const [canvasX, canvasY] = getDataAttributes(
+                    document.getElementById('objectCollection')!
+                  )
+                  updateAttribues(
+                    target,
+                    (event.x0 - canvasX) / z,
+                    (event.y0 - canvasY) / z
+                  )
                   target.style.left = 0
                   target.style.top = 0
                 },
                 move: event => {
                   const [x, y] = getDataAttributes(event.target)
-                  updateAttribues(event.target, x + event.dx, y + event.dy)
+                  const z = parseFloat(
+                    document
+                      .getElementById('objectCollection')
+                      ?.getAttribute('data-z') || '1'
+                  )
+                  updateAttribues(
+                    event.target,
+                    x + event.dx / z,
+                    y + event.dy / z
+                  )
                 },
               },
             })
@@ -122,22 +143,23 @@ export const useDragDrop = (
                   var target = event.target
                   let [x, y] = getDataAttributes(target)
 
+                  const z = parseFloat(
+                    document
+                      .getElementById('objectCollection')
+                      ?.getAttribute('data-z') || '1'
+                  )
                   // update the element's style
-                  target.style.width = event.rect.width + 'px'
-                  target.style.height = event.rect.height + 'px'
+                  target.style.width = event.rect.width / z + 'px'
+                  target.style.height = event.rect.height / z + 'px'
 
                   // translate when resizing from top or left edges
-                  x += event.deltaRect.left
-                  y += event.deltaRect.top
+                  x += event.deltaRect.left / z
+                  y += event.deltaRect.top / z
 
                   updateAttribues(target, x, y)
                 },
               },
               modifiers: [
-                interact.modifiers.restrictEdges({
-                  outer: 'parent',
-                }),
-
                 interact.modifiers.restrictSize({
                   min: { width: 100, height: 50 },
                 }),
@@ -160,24 +182,16 @@ export const useDragDrop = (
               event.target.classList.add('drop-active')
             },
             ondragenter: function (event) {
-              var draggableElement = event.relatedTarget
               var dropzoneElement = event.target
-
-              // feedback the possibility of a drop
               dropzoneElement.classList.add('drop-target')
-              draggableElement.classList.add('can-drop')
             },
             ondragleave: function (event) {
-              // remove the drop feedback style
               event.target.classList.remove('drop-target')
-              event.relatedTarget.classList.remove('can-drop')
             },
             ondrop: function (event) {
-              debugger
-              event.relatedTarget.classList.remove('can-drop')
               const parentId = event.target.id
               // temp
-              if (parentId === 'main-canvas') {
+              if (parentId === 'drag-holder') {
                 // if a non-root element is dropped on the main canvas, delete it
                 if (!event.relatedTarget.classList.contains('root-element')) {
                   const parentdnd = document.getElementById(

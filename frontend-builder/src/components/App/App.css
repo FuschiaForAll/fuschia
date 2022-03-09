@@ -51,9 +51,5 @@ body {
 }
 
 .drop-target {
-  border: var(--attention) solid 2px;
-}
-
-.can-drop {
-  box-shadow: 2px 2px 4px 0 var(--accent);
+  border: var(--accent) solid 1px;
 }

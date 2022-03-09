@@ -9,6 +9,7 @@ import {
 export const currentProjectIdVar = makeVar(
   localStorage.getItem('currentProjectId')
 )
+export const scaleFactorVar = makeVar(localStorage.getItem('scaleFactor'))
 
 export const selectionVar = makeVar<string[]>([])
 
@@ -31,6 +32,11 @@ const cache = new InMemoryCache({
         currentProjectId: {
           read() {
             return currentProjectIdVar()
+          },
+        },
+        scaleFactor: {
+          read() {
+            return scaleFactorVar()
           },
         },
         selection: {

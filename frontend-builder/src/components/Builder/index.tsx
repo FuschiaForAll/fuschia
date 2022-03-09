@@ -10,6 +10,7 @@ import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
 import PropertyWindow from './Properties'
+import Scalebar from './Scalebar'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -50,6 +51,7 @@ const Builder: React.FC = function Builder() {
           projectName={project.projectName}
         />
         <Sidebar />
+        <Scalebar />
         <PropertyWindow />
       </div>
       <Routes>

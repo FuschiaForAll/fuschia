@@ -137,6 +137,9 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
           modifiers: [],
           autoScroll: true,
           listeners: {
+            start: event => {
+              document.getElementById('drag-holder')?.appendChild(event.target)
+            },
             move: event => {
               var target = event.target
               var x =
