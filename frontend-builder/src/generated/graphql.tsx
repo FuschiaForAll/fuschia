@@ -165,17 +165,47 @@ export type Key = {
   name: Scalars['String'];
 };
 
+export type LabelLibrary = {
+  __typename?: 'LabelLibrary';
+  labelTags: Array<LabelTag>;
+  languages: Array<Language>;
+  translations: Array<LanguageTranslation>;
+};
+
+export type LabelTag = {
+  __typename?: 'LabelTag';
+  _id: Scalars['ObjectId'];
+  name: Scalars['String'];
+  numberOfStates: Scalars['Float'];
+};
+
+export type Language = {
+  __typename?: 'Language';
+  _id: Scalars['ObjectId'];
+  code: Scalars['String'];
+  name: Scalars['String'];
+};
+
+export type LanguageTranslation = {
+  __typename?: 'LanguageTranslation';
+  language: Scalars['ObjectId'];
+  translations: Array<Translation>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   createComponent: Component;
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
+  createLabelTag: Project;
+  createLanguage: Project;
   createMutation?: Maybe<Scalars['Boolean']>;
   createOrganization: Organization;
   createProject: Project;
   createQuery?: Maybe<Scalars['Boolean']>;
   createRelationship?: Maybe<Scalars['Boolean']>;
   createSubscription?: Maybe<Scalars['Boolean']>;
+  createTranslation: Project;
   createUser: User;
   deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
@@ -198,6 +228,7 @@ export type Mutation = {
   updateQuery?: Maybe<Scalars['Boolean']>;
   updateRelationship?: Maybe<Scalars['Boolean']>;
   updateSubscription?: Maybe<Scalars['Boolean']>;
+  updateTranslation: Project;
 };
 
 
@@ -220,6 +251,20 @@ export type MutationCreateEntityModelArgs = {
 };
 
 
+export type MutationCreateLabelTagArgs = {
+  numberOfStates: Scalars['Int'];
+  projectId: Scalars['ObjectId'];
+  tagName: Scalars['String'];
+};
+
+
+export type MutationCreateLanguageArgs = {
+  languageCode: Scalars['String'];
+  languageName: Scalars['String'];
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type MutationCreateOrganizationArgs = {
   organization: OrganizationInput;
 };
@@ -227,6 +272,14 @@ export type MutationCreateOrganizationArgs = {
 
 export type MutationCreateProjectArgs = {
   project: ProjectInput;
+};
+
+
+export type MutationCreateTranslationArgs = {
+  languageId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+  tagId: Scalars['ObjectId'];
+  translations: Array<Scalars['String']>;
 };
 
 
@@ -299,6 +352,14 @@ export type MutationUpdateProjectArgs = {
   projectId: Scalars['ObjectId'];
 };
 
+
+export type MutationUpdateTranslationArgs = {
+  languageId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+  tagId: Scalars['ObjectId'];
+  translations: Array<Scalars['String']>;
+};
+
 export type Organization = {
   __typename?: 'Organization';
   _id: Scalars['ObjectId'];
@@ -319,6 +380,7 @@ export type Project = {
   appId: Scalars['String'];
   body?: Maybe<Scalars['String']>;
   components: Array<Component>;
+  labelLibrary: LabelLibrary;
   organization: Organization;
   projectName: Scalars['String'];
 };
@@ -333,6 +395,7 @@ export type Query = {
   __typename?: 'Query';
   getAuth?: Maybe<Auth>;
   getComponents: Array<Component>;
+  getLabelLibrary?: Maybe<LabelLibrary>;
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
   listEntityModel?: Maybe<Scalars['Boolean']>;
@@ -361,6 +424,11 @@ export type QueryGetComponentsArgs = {
 };
 
 
+export type QueryGetLabelLibraryArgs = {
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type QueryGetProjectArgs = {
   projectId: Scalars['ObjectId'];
 };
@@ -369,6 +437,12 @@ export type QueryGetProjectArgs = {
 export type QueryGetServerStatusArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+};
+
+export type Translation = {
+  __typename?: 'Translation';
+  tag: Scalars['ObjectId'];
+  value: Array<Scalars['String']>;
 };
 
 export type UpdateProjectInput = {
@@ -664,6 +738,51 @@ export type IntrospectionQueryQueryVariables = Exact<{ [key: string]: never; }>;
 export type IntrospectionQueryQuery = { __typename?: 'Query', __schema: { __typename?: '__Schema', queryType: { __typename?: '__Type', name?: string | null }, mutationType?: { __typename?: '__Type', name?: string | null } | null, subscriptionType?: { __typename?: '__Type', name?: string | null } | null, types: Array<{ __typename?: '__Type', kind: __TypeKind, name?: string | null, fields?: Array<{ __typename?: '__Field', name: string, isDeprecated: boolean, deprecationReason?: string | null, args: Array<{ __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }>, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }> | null, inputFields?: Array<{ __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }> | null, interfaces?: Array<{ __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null }> | null, enumValues?: Array<{ __typename?: '__EnumValue', name: string, isDeprecated: boolean, deprecationReason?: string | null }> | null, possibleTypes?: Array<{ __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null }> | null }>, directives: Array<{ __typename?: '__Directive', name: string, locations: Array<__DirectiveLocation>, args: Array<{ __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }> }> } };
 
 export type TypeRefFragment = { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null };
+
+export type CreateLabelTagMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  tagName: Scalars['String'];
+  numberOfStates: Scalars['Int'];
+}>;
+
+
+export type CreateLabelTagMutation = { __typename?: 'Mutation', createLabelTag: { __typename?: 'Project', _id: any } };
+
+export type CreateLangaugeMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  languageName: Scalars['String'];
+  languageCode: Scalars['String'];
+}>;
+
+
+export type CreateLangaugeMutation = { __typename?: 'Mutation', createLanguage: { __typename?: 'Project', _id: any } };
+
+export type CreateTranslationMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  languageId: Scalars['ObjectId'];
+  tagId: Scalars['ObjectId'];
+  translations: Array<Scalars['String']> | Scalars['String'];
+}>;
+
+
+export type CreateTranslationMutation = { __typename?: 'Mutation', createTranslation: { __typename?: 'Project', _id: any } };
+
+export type GetLabelLibraryQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type GetLabelLibraryQuery = { __typename?: 'Query', getLabelLibrary?: { __typename?: 'LabelLibrary', languages: Array<{ __typename?: 'Language', _id: any, name: string, code: string }>, translations: Array<{ __typename?: 'LanguageTranslation', language: any, translations: Array<{ __typename?: 'Translation', tag: any, value: Array<string> }> }>, labelTags: Array<{ __typename?: 'LabelTag', _id: any, name: string, numberOfStates: number }> } | null };
+
+export type UpdateTranslationMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  languageId: Scalars['ObjectId'];
+  tagId: Scalars['ObjectId'];
+  translations: Array<Scalars['String']> | Scalars['String'];
+}>;
+
+
+export type UpdateTranslationMutation = { __typename?: 'Mutation', updateTranslation: { __typename?: 'Project', _id: any } };
 
 export type CreateOrganizationMutationVariables = Exact<{
   organization: OrganizationInput;
@@ -1253,6 +1372,217 @@ export function useIntrospectionQueryLazyQuery(baseOptions?: Apollo.LazyQueryHoo
 export type IntrospectionQueryQueryHookResult = ReturnType<typeof useIntrospectionQueryQuery>;
 export type IntrospectionQueryLazyQueryHookResult = ReturnType<typeof useIntrospectionQueryLazyQuery>;
 export type IntrospectionQueryQueryResult = Apollo.QueryResult<IntrospectionQueryQuery, IntrospectionQueryQueryVariables>;
+export const CreateLabelTagDocument = gql`
+    mutation CreateLabelTag($projectId: ObjectId!, $tagName: String!, $numberOfStates: Int!) {
+  createLabelTag(
+    projectId: $projectId
+    tagName: $tagName
+    numberOfStates: $numberOfStates
+  ) {
+    _id
+  }
+}
+    `;
+export type CreateLabelTagMutationFn = Apollo.MutationFunction<CreateLabelTagMutation, CreateLabelTagMutationVariables>;
+
+/**
+ * __useCreateLabelTagMutation__
+ *
+ * To run a mutation, you first call `useCreateLabelTagMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateLabelTagMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createLabelTagMutation, { data, loading, error }] = useCreateLabelTagMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      tagName: // value for 'tagName'
+ *      numberOfStates: // value for 'numberOfStates'
+ *   },
+ * });
+ */
+export function useCreateLabelTagMutation(baseOptions?: Apollo.MutationHookOptions<CreateLabelTagMutation, CreateLabelTagMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateLabelTagMutation, CreateLabelTagMutationVariables>(CreateLabelTagDocument, options);
+      }
+export type CreateLabelTagMutationHookResult = ReturnType<typeof useCreateLabelTagMutation>;
+export type CreateLabelTagMutationResult = Apollo.MutationResult<CreateLabelTagMutation>;
+export type CreateLabelTagMutationOptions = Apollo.BaseMutationOptions<CreateLabelTagMutation, CreateLabelTagMutationVariables>;
+export const CreateLangaugeDocument = gql`
+    mutation CreateLangauge($projectId: ObjectId!, $languageName: String!, $languageCode: String!) {
+  createLanguage(
+    projectId: $projectId
+    languageName: $languageName
+    languageCode: $languageCode
+  ) {
+    _id
+  }
+}
+    `;
+export type CreateLangaugeMutationFn = Apollo.MutationFunction<CreateLangaugeMutation, CreateLangaugeMutationVariables>;
+
+/**
+ * __useCreateLangaugeMutation__
+ *
+ * To run a mutation, you first call `useCreateLangaugeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateLangaugeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createLangaugeMutation, { data, loading, error }] = useCreateLangaugeMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      languageName: // value for 'languageName'
+ *      languageCode: // value for 'languageCode'
+ *   },
+ * });
+ */
+export function useCreateLangaugeMutation(baseOptions?: Apollo.MutationHookOptions<CreateLangaugeMutation, CreateLangaugeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateLangaugeMutation, CreateLangaugeMutationVariables>(CreateLangaugeDocument, options);
+      }
+export type CreateLangaugeMutationHookResult = ReturnType<typeof useCreateLangaugeMutation>;
+export type CreateLangaugeMutationResult = Apollo.MutationResult<CreateLangaugeMutation>;
+export type CreateLangaugeMutationOptions = Apollo.BaseMutationOptions<CreateLangaugeMutation, CreateLangaugeMutationVariables>;
+export const CreateTranslationDocument = gql`
+    mutation CreateTranslation($projectId: ObjectId!, $languageId: ObjectId!, $tagId: ObjectId!, $translations: [String!]!) {
+  createTranslation(
+    projectId: $projectId
+    languageId: $languageId
+    tagId: $tagId
+    translations: $translations
+  ) {
+    _id
+  }
+}
+    `;
+export type CreateTranslationMutationFn = Apollo.MutationFunction<CreateTranslationMutation, CreateTranslationMutationVariables>;
+
+/**
+ * __useCreateTranslationMutation__
+ *
+ * To run a mutation, you first call `useCreateTranslationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateTranslationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createTranslationMutation, { data, loading, error }] = useCreateTranslationMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      languageId: // value for 'languageId'
+ *      tagId: // value for 'tagId'
+ *      translations: // value for 'translations'
+ *   },
+ * });
+ */
+export function useCreateTranslationMutation(baseOptions?: Apollo.MutationHookOptions<CreateTranslationMutation, CreateTranslationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateTranslationMutation, CreateTranslationMutationVariables>(CreateTranslationDocument, options);
+      }
+export type CreateTranslationMutationHookResult = ReturnType<typeof useCreateTranslationMutation>;
+export type CreateTranslationMutationResult = Apollo.MutationResult<CreateTranslationMutation>;
+export type CreateTranslationMutationOptions = Apollo.BaseMutationOptions<CreateTranslationMutation, CreateTranslationMutationVariables>;
+export const GetLabelLibraryDocument = gql`
+    query GetLabelLibrary($projectId: ObjectId!) {
+  getLabelLibrary(projectId: $projectId) {
+    languages {
+      _id
+      name
+      code
+    }
+    translations {
+      language
+      translations {
+        tag
+        value
+      }
+    }
+    labelTags {
+      _id
+      name
+      numberOfStates
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetLabelLibraryQuery__
+ *
+ * To run a query within a React component, call `useGetLabelLibraryQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetLabelLibraryQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetLabelLibraryQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useGetLabelLibraryQuery(baseOptions: Apollo.QueryHookOptions<GetLabelLibraryQuery, GetLabelLibraryQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetLabelLibraryQuery, GetLabelLibraryQueryVariables>(GetLabelLibraryDocument, options);
+      }
+export function useGetLabelLibraryLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetLabelLibraryQuery, GetLabelLibraryQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetLabelLibraryQuery, GetLabelLibraryQueryVariables>(GetLabelLibraryDocument, options);
+        }
+export type GetLabelLibraryQueryHookResult = ReturnType<typeof useGetLabelLibraryQuery>;
+export type GetLabelLibraryLazyQueryHookResult = ReturnType<typeof useGetLabelLibraryLazyQuery>;
+export type GetLabelLibraryQueryResult = Apollo.QueryResult<GetLabelLibraryQuery, GetLabelLibraryQueryVariables>;
+export const UpdateTranslationDocument = gql`
+    mutation UpdateTranslation($projectId: ObjectId!, $languageId: ObjectId!, $tagId: ObjectId!, $translations: [String!]!) {
+  updateTranslation(
+    projectId: $projectId
+    languageId: $languageId
+    tagId: $tagId
+    translations: $translations
+  ) {
+    _id
+  }
+}
+    `;
+export type UpdateTranslationMutationFn = Apollo.MutationFunction<UpdateTranslationMutation, UpdateTranslationMutationVariables>;
+
+/**
+ * __useUpdateTranslationMutation__
+ *
+ * To run a mutation, you first call `useUpdateTranslationMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateTranslationMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateTranslationMutation, { data, loading, error }] = useUpdateTranslationMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      languageId: // value for 'languageId'
+ *      tagId: // value for 'tagId'
+ *      translations: // value for 'translations'
+ *   },
+ * });
+ */
+export function useUpdateTranslationMutation(baseOptions?: Apollo.MutationHookOptions<UpdateTranslationMutation, UpdateTranslationMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateTranslationMutation, UpdateTranslationMutationVariables>(UpdateTranslationDocument, options);
+      }
+export type UpdateTranslationMutationHookResult = ReturnType<typeof useUpdateTranslationMutation>;
+export type UpdateTranslationMutationResult = Apollo.MutationResult<UpdateTranslationMutation>;
+export type UpdateTranslationMutationOptions = Apollo.BaseMutationOptions<UpdateTranslationMutation, UpdateTranslationMutationVariables>;
 export const CreateOrganizationDocument = gql`
     mutation CreateOrganization($organization: OrganizationInput!) {
   createOrganization(organization: $organization) {

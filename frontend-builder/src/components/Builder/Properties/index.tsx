@@ -3,11 +3,13 @@ import React, { useEffect, useState } from 'react'
 import { useSelection } from '../../../utils/hooks'
 import Paper from '@mui/material/Paper'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
+import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
+import Editor from './Editors/Editor'
 
 const Wrapper = styled.div`
   position: fixed;
   top: 0;
-  right: 2rem;
+  left: 2rem;
   height: 100%;
   pointer-events: none;
   display: flex;
@@ -17,11 +19,13 @@ const Wrapper = styled.div`
 
 const Inner = styled.div`
   width: 250px;
-  max-height: 100%;
+  height: 100%;
   padding-top: calc(56px + 1rem);
+  padding-bottom: calc(56px + 1rem);
 `
 
 const cardStyles = {
+  height: '100%',
   padding: '0.5rem 0',
   margin: '1rem 0',
   display: 'flex',
@@ -43,8 +47,9 @@ function Property(props: any) {
         </fieldset>
       ) : (
         <div>
-          <span>{name}</span>
-          <input
+          <LabeledTextInput
+            label={name}
+            type="text"
             defaultValue={prop}
             onChange={e => {
               const element = document.getElementById(props.elementId)
@@ -61,18 +66,29 @@ function Property(props: any) {
 
 function Properties(props: { properties?: string; elementId: string }) {
   const objectProps = JSON.parse(props.properties || '{}')
+  function getReference(name: string) {
+    return undefined
+  }
   return (
-    <div>
-      {Object.keys(objectProps).map(prop => (
-        <Property
-          elementId={props.elementId}
-          name={prop}
-          prop={objectProps[prop]}
-          key={prop}
-        />
-      ))}
-    </div>
+    <Editor
+      initialValue={{}}
+      updateValue={(value, isValid) => {}}
+      getReference={getReference}
+      schema={objectProps}
+    />
   )
+  // return (
+  //   <div>
+  //     {Object.keys(objectProps).map(prop => (
+  //       <Property
+  //         elementId={props.elementId}
+  //         name={prop}
+  //         prop={objectProps[prop]}
+  //         key={prop}
+  //       />
+  //     ))}
+  //   </div>
+  // )
 }
 
 const PropertyWindow: React.FC = function PropertyWindow() {

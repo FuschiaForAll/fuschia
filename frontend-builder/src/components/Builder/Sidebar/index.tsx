@@ -2,7 +2,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import Icon from '../../Shared/Icon'
-
+import LabelIcon from '@mui/icons-material/Label'
 import { useNavigate } from 'react-router-dom'
 import Item from './Item'
 import Toolbar from './Toolbar'
@@ -42,6 +42,9 @@ const Sidebar: React.FC = function Sidebar() {
         <Paper elevation={12} sx={cardStyles}>
           <Item title="Database" onClick={() => navigate('database')}>
             <Icon icon="database" />
+          </Item>
+          <Item title="Label Library" onClick={() => navigate('label-library')}>
+            <LabelIcon />
           </Item>
           <Item title="Styles">
             <Icon icon="styles" />

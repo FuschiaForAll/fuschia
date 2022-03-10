@@ -7,6 +7,7 @@ import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
 import { v4 as uuid } from "uuid";
 import { Component } from "./AppConfig/Components/Component.entity";
+import { LabelLibrary } from "./AppConfig/Libraries/LabelLibrary/LabelLibrary.entity";
 
 @ObjectType()
 export class Project {
@@ -36,4 +37,8 @@ export class Project {
   @Field((type) => [Component])
   @Property({ ref: () => Component, default: [] })
   components!: Ref<Component>[];
+
+  @Field((type) => LabelLibrary)
+  @Property({ type: () => LabelLibrary })
+  labelLibrary?: LabelLibrary;
 }

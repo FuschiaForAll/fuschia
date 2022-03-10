@@ -1,9 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import Paper from '@mui/material/Paper'
-import AppsIcon from '@mui/icons-material/Apps'
-import ImageIcon from '@mui/icons-material/Image'
 import { useParams } from 'react-router-dom'
-import Icon from '../../Shared/Icon'
 import Item from './Item'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 import {
@@ -247,9 +244,6 @@ const Toolbar: React.FC = function Toolbar() {
   })
   return (
     <Paper elevation={12} sx={cardStyles}>
-      <Item title="Something">
-        <AppsIcon />
-      </Item>
       {packageData &&
         packageData.getPackages.flatMap(_package => {
           return _package.components.map(component => {
@@ -275,18 +269,6 @@ const Toolbar: React.FC = function Toolbar() {
             )
           })
         })}
-      <Item title="image">
-        <ImageIcon />
-      </Item>
-      <Item title="shapes">
-        <Icon icon="shapes" />
-      </Item>
-      <Item title="expandRight">
-        <Icon icon="expandRight" />
-      </Item>
-      <Item title="input">
-        <Icon icon="input" />
-      </Item>
     </Paper>
   )
 }

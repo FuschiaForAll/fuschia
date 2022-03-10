@@ -1,0 +1,13 @@
+mutation CreateLabelTag(
+  $projectId: ObjectId!
+  $tagName: String!
+  $numberOfStates: Int!
+) {
+  createLabelTag(
+    projectId: $projectId
+    tagName: $tagName
+    numberOfStates: $numberOfStates
+  ) {
+    _id
+  }
+}
