@@ -1,16 +1,10 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback } from 'react'
 import Paper from '@mui/material/Paper'
-import { useParams } from 'react-router-dom'
 import Item from './Item'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import {
-  Component,
-  useCreateComponentMutation,
-} from '../../../generated/graphql'
-import { gql } from '@apollo/client'
-import interact from 'interactjs'
-import { Interactable, InteractEvent } from '@interactjs/types'
+import { Component } from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
+import { useDragDrop } from '../../../utils/hooks'
 interface ToolProps {
   defaultLayer: Component & { isRootElement: boolean }
 }
@@ -41,105 +35,13 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   onDrag,
   onDragEnd,
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const { projectId } = useParams()
   const { props } = layer
   const jsonProps = JSON.parse(props || '{}')
-  const [createComponent] = useCreateComponentMutation({
-    update(cache, { data }) {
-      cache.modify({
-        fields: {
-          getComponents(existingComponents = []) {
-            const newComponentRef = cache.writeFragment({
-              data: data?.createComponent,
-              fragment: gql`
-                fragment ComponentFragment on Component {
-                  _id
-                  type
-                  x
-                  y
-                  props
-                  isRootElement
-                  isContainer
-                  parent {
-                    _id
-                  }
-                  children {
-                    _id
-                  }
-                }
-              `,
-            })
-            return [...existingComponents, newComponentRef]
-          },
-        },
-      })
+  const { ref } = useDragDrop('new-element', {
+    draggable: {
+      onDragEnd,
     },
   })
-  useEffect(() => {
-    let interaction: Interactable
-    if (ref.current) {
-      interaction = interact(ref.current)
-      interaction
-        .on('dragend', async (event: InteractEvent) => {
-          if (layer.isRootElement) {
-            var target = event.target
-            let x =
-              (parseFloat(target.style.left) || 0) +
-                parseFloat(target.getAttribute('data-x')!) || 0
-            let y =
-              (parseFloat(target.style.top) || 0) +
-                parseFloat(target.getAttribute('data-y')!) || 0
-            target.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)'
-            target.setAttribute('data-x', '0px')
-            target.setAttribute('data-y', '0px')
-            target.style.left = `${x}px`
-            target.style.top = `${y}px`
-          }
-          onDragEnd()
-        })
-        .on('move', (event: InteractEvent) => {
-          var interaction = event.interaction
-          if (!interaction.interacting()) {
-            const x = event.x0 + parseFloat(jsonProps.width || '0') / 2
-            const y = event.y0 + parseFloat(jsonProps.height || '0') / 2
-
-            event.target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-            event.target.setAttribute('data-x', `${x}`)
-            event.target.setAttribute('data-y', `${y}`)
-            interaction.start(
-              { name: 'drag' },
-              event.interactable,
-              event.currentTarget
-            )
-          }
-        })
-        .draggable({
-          manualStart: true,
-          inertia: true,
-          modifiers: [],
-          autoScroll: true,
-          listeners: {
-            start: event => {
-              document.getElementById('drag-holder')?.appendChild(event.target)
-            },
-            move: event => {
-              var target = event.target
-              var x =
-                (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
-              var y =
-                (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-
-              target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-              target.setAttribute('data-x', x)
-              target.setAttribute('data-y', y)
-            },
-          },
-        })
-    }
-    return () => interaction.unset()
-  }, [createComponent, jsonProps, layer, projectId, onDragEnd])
-
   const styles: React.CSSProperties = {
     width: 50,
     height: 50,
@@ -201,6 +103,7 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   )
 
   const handleDragEnd = useCallback(() => {
+    debugger
     setDragActive(false)
   }, [])
 
@@ -210,12 +113,14 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
         <>{children}</>
       </Item>
       {dragActive && (
-        <DragItem
-          drag={drag}
-          layer={defaultLayer}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
-        />
+        <div>
+          <DragItem
+            drag={drag}
+            layer={defaultLayer}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+          />
+        </div>
       )}
     </>
   )

@@ -44,17 +44,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
-      onDragEnd: (id, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-            },
-          },
-        })
-      },
+      onDragEnd: id => {},
     },
     resizable: {
       onResizeEnd: (id, { width, height }, { x, y }) => {
@@ -124,17 +114,7 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
-      onDragEnd: (id, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-            },
-          },
-        })
-      },
+      onDragEnd: id => {},
     },
     resizable: {
       onResizeEnd: (id, { width, height }, { x, y }) => {
