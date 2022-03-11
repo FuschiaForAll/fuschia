@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
-import { Schema } from '@fuchsia/types'
 
 interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
@@ -19,7 +18,7 @@ interface DragDropOptions {
   resizable?: {
     onResizeEnd: (
       id: string,
-      size: { width: string; height: string },
+      size: { width: number; height: number },
       position: { x: number; y: number }
     ) => void
   }
@@ -27,17 +26,6 @@ interface DragDropOptions {
     dropClass: string
     onDrop: () => void
   }
-}
-
-function getDefaultProps(schema: Schema, acc: object) {
-  debugger
-  if (schema.type === 'object') {
-    return Object.keys(schema.properties).reduce((obj, key) => {
-      obj[key] = getDefaultProps(schema.properties[key], { [key]: {} })
-      return obj
-    }, {} as any)
-  }
-  return schema.default
 }
 
 function updateAttribues(target: Element, x: number, y: number) {
@@ -143,7 +131,10 @@ export const useDragDrop = (
               updatePosition(target, x + left, y + top)
               resizable.onResizeEnd(
                 id,
-                { width: target.style.width, height: target.style.height },
+                {
+                  width: parseFloat(target.style.width),
+                  height: parseFloat(target.style.height),
+                },
                 { x: x + left, y: y + top }
               )
             })
@@ -171,11 +162,6 @@ export const useDragDrop = (
                   updateAttribues(target, x, y)
                 },
               },
-              modifiers: [
-                interact.modifiers.restrictSize({
-                  min: { width: 100, height: 50 },
-                }),
-              ],
 
               inertia: false,
             })
@@ -200,10 +186,14 @@ export const useDragDrop = (
             ondragleave: function (event) {
               event.target.classList.remove('drop-target')
             },
-            ondrop: function (event) {
+            ondrop: function (event: InteractEvent) {
+              if (!event.relatedTarget) {
+                return
+              }
               const parentId = event.target.id
               // temp
-              if (parentId === 'drag-holder') {
+              if (parentId === 'main-canvas') {
+                debugger
                 // if a non-root element is dropped on the main canvas, delete it
                 if (!event.relatedTarget.classList.contains('root-element')) {
                   const parentdnd = document.getElementById(
@@ -216,6 +206,8 @@ export const useDragDrop = (
                   event.relatedTarget.classList.add('deleted')
                   if (event.relatedTarget.id !== 'new-element') {
                     deleteComponents(event.relatedTarget.id)
+                  } else {
+                    return
                   }
                 } else {
                   // it is a root element, update location
@@ -223,6 +215,21 @@ export const useDragDrop = (
                   const [left, top] = getPosition(event.relatedTarget)
                   updateAttribues(event.relatedTarget, 0, 0)
                   updatePosition(event.relatedTarget, x + left, y + top)
+                  if (event.relatedTarget.id === 'new-element') {
+                    const layer = event.relatedTarget.dataset['layer']
+                    if (layer) {
+                      const jsonLayer = JSON.parse(layer)
+                      createComponent({
+                        isRootElement: jsonLayer.isRootElement,
+                        isContainer: jsonLayer.isContainer,
+                        package: jsonLayer.package,
+                        type: jsonLayer.type,
+                        props: jsonLayer.props,
+                        x: x + left,
+                        y: y + top,
+                      })
+                    }
+                  }
                 }
                 return
               }
@@ -234,7 +241,6 @@ export const useDragDrop = (
                 const layer = event.relatedTarget.dataset['layer']
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
-
                   const [parentX, parentY] = getPosition(event.target)
                   const [x, y] = getDataAttributes(event.relatedTarget)
                   const [left, top] = getPosition(event.relatedTarget)
@@ -250,9 +256,7 @@ export const useDragDrop = (
                     package: jsonLayer.package,
                     type: jsonLayer.type,
                     parent: targetId,
-                    props: JSON.stringify(
-                      getDefaultProps(JSON.parse(jsonLayer.props), {})
-                    ),
+                    props: jsonLayer.props,
                     x: newX,
                     y: newY,
                   })
@@ -265,18 +269,29 @@ export const useDragDrop = (
                   parentdnd.id = ''
                   parentdnd.appendChild(event.relatedTarget)
                 }
-                // adjust to be relative to drop parent
-                const [parentX, parentY] = getPosition(event.target)
+                let parent = event.target
+                let [positionX, positionY] = getPosition(parent)
+                while (
+                  parent.parentElement &&
+                  !parent.classList.contains('root-element')
+                ) {
+                  parent = parent.parentElement
+                  const [parentX, parentY] = getPosition(parent)
+                  positionX += parentX
+                  positionY += parentY
+                }
                 const [x, y] = getDataAttributes(event.relatedTarget)
                 const [left, top] = getPosition(event.relatedTarget)
                 updatePosition(
                   event.relatedTarget,
-                  x + left - parentX,
-                  y + top - parentY
+                  x + left - positionX,
+                  y + top - positionY
                 )
+                const targetId =
+                  parentId === 'main-canvas' ? undefined : parentId
                 updateAttribues(event.relatedTarget, 0, 0)
                 updateComponent(event.relatedTarget.id, {
-                  parent: parentId,
+                  parent: targetId,
                 })
               }
             },

@@ -15,8 +15,9 @@ const NumberEditor = function NumberEditor(props: NumberEditorProps) {
         <LabeledTextInput
           type="number"
           step={props.schema.step || 1}
-          defaultValue={props.schema.default as string}
+          defaultValue={props.initialValue}
           label={props.schema.title || 'undefined'}
+          onChange={e => props.updateValue(+e.target.value, true)}
         />
       )
   }

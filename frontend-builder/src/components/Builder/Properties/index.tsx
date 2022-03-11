@@ -4,7 +4,11 @@ import { useSelection } from '../../../utils/hooks'
 import Paper from '@mui/material/Paper'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 import Editor from './Editors/Editor'
-import { useGetComponentLazyQuery } from '../../../generated/graphql'
+import {
+  useGetComponentLazyQuery,
+  useGetComponentQuery,
+  useUpdateComponentMutation,
+} from '../../../generated/graphql'
 import { Schema } from '@fuchsia/types'
 
 const Wrapper = styled.div`
@@ -34,23 +38,37 @@ const cardStyles = {
   pointerEvents: 'all',
 }
 
-function Properties(props: {
-  schema: Schema
-  properties: string
-  elementId: string
-}) {
-  const objectProps = JSON.parse(props.properties || '{}')
+function Properties(props: { schema: Schema; elementId: string }) {
+  const [updateComponent] = useUpdateComponentMutation()
+  const { data: componentData, loading } = useGetComponentQuery({
+    variables: {
+      componentId: props.elementId,
+    },
+  })
   function getReference(name: string) {
     if (props.schema.definitions) {
       return props.schema.definitions[name.substring('#/definitions/'.length)]
     }
     return undefined
   }
+  if (!componentData?.getComponent) {
+    return <div>Loading</div>
+  }
+  if (loading) {
+    return null
+  }
   return (
     <Editor
-      initialValue={objectProps}
+      initialValue={JSON.parse(componentData.getComponent.props || '{}')}
       updateValue={(value, isValid) => {
-        alert(value)
+        updateComponent({
+          variables: {
+            componentId: props.elementId,
+            componentInput: {
+              props: JSON.stringify(value),
+            },
+          },
+        })
       }}
       getReference={getReference}
       required={true}
@@ -99,11 +117,8 @@ const PropertyWindow: React.FC = function PropertyWindow() {
       <Wrapper>
         <Inner>
           <Paper elevation={12} sx={cardStyles}>
-            <Properties
-              elementId={componentData.getComponent._id}
-              schema={schema}
-              properties={componentData.getComponent.props!}
-            />
+            <span>{schema.title}</span>
+            <Properties elementId={selection[0]} schema={schema} />
           </Paper>
         </Inner>
       </Wrapper>

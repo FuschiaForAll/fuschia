@@ -1,6 +1,5 @@
 import React, { useCallback } from 'react'
 import styled from '@emotion/styled'
-import Paper from '@mui/material/Paper'
 
 import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
@@ -8,33 +7,6 @@ import {
   Component,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
-
-const Wrapper = styled.div`
-  position: fixed;
-  top: 0;
-  left: 2rem;
-  height: 100%;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-`
-
-const Inner = styled.div`
-  width: 300px;
-  height: 100%;
-  padding-top: calc(56px + 1rem);
-  padding-bottom: calc(56px + 1rem);
-`
-
-const cardStyles = {
-  height: '100%',
-  padding: '0.5rem',
-  margin: '1rem 0',
-  display: 'flex',
-  flexDirection: 'column',
-  pointerEvents: 'all',
-}
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
@@ -69,7 +41,6 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
 }) {
   const { x, y, props } = layer
   const jsonProps = JSON.parse(props || '{}')
-  console.log(`FrameLayer here for: ${layer._id}`)
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
@@ -109,8 +80,8 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   })
 
   const styles: React.CSSProperties = {
-    width: jsonProps.width || 50,
-    height: jsonProps.height || 50,
+    width: jsonProps.style?.width || 50,
+    height: jsonProps.style?.height || 50,
     left: x || 0,
     top: y || 0,
     pointerEvents: 'all',
@@ -120,6 +91,10 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
 
   if (selected) {
     styles.boxShadow = BOX_SHADOW
+  }
+
+  if (layer.isRootElement) {
+    styles.border = '#ccc solid 1px'
   }
   const classNames = ['droppable']
   if (layer.isRootElement) {
@@ -181,9 +156,10 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   })
   const { x, y, props } = layer
   const jsonProps = JSON.parse(props || '{}')
+
   const styles: React.CSSProperties = {
-    width: jsonProps.width || 50,
-    height: jsonProps.height || 50,
+    width: jsonProps.style?.width || 50,
+    height: jsonProps.style?.height || 50,
     pointerEvents: 'all',
     zIndex: 1000,
     position: 'absolute',
@@ -246,29 +222,30 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
           ))}
         </InlineComponent>
       ) : (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-          }}
-        >
-          <InlineComponent
-            id={`component=${layer._id}`}
-            {...jsonProps}
+        <div>
+          <div
             style={{
-              ...jsonProps.style,
               width: '100%',
               height: '100%',
               position: 'absolute',
             }}
-          />
+          >
+            <InlineComponent
+              id={`component=${layer._id}`}
+              {...jsonProps}
+              style={{
+                ...jsonProps.style,
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+              }}
+            />
+          </div>
           <div
             style={{
               position: 'absolute',
               width: '100%',
               height: '100%',
-              backgroundColor: 'rgba(254, 254, 254, 0.1)',
             }}
           />
         </div>

@@ -12,19 +12,22 @@ const ObjectEditor = function ObjectEditor(props: ObjectEditorProps) {
     value: ValueType | undefined,
     isValid: boolean
   ) {
-    props.updateValue(value as any, true)
+    props.initialValue[property] = value
+    props.updateValue(props.initialValue as any, true)
   }
   return (
     <>
-      <span>{props.schema.title}</span>
       {Object.keys(props.schema.properties).map(key => (
         <Editor
+          key={key}
           schema={props.schema.properties[key]}
-          initialValue={{}}
+          getReference={props.getReference}
+          initialValue={
+            props.initialValue ? props.initialValue[key] : undefined
+          }
           updateValue={(value: ValueType | undefined, isValid: boolean) =>
             onChange(key, value, isValid)
           }
-          getReference={props.getReference}
         />
       ))}
     </>

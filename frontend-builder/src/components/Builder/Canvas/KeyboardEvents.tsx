@@ -17,7 +17,7 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
   const keyDown = useCallback(
     (e: KeyboardEvent) => {
       const key = e.key
-      if (key === DELETE || key === BACKSPACE) {
+      if (key === DELETE) {
         handleDelete()
       }
     },

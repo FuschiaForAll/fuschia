@@ -95,20 +95,6 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
             target.setAttribute('data-y', '0px')
             target.style.left = `${x}px`
             target.style.top = `${y}px`
-            await createComponent({
-              variables: {
-                projectId,
-                componentInput: {
-                  package: layer.package,
-                  type: layer.type,
-                  isRootElement: layer.isRootElement,
-                  isContainer: layer.isContainer,
-                  x,
-                  y,
-                  props: layer.props,
-                },
-              },
-            })
           }
           onDragEnd()
         })
@@ -159,6 +145,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     height: 50,
     pointerEvents: 'all',
     position: 'fixed',
+    zIndex: 1000,
   }
   if (jsonProps) {
     styles.width = jsonProps?.width || 50
@@ -181,10 +168,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
       style={styles}
       data-layer={JSON.stringify(layer)}
     >
-      <InlineComponent
-        {...jsonProps}
-        style={{ ...jsonProps.style, width: '100%', height: '100%' }}
-      />
+      <InlineComponent {...jsonProps} />
     </div>
   )
 }
