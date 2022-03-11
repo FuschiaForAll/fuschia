@@ -15,4 +15,13 @@ export class ComponentResolver {
     }
     return [];
   }
+
+  @Mutation(() => [Component])
+  async publishComponents(
+    @Arg("componentInput", (type) => [ComponentInput])
+    componentInput: ComponentInput[]
+  ) {
+    console.log(componentInput);
+    return PackageModel.insertMany(componentInput);
+  }
 }

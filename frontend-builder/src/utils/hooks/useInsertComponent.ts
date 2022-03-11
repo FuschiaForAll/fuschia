@@ -6,8 +6,18 @@ import {
   useCreateComponentMutation,
   GetComponentsDocument,
 } from '../../generated/graphql'
-
+import { Schema } from '@fuchsia/types'
 type InsertFunc = (value: ComponentInput) => void
+
+function getDefaultProps(schema: Schema, acc: object) {
+  if (schema.type === 'object') {
+    return Object.keys(schema.properties).reduce((obj, key) => {
+      obj[key] = getDefaultProps(schema.properties[key], {})
+      return obj
+    }, {} as any)
+  }
+  return schema.default
+}
 
 export const useInsertComponent = (): InsertFunc => {
   const { projectId } = useParams()
@@ -27,6 +37,7 @@ export const useInsertComponent = (): InsertFunc => {
         },
       })
       if (newComponent.data) {
+        debugger
         setSelection([newComponent.data.createComponent._id])
       }
     },

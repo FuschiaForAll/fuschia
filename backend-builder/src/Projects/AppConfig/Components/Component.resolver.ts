@@ -22,6 +22,17 @@ import { ComponentInput } from "./Component.input";
 export class ComponentResolver {
   constructor(private projectService: ProjectService) {}
 
+  @Query((returns) => Component, { nullable: true })
+  async getComponent(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Ctx() ctx: Context
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to get ComponentId`
+    );
+    return ComponentModel.findById(componentId);
+  }
+
   @Query((returns) => [Component])
   async getComponents(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,

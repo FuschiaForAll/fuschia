@@ -54,6 +54,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
         <LabeledTextInput
           label={props.schema.title || 'undefined'}
           defaultValue={props.schema.default as string}
+          onChange={e => props.updateValue(e.target.value, true)}
         />
       )
   }

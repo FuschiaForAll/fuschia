@@ -115,8 +115,8 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
         .on('move', (event: InteractEvent) => {
           var interaction = event.interaction
           if (!interaction.interacting()) {
-            const x = event.x0 + parseFloat(jsonProps.style.width || '0') / 2
-            const y = event.y0 + parseFloat(jsonProps.style.height || '0') / 2
+            const x = event.x0 + parseFloat(jsonProps.width || '0') / 2
+            const y = event.y0 + parseFloat(jsonProps.height || '0') / 2
 
             event.target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
             event.target.setAttribute('data-x', `${x}`)
@@ -160,14 +160,14 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     pointerEvents: 'all',
     position: 'fixed',
   }
-  if (jsonProps.style) {
-    styles.width = jsonProps.style.width
-    styles.height = jsonProps.style.height
+  if (jsonProps) {
+    styles.width = jsonProps?.width || 50
+    styles.height = jsonProps?.height || 50
     styles.left = `${
-      drag.position[0] - parseFloat(jsonProps.style.width || '0') / 2
+      drag.position[0] - parseFloat(jsonProps.width || '0') / 2
     }px`
     styles.top = `${
-      drag.position[1] - parseFloat(jsonProps.style.height || '0') / 2
+      drag.position[1] - parseFloat(jsonProps.height || '0') / 2
     }px`
   }
   // @ts-ignore
@@ -176,6 +176,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     <div
       className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
       id="new-element"
+      data-parent="toolbar"
       ref={ref}
       style={styles}
       data-layer={JSON.stringify(layer)}
@@ -243,7 +244,7 @@ const Toolbar: React.FC = function Toolbar() {
     },
   })
   return (
-    <Paper elevation={12} sx={cardStyles}>
+    <Paper elevation={12} sx={cardStyles} id="toolbar">
       {packageData &&
         packageData.getPackages.flatMap(_package => {
           return _package.components.map(component => {
@@ -256,7 +257,7 @@ const Toolbar: React.FC = function Toolbar() {
                   package: _package.packageName,
                   _id: '',
                   type: component.name,
-                  props: component.props,
+                  props: component.defaultValue,
                 }}
               >
                 {/* @ts-ignore */}

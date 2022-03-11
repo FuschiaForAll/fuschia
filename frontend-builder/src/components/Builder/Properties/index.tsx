@@ -3,8 +3,9 @@ import React, { useEffect, useState } from 'react'
 import { useSelection } from '../../../utils/hooks'
 import Paper from '@mui/material/Paper'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import Editor from './Editors/Editor'
+import { useGetComponentLazyQuery } from '../../../generated/graphql'
+import { Schema } from '@fuchsia/types'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -18,7 +19,7 @@ const Wrapper = styled.div`
 `
 
 const Inner = styled.div`
-  width: 250px;
+  width: 300px;
   height: 100%;
   padding-top: calc(56px + 1rem);
   padding-bottom: calc(56px + 1rem);
@@ -26,75 +27,43 @@ const Inner = styled.div`
 
 const cardStyles = {
   height: '100%',
-  padding: '0.5rem 0',
+  padding: '0.5rem',
   margin: '1rem 0',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'center',
   pointerEvents: 'all',
 }
 
-function Property(props: any) {
-  const { prop, name } = props
-  return (
-    <div>
-      {typeof prop === 'object' ? (
-        <fieldset>
-          <legend>{name}</legend>
-          {Object.keys(prop).map(subProp => (
-            <Property name={subProp} prop={prop[subProp]} key={subProp} />
-          ))}
-        </fieldset>
-      ) : (
-        <div>
-          <LabeledTextInput
-            label={name}
-            type="text"
-            defaultValue={prop}
-            onChange={e => {
-              const element = document.getElementById(props.elementId)
-              if (element) {
-                element.textContent = e.target.value
-              }
-            }}
-          />
-        </div>
-      )}
-    </div>
-  )
-}
-
-function Properties(props: { properties?: string; elementId: string }) {
+function Properties(props: {
+  schema: Schema
+  properties: string
+  elementId: string
+}) {
   const objectProps = JSON.parse(props.properties || '{}')
   function getReference(name: string) {
+    if (props.schema.definitions) {
+      return props.schema.definitions[name.substring('#/definitions/'.length)]
+    }
     return undefined
   }
   return (
     <Editor
-      initialValue={{}}
-      updateValue={(value, isValid) => {}}
+      initialValue={objectProps}
+      updateValue={(value, isValid) => {
+        alert(value)
+      }}
       getReference={getReference}
-      schema={objectProps}
+      required={true}
+      schema={props.schema}
     />
   )
-  // return (
-  //   <div>
-  //     {Object.keys(objectProps).map(prop => (
-  //       <Property
-  //         elementId={props.elementId}
-  //         name={prop}
-  //         prop={objectProps[prop]}
-  //         key={prop}
-  //       />
-  //     ))}
-  //   </div>
-  // )
 }
 
 const PropertyWindow: React.FC = function PropertyWindow() {
   const { selection } = useSelection()
   const { data: packageData } = useGetPackagesQuery()
-  const [properties, setProperties] = useState<any>()
+  const [schema, setSchema] = useState<Schema | undefined>()
+  const [getComponent, { data: componentData }] = useGetComponentLazyQuery()
   useEffect(() => {
     if (selection && packageData) {
       // get the DOM elemenet so we can find package and type
@@ -102,6 +71,12 @@ const PropertyWindow: React.FC = function PropertyWindow() {
         document.getElementById(selectedItem)
       )
       if (selectedNodes.length === 1) {
+        // TODO: update props if the underlying package changes
+        getComponent({
+          variables: {
+            componentId: selectedNodes[0]?.id,
+          },
+        })
         const selectedPackage = packageData.getPackages.find(
           packageData =>
             packageData.packageName === selectedNodes[0]?.dataset['package']
@@ -112,18 +87,23 @@ const PropertyWindow: React.FC = function PropertyWindow() {
               packageData.name === selectedNodes[0]?.dataset['type']
           )
           if (selectedProps) {
-            setProperties(selectedProps.props)
+            const schema = JSON.parse(selectedProps.schema)
+            setSchema(schema as Schema)
           }
         }
       }
     }
-  }, [packageData, selection])
-  if (selection && selection.length > 0) {
+  }, [getComponent, packageData, selection])
+  if (schema && selection && componentData && componentData.getComponent) {
     return (
       <Wrapper>
         <Inner>
           <Paper elevation={12} sx={cardStyles}>
-            <Properties elementId={selection[0]} properties={properties} />
+            <Properties
+              elementId={componentData.getComponent._id}
+              schema={schema}
+              properties={componentData.getComponent.props!}
+            />
           </Paper>
         </Inner>
       </Wrapper>

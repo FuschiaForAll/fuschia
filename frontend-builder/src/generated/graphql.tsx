@@ -394,6 +394,7 @@ export type ProjectInput = {
 export type Query = {
   __typename?: 'Query';
   getAuth?: Maybe<Auth>;
+  getComponent?: Maybe<Component>;
   getComponents: Array<Component>;
   getLabelLibrary?: Maybe<LabelLibrary>;
   getProject: Project;
@@ -416,6 +417,11 @@ export type Query = {
 
 export type QueryGetAuthArgs = {
   projectId: Scalars['ObjectId'];
+};
+
+
+export type QueryGetComponentArgs = {
+  componentId: Scalars['ObjectId'];
 };
 
 
@@ -678,6 +684,13 @@ export type DeleteComponentsMutationVariables = Exact<{
 
 
 export type DeleteComponentsMutation = { __typename?: 'Mutation', deleteComponents: Array<any> };
+
+export type GetComponentQueryVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+}>;
+
+
+export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: string | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parent?: { __typename?: 'Component', _id: any } | null } | null };
 
 export type GetComponentsQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1062,6 +1075,65 @@ export function useDeleteComponentsMutation(baseOptions?: Apollo.MutationHookOpt
 export type DeleteComponentsMutationHookResult = ReturnType<typeof useDeleteComponentsMutation>;
 export type DeleteComponentsMutationResult = Apollo.MutationResult<DeleteComponentsMutation>;
 export type DeleteComponentsMutationOptions = Apollo.BaseMutationOptions<DeleteComponentsMutation, DeleteComponentsMutationVariables>;
+export const GetComponentDocument = gql`
+    query GetComponent($componentId: ObjectId!) {
+  getComponent(componentId: $componentId) {
+    ...ComponentFragment
+    children {
+      ...ComponentFragment
+      children {
+        ...ComponentFragment
+        children {
+          ...ComponentFragment
+          children {
+            ...ComponentFragment
+            children {
+              ...ComponentFragment
+              children {
+                ...ComponentFragment
+                children {
+                  ...ComponentFragment
+                  children {
+                    ...ComponentFragment
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    ${ComponentFragmentFragmentDoc}`;
+
+/**
+ * __useGetComponentQuery__
+ *
+ * To run a query within a React component, call `useGetComponentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetComponentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetComponentQuery({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *   },
+ * });
+ */
+export function useGetComponentQuery(baseOptions: Apollo.QueryHookOptions<GetComponentQuery, GetComponentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetComponentQuery, GetComponentQueryVariables>(GetComponentDocument, options);
+      }
+export function useGetComponentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetComponentQuery, GetComponentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetComponentQuery, GetComponentQueryVariables>(GetComponentDocument, options);
+        }
+export type GetComponentQueryHookResult = ReturnType<typeof useGetComponentQuery>;
+export type GetComponentLazyQueryHookResult = ReturnType<typeof useGetComponentLazyQuery>;
+export type GetComponentQueryResult = Apollo.QueryResult<GetComponentQuery, GetComponentQueryVariables>;
 export const GetComponentsDocument = gql`
     query GetComponents($projectId: ObjectId!) {
   getComponents(projectId: $projectId) {

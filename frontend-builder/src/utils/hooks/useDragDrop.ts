@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
+import { Schema } from '@fuchsia/types'
 
 interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
@@ -26,6 +27,17 @@ interface DragDropOptions {
     dropClass: string
     onDrop: () => void
   }
+}
+
+function getDefaultProps(schema: Schema, acc: object) {
+  debugger
+  if (schema.type === 'object') {
+    return Object.keys(schema.properties).reduce((obj, key) => {
+      obj[key] = getDefaultProps(schema.properties[key], { [key]: {} })
+      return obj
+    }, {} as any)
+  }
+  return schema.default
 }
 
 function updateAttribues(target: Element, x: number, y: number) {
@@ -78,7 +90,7 @@ export const useDragDrop = (
               updateComponent(id, { x: x + left, y: y + top })
             })
             .draggable({
-              inertia: true,
+              inertia: false,
               autoScroll: true,
               listeners: {
                 start: event => {
@@ -137,7 +149,7 @@ export const useDragDrop = (
             })
             .resizable({
               // resize from all edges and corners
-              edges: { left: true, right: true, bottom: true, top: true },
+              edges: { left: false, right: true, bottom: true, top: false },
               listeners: {
                 move(event) {
                   var target = event.target
@@ -165,7 +177,7 @@ export const useDragDrop = (
                 }),
               ],
 
-              inertia: true,
+              inertia: false,
             })
         }
         if (droppable) {
@@ -216,6 +228,9 @@ export const useDragDrop = (
               }
               if (event.relatedTarget.id === 'new-element') {
                 // insert component
+                document
+                  .getElementById('toolbar')
+                  ?.appendChild(event.relatedTarget)
                 const layer = event.relatedTarget.dataset['layer']
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
@@ -227,13 +242,17 @@ export const useDragDrop = (
                   const newY = y + top - parentY
                   updateAttribues(event.relatedTarget, 0, 0)
                   updatePosition(event.relatedTarget, newX, newY)
+                  const targetId =
+                    parentId === 'main-canvas' ? undefined : parentId
                   createComponent({
                     isRootElement: jsonLayer.isRootElement,
                     isContainer: jsonLayer.isContainer,
                     package: jsonLayer.package,
                     type: jsonLayer.type,
-                    parent: parentId,
-                    props: jsonLayer.props,
+                    parent: targetId,
+                    props: JSON.stringify(
+                      getDefaultProps(JSON.parse(jsonLayer.props), {})
+                    ),
                     x: newX,
                     y: newY,
                   })

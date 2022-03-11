@@ -25,6 +25,12 @@ export type AnySchema = CommonSchema & {
   type: undefined
 }
 
+export type FunctionSchema = CommonSchema & {
+  type: 'function'
+  arguments: Array<{ [name: string]: ValueType }>
+  returnType: ValueType
+}
+
 export type ObjectSchema = CommonSchema & {
   type: 'object'
   properties: { [name: string]: Schema }
@@ -91,7 +97,7 @@ export type StringSchema = CommonSchema & {
 
 export type BooleanSchema = CommonSchema & {
   type: 'boolean'
-  format?: 'checkbox' | 'select' | 'select2'
+  format?: 'checkbox' | 'select'
 }
 
 export type NullSchema = CommonSchema & {
@@ -106,6 +112,7 @@ export type Schema =
   | BooleanSchema
   | NullSchema
   | AnySchema
+  | FunctionSchema
 
 export type ValueType =
   | { [name: string]: any }
@@ -129,4 +136,118 @@ export interface CommonSchema {
   optionalWhen?: EqualCondition | InCondition | IsUndefinedCondition
   className?: string
   propertyName?: string
+}
+
+export function getDefaultValue(
+  required: boolean | undefined = undefined,
+  schema: Schema,
+  initialValue: ValueType | undefined
+): ValueType | undefined {
+  if (initialValue !== undefined) {
+    switch (schema.type) {
+      case 'object':
+        if (initialValue === Object(initialValue)) {
+          return initialValue
+        }
+        break
+      case 'array':
+        if (Array.isArray(initialValue)) {
+          return initialValue
+        }
+        break
+      case 'number':
+      case 'integer':
+        if (typeof initialValue === 'number') {
+          return initialValue
+        }
+        break
+      case 'boolean':
+        if (typeof initialValue === 'boolean') {
+          return initialValue
+        }
+        break
+      case 'string':
+        if (typeof initialValue === 'string') {
+          return initialValue
+        }
+        break
+      case undefined:
+        return initialValue
+      case 'null':
+      default:
+        if (initialValue === null) {
+          return initialValue
+        }
+    }
+  }
+
+  if (!required) {
+    return undefined
+  }
+
+  if (schema.default !== undefined) {
+    switch (schema.type) {
+      case 'object':
+        if (schema.default === Object(schema.default)) {
+          return schema.default
+        }
+        break
+      case 'array':
+        if (Array.isArray(schema.default)) {
+          return schema.default
+        }
+        break
+      case 'number':
+      case 'integer':
+        if (typeof schema.default === 'number') {
+          return schema.default
+        }
+        break
+      case 'boolean':
+        if (typeof schema.default === 'boolean') {
+          return schema.default
+        }
+        break
+      case 'string':
+        if (typeof schema.default === 'string') {
+          return schema.default
+        }
+        break
+      case 'null':
+      default:
+        if (schema.default === null) {
+          return schema.default
+        }
+    }
+  }
+
+  switch (schema.type) {
+    case 'object':
+      const value: any = {}
+      for (const property in schema.properties) {
+        const propertySchema = schema.properties[property]
+        value[propertySchema.propertyName || property] = undefined
+      }
+      return value
+    case 'array':
+      return []
+    case 'number':
+    case 'integer':
+      if (schema.enum !== undefined && schema.enum.length > 0) {
+        return schema.enum[0]
+      } else {
+        return 0
+      }
+    case 'boolean':
+      return false
+    case 'string':
+      if (schema.enum !== undefined && schema.enum.length > 0) {
+        return schema.enum[0]
+      } else {
+        return ''
+      }
+    case 'null':
+    default:
+      return null
+  }
 }

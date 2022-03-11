@@ -240,6 +240,7 @@ input ProjectInput {
 
 type Query {
   getAuth(projectId: ObjectId!): Auth
+  getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getProject(projectId: ObjectId!): Project!
