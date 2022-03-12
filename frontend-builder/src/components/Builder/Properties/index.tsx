@@ -77,54 +77,25 @@ function Properties(props: { schema: Schema; elementId: string }) {
   )
 }
 
-const PropertyWindow: React.FC = function PropertyWindow() {
-  const { selection } = useSelection()
-  const { data: packageData } = useGetPackagesQuery()
-  const [schema, setSchema] = useState<Schema | undefined>()
-  const [getComponent, { data: componentData }] = useGetComponentLazyQuery()
-  useEffect(() => {
-    if (selection && packageData) {
-      // get the DOM elemenet so we can find package and type
-      const selectedNodes = selection.map(selectedItem =>
-        document.getElementById(selectedItem)
-      )
-      if (selectedNodes.length === 1) {
-        // TODO: update props if the underlying package changes
-        getComponent({
-          variables: {
-            componentId: selectedNodes[0]?.id,
-          },
-        })
-        const selectedPackage = packageData.getPackages.find(
-          packageData =>
-            packageData.packageName === selectedNodes[0]?.dataset['package']
-        )
-        if (selectedPackage) {
-          const selectedProps = selectedPackage.components.find(
-            packageData =>
-              packageData.name === selectedNodes[0]?.dataset['type']
-          )
-          if (selectedProps) {
-            const schema = JSON.parse(selectedProps.schema)
-            setSchema(schema as Schema)
-          }
-        }
-      }
-    }
-  }, [getComponent, packageData, selection])
-  if (schema && selection && componentData && componentData.getComponent) {
-    return (
-      <Wrapper>
-        <Inner>
-          <Paper elevation={12} sx={cardStyles}>
-            <span>{schema.title}</span>
-            <Properties elementId={selection[0]} schema={schema} />
-          </Paper>
-        </Inner>
-      </Wrapper>
-    )
-  }
-  return <></>
+interface PropertyWindowProps {
+  schema: Schema
+  properties: any
+  elementId: string
+}
+
+const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
+  props
+) {
+  return (
+    <Wrapper onClick={e => e.stopPropagation()}>
+      <Inner>
+        <Paper elevation={12} sx={cardStyles}>
+          <span>{props.schema.title}</span>
+          <Properties elementId={props.elementId} schema={props.schema} />
+        </Paper>
+      </Inner>
+    </Wrapper>
+  )
 }
 
 export default PropertyWindow

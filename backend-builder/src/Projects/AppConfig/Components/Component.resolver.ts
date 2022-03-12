@@ -17,6 +17,8 @@ import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { ProjectService } from "../../Project.service";
 import { Component } from "./Component.entity";
 import { ComponentInput } from "./Component.input";
+import * as _ from "lodash";
+
 @Service()
 @Resolver(Component)
 export class ComponentResolver {
@@ -100,13 +102,29 @@ export class ComponentResolver {
     console.error(
       `SECURITY WARNING: Validate that the user has access to modify ComponentId`
     );
-    return ComponentModel.findByIdAndUpdate(
-      componentId,
-      {
-        ...componentInput,
-      },
-      { returnDocument: "after" }
-    );
+    // merge the props from old and new...
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      const oldProps = JSON.parse(component.props || "{}");
+      console.log(`oldProps`);
+      console.log(oldProps);
+      const newProps = JSON.parse(componentInput.props || "{}");
+      console.log(`newProps`);
+      console.log(newProps);
+      const updates = { ...componentInput };
+      const mergeProps = _.merge(oldProps, newProps);
+      updates.props = JSON.stringify(mergeProps);
+      console.log(`updates`);
+      console.log(updates);
+      return ComponentModel.findByIdAndUpdate(
+        componentId,
+        {
+          ...updates,
+        },
+        { returnDocument: "after" }
+      );
+    }
+    throw new ApolloError("Component not found");
   }
 
   @Mutation((returns) => [ObjectIdScalar])

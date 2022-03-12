@@ -103,7 +103,6 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
   )
 
   const handleDragEnd = useCallback(() => {
-    debugger
     setDragActive(false)
   }, [])
 

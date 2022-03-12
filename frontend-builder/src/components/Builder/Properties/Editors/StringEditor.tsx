@@ -4,6 +4,10 @@ import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import { Color, SketchPicker } from 'react-color'
 import Box from '@mui/material/Box'
 import Popper from '@mui/material/Popper'
+import Select from '@mui/material/Select'
+import MenuItem from '@mui/material/MenuItem'
+import FormControl from '@mui/material/FormControl'
+import InputLabel from '@mui/material/InputLabel'
 
 export type StringEditorProps = Props<StringSchema, string>
 
@@ -57,6 +61,30 @@ const ColorPicker = ({
 }
 
 const StringEditor = function StringEditor(props: StringEditorProps) {
+  if (props.schema.enum) {
+    return (
+      <FormControl
+        fullWidth={true}
+        sx={{ marginTop: '0.5em', marginBottom: '0.5em' }}
+      >
+        <InputLabel id={`select-${props.schema.title || 'undefined'}-label`}>
+          {props.schema.title}
+        </InputLabel>
+        <Select
+          labelId={`select-${props.schema.title || 'undefined'}-label`}
+          label={props.schema.title}
+          defaultValue={props.initialValue as string}
+          onChange={e => props.updateValue(e.target.value, true)}
+        >
+          {props.schema.enum.map(item => (
+            <MenuItem key={item} value={item}>
+              {item}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    )
+  }
   switch (props.schema.format) {
     case 'textarea':
       return <textarea />

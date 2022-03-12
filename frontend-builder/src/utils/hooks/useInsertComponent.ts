@@ -20,7 +20,6 @@ export const useInsertComponent = (): InsertFunc => {
 
   const insertFunc = useCallback<InsertFunc>(
     async componentInput => {
-      debugger
       const newComponent = await createComponent({
         variables: {
           projectId,

@@ -9,7 +9,6 @@ import Database from './Database'
 import Sidebar from './Sidebar'
 import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
-import PropertyWindow from './Properties'
 import Scalebar from './Scalebar'
 import LabelLibrary from './LabelLibrary'
 
@@ -53,7 +52,6 @@ const Builder: React.FC = function Builder() {
         />
         <Sidebar />
         <Scalebar />
-        <PropertyWindow />
       </div>
       <Routes>
         <Route path="database" element={<Database />} />
