@@ -1,11 +1,8 @@
 import styled from '@emotion/styled'
-import React, { useEffect, useState } from 'react'
-import { useSelection } from '../../../utils/hooks'
+import React from 'react'
 import Paper from '@mui/material/Paper'
-import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 import Editor from './Editors/Editor'
 import {
-  useGetComponentLazyQuery,
   useGetComponentQuery,
   useUpdateComponentMutation,
 } from '../../../generated/graphql'

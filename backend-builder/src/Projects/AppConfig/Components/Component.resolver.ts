@@ -152,7 +152,7 @@ export class ComponentResolver {
     console.log(project?.components);
     return componentIds;
   }
-
+  
   @FieldResolver()
   async children(@Root() component: Component) {
     return ComponentModel.find({

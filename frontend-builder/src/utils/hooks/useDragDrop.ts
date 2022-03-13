@@ -14,6 +14,7 @@ interface DragDropOptions {
   min?: { width: number; height: number }
   draggable?: {
     onDragEnd: (id: string) => void
+    manualStart?: boolean
   }
   resizable?: {
     onResizeEnd: (
@@ -71,10 +72,16 @@ export const useDragDrop = (
               draggable.onDragEnd(event.target.id)
             })
             .draggable({
+              manualStart: !!options.draggable?.manualStart,
               inertia: false,
               autoScroll: true,
               listeners: {
                 start: event => {
+                  /**
+                   * we are going to move the element to the root of the drag holder
+                   * so that it will be rendered on top of the other objects to maintain
+                   * visibility
+                   */
                   const target = event.target
                   updateAttribues(target, 0, 0)
                   if (
@@ -116,6 +123,20 @@ export const useDragDrop = (
                 },
               },
             })
+          if (draggable.manualStart) {
+            interaction.on('move', (event: InteractEvent) => {
+              if (
+                event.interaction.pointerIsDown &&
+                !event.interaction.interacting()
+              ) {
+                event.interaction.start(
+                  { name: 'drag' },
+                  event.interactable,
+                  ref.current!
+                )
+              }
+            })
+          }
         }
         if (resizable) {
           interaction
@@ -191,6 +212,23 @@ export const useDragDrop = (
                 dndOrigin.id = ''
                 dndOrigin.appendChild(event.relatedTarget)
               }
+              // check if we need to update the component
+              let parent = event.target
+              let [positionX, positionY] = getPosition(parent)
+              while (
+                parent.parentElement &&
+                !parent.classList.contains('root-element')
+              ) {
+                parent = parent.parentElement
+                const [parentX, parentY] = getPosition(parent)
+                positionX += parentX
+                positionY += parentY
+              }
+              const [x, y] = getDataAttributes(event.relatedTarget)
+              const [left, top] = getPosition(event.relatedTarget)
+              const newX = x + left - positionX
+              const newY = y + top - positionY
+
               if (event.relatedTarget.id === 'new-element') {
                 // check if we need to insert the component
                 if (!isRootElement && parentId === 'main-canvas') {
@@ -199,11 +237,6 @@ export const useDragDrop = (
                 const layer = event.relatedTarget.dataset['layer']
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
-                  const [parentX, parentY] = getPosition(event.target)
-                  const [x, y] = getDataAttributes(event.relatedTarget)
-                  const [left, top] = getPosition(event.relatedTarget)
-                  const newX = x + left - parentX
-                  const newY = y + top - parentY
                   updateAttribues(event.relatedTarget, 0, 0)
                   updatePosition(event.relatedTarget, newX, newY)
                   const targetId =
@@ -220,32 +253,14 @@ export const useDragDrop = (
                   })
                 }
               } else {
-                // check if we need to update the component
-                let parent = event.target
-                let [positionX, positionY] = getPosition(parent)
-                while (
-                  parent.parentElement &&
-                  !parent.classList.contains('root-element')
-                ) {
-                  parent = parent.parentElement
-                  const [parentX, parentY] = getPosition(parent)
-                  positionX += parentX
-                  positionY += parentY
-                }
-                const [x, y] = getDataAttributes(event.relatedTarget)
-                const [left, top] = getPosition(event.relatedTarget)
-                updatePosition(
-                  event.relatedTarget,
-                  x + left - positionX,
-                  y + top - positionY
-                )
+                updatePosition(event.relatedTarget, newX, newY)
                 const targetId =
                   parentId === 'main-canvas' ? undefined : parentId
                 updateAttribues(event.relatedTarget, 0, 0)
                 updateComponent(event.relatedTarget.id, {
                   parent: targetId,
-                  x: x + left - positionX,
-                  y: y + top - positionY,
+                  x: newX,
+                  y: newY,
                 })
               }
             },

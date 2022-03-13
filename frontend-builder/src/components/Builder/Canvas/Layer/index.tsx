@@ -5,7 +5,6 @@ import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
 import {
   Component,
-  useGetComponentQuery,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
 import PropertyWindow from '../../Properties'
@@ -281,7 +280,6 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
 
   const handleSelect = useCallback<ClickHandler>(
     e => {
-      debugger
       e.stopPropagation()
       if (e.shiftKey) {
         setSelection(arrayXor(selection, e.currentTarget.id))

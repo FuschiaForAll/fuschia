@@ -1,4 +1,7 @@
-import React, { useRef, useEffect } from 'react'
+/**
+ * https://www.jayfreestone.com/writing/react-portals-with-hooks/
+ */
+import { useRef, useEffect } from 'react'
 
 /**
  * Creates DOM element to be used as React root.

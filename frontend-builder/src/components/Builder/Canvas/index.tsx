@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import styled from '@emotion/styled'
 import { useParams } from 'react-router-dom'
 import { useDragDrop, useSelection } from '../../../utils/hooks'
@@ -39,7 +39,6 @@ const ZOOM_INCEMENT = 0.1
 const Canvas: React.FC = function Canvas() {
   const { zoomFactor } = useScale()
   const { projectId } = useParams()
-  const [update, setUpdate] = useState(0)
   const objectCollectionRef = useRef<HTMLDivElement>(null)
   const { data: componentData } = useGetComponentsQuery({
     variables: {
@@ -47,10 +46,6 @@ const Canvas: React.FC = function Canvas() {
     },
   })
   const { setSelection } = useSelection()
-  useEffect(() => {
-    setUpdate(i => i + 1)
-  }, [componentData])
-  console.log(`Rerenders: ${update}`)
   const { ref } = useDragDrop('main-canvas', {
     droppable: {
       dropClass: '.droppable',
@@ -102,8 +97,6 @@ const Canvas: React.FC = function Canvas() {
   if (!componentData) {
     return <div>Loading...</div>
   }
-  console.log('Canvas')
-  console.log(componentData.getComponents)
   return (
     <Wrapper
       id="main-canvas"

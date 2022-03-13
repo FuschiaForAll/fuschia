@@ -5,7 +5,6 @@ import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 export type NumberEditorProps = Props<NumberSchema, number>
 
 const NumberEditor = function NumberEditor(props: NumberEditorProps) {
-  console.log(props)
   switch (props.schema.format) {
     case 'select':
     case 'radiobox':

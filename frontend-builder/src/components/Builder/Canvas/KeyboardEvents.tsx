@@ -6,11 +6,11 @@ import {
 } from '../../../utils/hooks'
 
 const DELETE = 'Delete'
-const BACKSPACE = 'Backspace'
 const RIGHT_ARROW = 'ArrowRight'
 const LEFT_ARROW = 'ArrowLeft'
 const UP_ARROW = 'ArrowUp'
 const DOWN_ARROW = 'ArrowDown'
+const ESCAPE = 'Escape'
 
 const KeyboardEvents: React.FC = function KeyboardEvents() {
   const { selection, setSelection } = useSelection()
@@ -51,26 +51,48 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
     setCopyReferences(undefined)
   }, [copyReferences])
 
+  const handleClearSelection = useCallback(() => {
+    setSelection()
+  }, [setSelection])
+
   const keyDown = useCallback(
     (e: KeyboardEvent) => {
       const key = e.key
-      if (key === DELETE) {
-        handleDelete()
-      } else if (e.ctrlKey && key === 'c') {
-        handleCopy()
-      } else if (e.ctrlKey && key === 'v') {
-        handlePaste()
-      } else if (key === RIGHT_ARROW) {
-        handleMove({ x: e.shiftKey ? 10 : 1, y: 0 })
-      } else if (key === LEFT_ARROW) {
-        handleMove({ x: e.shiftKey ? -10 : -1, y: 0 })
-      } else if (key === UP_ARROW) {
-        handleMove({ x: 0, y: e.shiftKey ? -10 : -1 })
-      } else if (key === DOWN_ARROW) {
-        handleMove({ x: 0, y: e.shiftKey ? 10 : 1 })
+      switch (key) {
+        case DELETE:
+          handleDelete()
+          break
+        case 'c':
+          if (e.ctrlKey) {
+            handleCopy()
+          }
+          break
+        case 'v':
+          if (e.ctrlKey) {
+            handlePaste()
+          }
+          break
+
+        case RIGHT_ARROW:
+          handleMove({ x: e.shiftKey ? 10 : 1, y: 0 })
+          break
+        case LEFT_ARROW:
+          handleMove({ x: e.shiftKey ? -10 : -1, y: 0 })
+          break
+        case UP_ARROW:
+          handleMove({ x: 0, y: e.shiftKey ? -10 : -1 })
+          break
+        case DOWN_ARROW:
+          handleMove({ x: 0, y: e.shiftKey ? 10 : 1 })
+          break
+        case ESCAPE:
+          handleClearSelection()
+          break
+        default:
+          console.log(key)
       }
     },
-    [handleCopy, handleDelete, handleMove, handlePaste]
+    [handleClearSelection, handleCopy, handleDelete, handleMove, handlePaste]
   )
 
   useEffect(() => {

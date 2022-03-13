@@ -34,7 +34,6 @@ const LabelLibrary = function LabelLibrary() {
             acc[t.language] = {}
           }
           t.translations.forEach(tag => (acc[t.language][tag.tag] = tag.value))
-          console.log(acc)
           return acc
         },
         {} as { [language: string]: { [tag: string]: string[] } }
