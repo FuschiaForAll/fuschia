@@ -35,6 +35,7 @@ import { execute, subscribe } from "graphql";
 import { SubscriptionServer } from "subscriptions-transport-ws";
 import { AuthResolver } from "./Projects/AppConfig/Auth/Auth.resolver";
 import { ComponentResolver } from "./Projects/AppConfig/Components/Component.resolver";
+import { LabelLibraryResolver } from "./Projects/AppConfig/Libraries/LabelLibrary/LabelLibrary.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -65,6 +66,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       ApiResolver,
       AuthResolver,
       ComponentResolver,
+      LabelLibraryResolver,
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],

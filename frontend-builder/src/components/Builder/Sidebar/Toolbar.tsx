@@ -1,19 +1,10 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react'
+import React, { useState, useCallback } from 'react'
 import Paper from '@mui/material/Paper'
-import AppsIcon from '@mui/icons-material/Apps'
-import ImageIcon from '@mui/icons-material/Image'
-import { useParams } from 'react-router-dom'
-import Icon from '../../Shared/Icon'
 import Item from './Item'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import {
-  Component,
-  useCreateComponentMutation,
-} from '../../../generated/graphql'
-import { gql } from '@apollo/client'
-import interact from 'interactjs'
-import { Interactable, InteractEvent } from '@interactjs/types'
+import { Component } from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
+import { useDragDrop } from '../../../utils/hooks'
 interface ToolProps {
   defaultLayer: Component & { isRootElement: boolean }
 }
@@ -44,149 +35,41 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   onDrag,
   onDragEnd,
 }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const { projectId } = useParams()
   const { props } = layer
   const jsonProps = JSON.parse(props || '{}')
-  const [createComponent] = useCreateComponentMutation({
-    update(cache, { data }) {
-      cache.modify({
-        fields: {
-          getComponents(existingComponents = []) {
-            const newComponentRef = cache.writeFragment({
-              data: data?.createComponent,
-              fragment: gql`
-                fragment ComponentFragment on Component {
-                  _id
-                  type
-                  x
-                  y
-                  props
-                  isRootElement
-                  isContainer
-                  parent {
-                    _id
-                  }
-                  children {
-                    _id
-                  }
-                }
-              `,
-            })
-            return [...existingComponents, newComponentRef]
-          },
-        },
-      })
+  const { ref } = useDragDrop('new-element', {
+    draggable: {
+      onDragEnd,
+      manualStart: true,
     },
   })
-  useEffect(() => {
-    let interaction: Interactable
-    if (ref.current) {
-      interaction = interact(ref.current)
-      interaction
-        .on('dragend', async (event: InteractEvent) => {
-          if (layer.isRootElement) {
-            var target = event.target
-            let x =
-              (parseFloat(target.style.left) || 0) +
-                parseFloat(target.getAttribute('data-x')!) || 0
-            let y =
-              (parseFloat(target.style.top) || 0) +
-                parseFloat(target.getAttribute('data-y')!) || 0
-            target.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)'
-            target.setAttribute('data-x', '0px')
-            target.setAttribute('data-y', '0px')
-            target.style.left = `${x}px`
-            target.style.top = `${y}px`
-            await createComponent({
-              variables: {
-                projectId,
-                componentInput: {
-                  package: layer.package,
-                  type: layer.type,
-                  isRootElement: layer.isRootElement,
-                  isContainer: layer.isContainer,
-                  x,
-                  y,
-                  props: layer.props,
-                },
-              },
-            })
-          }
-          onDragEnd()
-        })
-        .on('move', (event: InteractEvent) => {
-          var interaction = event.interaction
-          if (!interaction.interacting()) {
-            const x = event.x0 + parseFloat(jsonProps.style.width || '0') / 2
-            const y = event.y0 + parseFloat(jsonProps.style.height || '0') / 2
-
-            event.target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-            event.target.setAttribute('data-x', `${x}`)
-            event.target.setAttribute('data-y', `${y}`)
-            interaction.start(
-              { name: 'drag' },
-              event.interactable,
-              event.currentTarget
-            )
-          }
-        })
-        .draggable({
-          manualStart: true,
-          inertia: true,
-          modifiers: [],
-          autoScroll: true,
-          listeners: {
-            start: event => {
-              document.getElementById('drag-holder')?.appendChild(event.target)
-            },
-            move: event => {
-              var target = event.target
-              var x =
-                (parseFloat(target.getAttribute('data-x')) || 0) + event.dx
-              var y =
-                (parseFloat(target.getAttribute('data-y')) || 0) + event.dy
-
-              target.style.transform = 'translate(' + x + 'px, ' + y + 'px)'
-              target.setAttribute('data-x', x)
-              target.setAttribute('data-y', y)
-            },
-          },
-        })
-    }
-    return () => interaction.unset()
-  }, [createComponent, jsonProps, layer, projectId, onDragEnd])
-
   const styles: React.CSSProperties = {
     width: 50,
     height: 50,
     pointerEvents: 'all',
     position: 'fixed',
+    zIndex: 1000,
   }
-  if (jsonProps.style) {
-    styles.width = jsonProps.style.width
-    styles.height = jsonProps.style.height
-    styles.left = `${
-      drag.position[0] - parseFloat(jsonProps.style.width || '0') / 2
-    }px`
-    styles.top = `${
-      drag.position[1] - parseFloat(jsonProps.style.height || '0') / 2
-    }px`
-  }
+  styles.width = jsonProps.style?.width || 50
+  styles.height = jsonProps.style?.height || 50
+  styles.left = `${
+    drag.position[0] - parseFloat(jsonProps.style?.width || '0') / 2
+  }px`
+  styles.top = `${
+    drag.position[1] - parseFloat(jsonProps.style?.height || '0') / 2
+  }px`
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
   return (
     <div
       className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
       id="new-element"
+      data-parent="toolbar"
       ref={ref}
       style={styles}
       data-layer={JSON.stringify(layer)}
     >
-      <InlineComponent
-        {...jsonProps}
-        style={{ ...jsonProps.style, width: '100%', height: '100%' }}
-      />
+      <InlineComponent {...jsonProps} />
     </div>
   )
 }
@@ -228,12 +111,14 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
         <>{children}</>
       </Item>
       {dragActive && (
-        <DragItem
-          drag={drag}
-          layer={defaultLayer}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
-        />
+        <div>
+          <DragItem
+            drag={drag}
+            layer={defaultLayer}
+            onDrag={handleDrag}
+            onDragEnd={handleDragEnd}
+          />
+        </div>
       )}
     </>
   )
@@ -246,10 +131,7 @@ const Toolbar: React.FC = function Toolbar() {
     },
   })
   return (
-    <Paper elevation={12} sx={cardStyles}>
-      <Item title="Something">
-        <AppsIcon />
-      </Item>
+    <Paper elevation={12} sx={cardStyles} id="toolbar">
       {packageData &&
         packageData.getPackages.flatMap(_package => {
           return _package.components.map(component => {
@@ -262,7 +144,7 @@ const Toolbar: React.FC = function Toolbar() {
                   package: _package.packageName,
                   _id: '',
                   type: component.name,
-                  props: component.props,
+                  props: component.defaultValue,
                 }}
               >
                 {/* @ts-ignore */}
@@ -275,18 +157,6 @@ const Toolbar: React.FC = function Toolbar() {
             )
           })
         })}
-      <Item title="image">
-        <ImageIcon />
-      </Item>
-      <Item title="shapes">
-        <Icon icon="shapes" />
-      </Item>
-      <Item title="expandRight">
-        <Icon icon="expandRight" />
-      </Item>
-      <Item title="input">
-        <Icon icon="input" />
-      </Item>
     </Paper>
   )
 }

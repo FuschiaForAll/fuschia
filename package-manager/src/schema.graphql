@@ -5,23 +5,26 @@
 
 type Component {
   _id: ObjectId!
+  defaultValue: String!
   icon: String!
   isContainer: Boolean!
   isRootElement: Boolean!
   name: String!
-  props: String!
+  schema: String!
 }
 
 input ComponentInput {
+  defaultValue: String!
   icon: String!
   isContainer: Boolean!
   isRootElement: Boolean!
   name: String!
-  props: String!
+  schema: String!
 }
 
 type Mutation {
   createPackage(packageInput: PackageInput!): Package!
+  publishComponents(componentInput: [ComponentInput!]!): [Component!]!
 }
 
 """Mongo object id scalar type"""

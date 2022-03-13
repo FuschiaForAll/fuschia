@@ -9,7 +9,7 @@ export class Component {
   readonly _id!: ObjectId;
 
   @Field()
-  @Property({ required: true, unique: true })
+  @Property({ required: true })
   name!: String;
 
   @Field()
@@ -22,7 +22,11 @@ export class Component {
 
   @Field()
   @Property({ required: true })
-  props!: String;
+  schema!: String;
+
+  @Field()
+  @Property({ required: true })
+  defaultValue!: String;
 
   @Field()
   @Property({ required: true })

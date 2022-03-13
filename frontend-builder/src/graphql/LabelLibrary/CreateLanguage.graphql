@@ -1,0 +1,13 @@
+mutation CreateLangauge(
+  $projectId: ObjectId!
+  $languageName: String!
+  $languageCode: String!
+) {
+  createLanguage(
+    projectId: $projectId
+    languageName: $languageName
+    languageCode: $languageCode
+  ) {
+    _id
+  }
+}

@@ -7,6 +7,13 @@ import {
   Component,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
+import PropertyWindow from '../../Properties'
+import {
+  GetPackagesQuery,
+  useGetPackagesQuery,
+} from '../../../../generated/graphql-packages'
+import { Schema } from '@fuchsia/types'
+import Portal from '../../../Shared/Portal'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
@@ -41,21 +48,10 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
 }) {
   const { x, y, props } = layer
   const jsonProps = JSON.parse(props || '{}')
-  console.log(`FrameLayer here for: ${layer._id}`)
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
-      onDragEnd: (id, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-            },
-          },
-        })
-      },
+      onDragEnd: id => {},
     },
     resizable: {
       onResizeEnd: (id, { width, height }, { x, y }) => {
@@ -81,8 +77,8 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   })
 
   const styles: React.CSSProperties = {
-    width: 50,
-    height: 50,
+    width: jsonProps.style?.width || 50,
+    height: jsonProps.style?.height || 50,
     left: x || 0,
     top: y || 0,
     pointerEvents: 'all',
@@ -90,13 +86,12 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
     zIndex: 10,
   }
 
-  if (jsonProps.style) {
-    styles.width = jsonProps.style.width
-    styles.height = jsonProps.style.height
-  }
-
   if (selected) {
     styles.boxShadow = BOX_SHADOW
+  }
+
+  if (layer.isRootElement) {
+    styles.border = '#ccc solid 1px'
   }
   const classNames = ['droppable']
   if (layer.isRootElement) {
@@ -126,17 +121,7 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
-      onDragEnd: (id, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-            },
-          },
-        })
-      },
+      onDragEnd: id => {},
     },
     resizable: {
       onResizeEnd: (id, { width, height }, { x, y }) => {
@@ -157,19 +142,16 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
     },
   })
   const { x, y, props } = layer
+  const jsonProps = JSON.parse(props || '{}')
+
   const styles: React.CSSProperties = {
-    width: 50,
-    height: 50,
+    width: jsonProps.style?.width || 50,
+    height: jsonProps.style?.height || 50,
     pointerEvents: 'all',
     zIndex: 1000,
     position: 'absolute',
     left: `${x}px`,
     top: `${y}px`,
-  }
-  const jsonProps = JSON.parse(props || '{}')
-  if (jsonProps.style) {
-    styles.width = jsonProps.style.width
-    styles.height = jsonProps.style.height
   }
   if (selected) {
     styles.boxShadow = BOX_SHADOW
@@ -189,11 +171,30 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
+function getComponentSchema(
+  packageData: GetPackagesQuery,
+  layer: Component
+): Schema {
+  const componentPackage = packageData.getPackages.find(
+    p => p.packageName === layer.package
+  )
+  if (componentPackage) {
+    const component = componentPackage.components.find(
+      component => component.name === layer.type
+    )
+    if (component) {
+      return JSON.parse(component.schema || '{}')
+    }
+  }
+  throw new Error('Schema not found')
+}
+
 const LayerSub: React.FC<LayerProps> = function LayerSub({
   layer,
   selection,
   onSelect,
 }) {
+  const { data: packageData } = useGetPackagesQuery()
   const selected = !!selection?.includes(layer._id)
 
   // @ts-ignore
@@ -210,30 +211,18 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   const { props } = layer
   const jsonProps = JSON.parse(props || '{}')
   return (
-    <WrapperType layer={layer} selected={selected} onClick={onSelect}>
-      {layer.isContainer ? (
-        <InlineComponent
-          id={`component=${layer._id}`}
-          {...jsonProps}
-          style={{
-            ...jsonProps.style,
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-          }}
-        >
-          {layer.children?.map(child => (
-            <LayerSub layer={child} selection={selection} onSelect={onSelect} />
-          ))}
-        </InlineComponent>
-      ) : (
-        <div
-          style={{
-            width: '100%',
-            height: '100%',
-            position: 'absolute',
-          }}
-        >
+    <>
+      {selected && packageData?.getPackages && (
+        <Portal id="property-window">
+          <PropertyWindow
+            elementId={layer._id}
+            schema={getComponentSchema(packageData, layer)}
+            properties={JSON.parse(layer.props || '{}')}
+          />
+        </Portal>
+      )}
+      <WrapperType layer={layer} selected={selected} onClick={onSelect}>
+        {layer.isContainer ? (
           <InlineComponent
             id={`component=${layer._id}`}
             {...jsonProps}
@@ -243,18 +232,46 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
               height: '100%',
               position: 'absolute',
             }}
-          />
-          <div
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(254, 254, 254, 0.1)',
-            }}
-          />
-        </div>
-      )}
-    </WrapperType>
+          >
+            {layer.children?.map(child => (
+              <LayerSub
+                layer={child}
+                selection={selection}
+                onSelect={onSelect}
+              />
+            ))}
+          </InlineComponent>
+        ) : (
+          <div>
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+              }}
+            >
+              <InlineComponent
+                id={`component=${layer._id}`}
+                {...jsonProps}
+                style={{
+                  ...jsonProps.style,
+                  width: '100%',
+                  height: '100%',
+                  position: 'absolute',
+                }}
+              />
+            </div>
+            <div
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+              }}
+            />
+          </div>
+        )}
+      </WrapperType>
+    </>
   )
 }
 

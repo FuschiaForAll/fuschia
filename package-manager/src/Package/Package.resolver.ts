@@ -9,17 +9,20 @@ import { PackageInput } from "./Package.input";
 export class PackageResolver {
   @Query(() => [Package])
   async getPackages() {
-    return PackageModel.find()
+    return PackageModel.find();
   }
 
   @Mutation(() => Package)
-  async createPackage(@Arg('packageInput', type => PackageInput) packageInput: PackageInput) {
+  async createPackage(
+    @Arg("packageInput", (type) => PackageInput) packageInput: PackageInput
+  ) {
+    console.log(packageInput);
     const createObj = await PackageModel.create({
-      ...packageInput
-    })
+      ...packageInput,
+    });
     return {
       _id: createObj._id,
-      ...packageInput
-    }
+      ...packageInput,
+    };
   }
 }

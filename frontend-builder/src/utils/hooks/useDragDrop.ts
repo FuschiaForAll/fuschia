@@ -13,12 +13,13 @@ interface DragResponse {
 interface DragDropOptions {
   min?: { width: number; height: number }
   draggable?: {
-    onDragEnd: (id: string, position: { x: number; y: number }) => void
+    onDragEnd: (id: string) => void
+    manualStart?: boolean
   }
   resizable?: {
     onResizeEnd: (
       id: string,
-      size: { width: string; height: string },
+      size: { width: number; height: number },
       position: { x: number; y: number }
     ) => void
   }
@@ -68,23 +69,25 @@ export const useDragDrop = (
         if (draggable) {
           interaction
             .on('dragend', (event: InteractEvent) => {
-              var target = event.target
-              if (target.classList.contains('deleted')) {
-                return
-              }
-              const [x, y] = getDataAttributes(target)
-              const [left, top] = getPosition(target)
-              updatePosition(target, x + left, y + top)
-              updateComponent(id, { x: x + left, y: y + top })
+              draggable.onDragEnd(event.target.id)
             })
             .draggable({
-              inertia: true,
+              manualStart: !!options.draggable?.manualStart,
+              inertia: false,
               autoScroll: true,
               listeners: {
                 start: event => {
+                  /**
+                   * we are going to move the element to the root of the drag holder
+                   * so that it will be rendered on top of the other objects to maintain
+                   * visibility
+                   */
                   const target = event.target
                   updateAttribues(target, 0, 0)
-                  if (event.target.classList.contains('root-element')) {
+                  if (
+                    event.target.classList.contains('root-element') &&
+                    event.target.id !== 'new-element'
+                  ) {
                     return
                   }
                   target.parentElement.id = 'drag-and-drop-origin'
@@ -120,6 +123,20 @@ export const useDragDrop = (
                 },
               },
             })
+          if (draggable.manualStart) {
+            interaction.on('move', (event: InteractEvent) => {
+              if (
+                event.interaction.pointerIsDown &&
+                !event.interaction.interacting()
+              ) {
+                event.interaction.start(
+                  { name: 'drag' },
+                  event.interactable,
+                  ref.current!
+                )
+              }
+            })
+          }
         }
         if (resizable) {
           interaction
@@ -131,13 +148,16 @@ export const useDragDrop = (
               updatePosition(target, x + left, y + top)
               resizable.onResizeEnd(
                 id,
-                { width: target.style.width, height: target.style.height },
+                {
+                  width: parseFloat(target.style.width),
+                  height: parseFloat(target.style.height),
+                },
                 { x: x + left, y: y + top }
               )
             })
             .resizable({
               // resize from all edges and corners
-              edges: { left: true, right: true, bottom: true, top: true },
+              edges: { left: false, right: true, bottom: true, top: false },
               listeners: {
                 move(event) {
                   var target = event.target
@@ -159,112 +179,90 @@ export const useDragDrop = (
                   updateAttribues(target, x, y)
                 },
               },
-              modifiers: [
-                interact.modifiers.restrictSize({
-                  min: { width: 100, height: 50 },
-                }),
-              ],
 
-              inertia: true,
+              inertia: false,
             })
         }
         if (droppable) {
           interaction.dropzone({
-            // only accept elements matching this CSS selector
             accept: '.droppable',
-            // Require a 75% element overlap for a drop to be possible
             overlap: 0.75,
-
-            // listen for drop related events:
-
-            ondropactivate: function (event) {
-              // add active dropzone feedback
-              event.target.classList.add('drop-active')
-            },
-            ondragenter: function (event) {
-              var dropzoneElement = event.target
-              dropzoneElement.classList.add('drop-target')
-            },
-            ondragleave: function (event) {
+            ondropactivate: event => event.target.classList.add('drop-active'),
+            ondragenter: event => event.target.classList.add('drop-target'),
+            ondragleave: event => event.target.classList.remove('drop-target'),
+            ondropdeactivate: function (event) {
+              event.target.classList.remove('drop-active')
               event.target.classList.remove('drop-target')
             },
-            ondrop: function (event) {
-              const parentId = event.target.id
-              // temp
-              if (parentId === 'drag-holder') {
-                // if a non-root element is dropped on the main canvas, delete it
-                if (!event.relatedTarget.classList.contains('root-element')) {
-                  const parentdnd = document.getElementById(
-                    'drag-and-drop-origin'
-                  )
-                  if (parentdnd) {
-                    parentdnd.id = ''
-                    parentdnd.appendChild(event.relatedTarget)
-                  }
-                  event.relatedTarget.classList.add('deleted')
-                  if (event.relatedTarget.id !== 'new-element') {
-                    deleteComponents(event.relatedTarget.id)
-                  }
-                } else {
-                  // it is a root element, update location
-                  const [x, y] = getDataAttributes(event.relatedTarget)
-                  const [left, top] = getPosition(event.relatedTarget)
-                  updateAttribues(event.relatedTarget, 0, 0)
-                  updatePosition(event.relatedTarget, x + left, y + top)
-                }
+            ondrop: function (event: InteractEvent) {
+              /**
+               * Drop rules
+               * 1. Only a root component can be placed on the main-canvas
+               * 2. Only containers or the main canvas can be dropped on
+               */
+              if (!event.relatedTarget) {
                 return
               }
+              const parentId = event.target.id
+              const isRootElement =
+                event.relatedTarget.classList.contains('root-element')
+              // put the component back in the proper DOM location so react doesn't complain
+              const dndOrigin = document.getElementById('drag-and-drop-origin')
+              if (dndOrigin) {
+                dndOrigin.id = ''
+                dndOrigin.appendChild(event.relatedTarget)
+              }
+              // check if we need to update the component
+              let parent = event.target
+              let [positionX, positionY] = getPosition(parent)
+              while (
+                parent.parentElement &&
+                !parent.classList.contains('root-element')
+              ) {
+                parent = parent.parentElement
+                const [parentX, parentY] = getPosition(parent)
+                positionX += parentX
+                positionY += parentY
+              }
+              const [x, y] = getDataAttributes(event.relatedTarget)
+              const [left, top] = getPosition(event.relatedTarget)
+              const newX = x + left - positionX
+              const newY = y + top - positionY
+
               if (event.relatedTarget.id === 'new-element') {
-                // insert component
+                // check if we need to insert the component
+                if (!isRootElement && parentId === 'main-canvas') {
+                  return
+                }
                 const layer = event.relatedTarget.dataset['layer']
                 if (layer) {
                   const jsonLayer = JSON.parse(layer)
-
-                  const [parentX, parentY] = getPosition(event.target)
-                  const [x, y] = getDataAttributes(event.relatedTarget)
-                  const [left, top] = getPosition(event.relatedTarget)
-                  const newX = x + left - parentX
-                  const newY = y + top - parentY
                   updateAttribues(event.relatedTarget, 0, 0)
                   updatePosition(event.relatedTarget, newX, newY)
+                  const targetId =
+                    parentId === 'main-canvas' ? undefined : parentId
                   createComponent({
                     isRootElement: jsonLayer.isRootElement,
                     isContainer: jsonLayer.isContainer,
                     package: jsonLayer.package,
                     type: jsonLayer.type,
-                    parent: parentId,
+                    parent: targetId,
                     props: jsonLayer.props,
                     x: newX,
                     y: newY,
                   })
                 }
               } else {
-                const parentdnd = document.getElementById(
-                  'drag-and-drop-origin'
-                )
-                if (parentdnd) {
-                  parentdnd.id = ''
-                  parentdnd.appendChild(event.relatedTarget)
-                }
-                // adjust to be relative to drop parent
-                const [parentX, parentY] = getPosition(event.target)
-                const [x, y] = getDataAttributes(event.relatedTarget)
-                const [left, top] = getPosition(event.relatedTarget)
-                updatePosition(
-                  event.relatedTarget,
-                  x + left - parentX,
-                  y + top - parentY
-                )
+                updatePosition(event.relatedTarget, newX, newY)
+                const targetId =
+                  parentId === 'main-canvas' ? undefined : parentId
                 updateAttribues(event.relatedTarget, 0, 0)
                 updateComponent(event.relatedTarget.id, {
-                  parent: parentId,
+                  parent: targetId,
+                  x: newX,
+                  y: newY,
                 })
               }
-            },
-            ondropdeactivate: function (event) {
-              // remove active dropzone feedback
-              event.target.classList.remove('drop-active')
-              event.target.classList.remove('drop-target')
             },
           })
         }

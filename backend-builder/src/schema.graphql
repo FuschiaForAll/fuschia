@@ -145,16 +145,42 @@ type Key {
   name: String!
 }
 
+type LabelLibrary {
+  labelTags: [LabelTag!]!
+  languages: [Language!]!
+  translations: [LanguageTranslation!]!
+}
+
+type LabelTag {
+  _id: ObjectId!
+  name: String!
+  numberOfStates: Float!
+}
+
+type Language {
+  _id: ObjectId!
+  code: String!
+  name: String!
+}
+
+type LanguageTranslation {
+  language: ObjectId!
+  translations: [Translation!]!
+}
+
 type Mutation {
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
+  createLabelTag(numberOfStates: Int!, projectId: ObjectId!, tagName: String!): Project!
+  createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
   createOrganization(organization: OrganizationInput!): Organization!
   createProject(project: ProjectInput!): Project!
   createQuery: Boolean
   createRelationship: Boolean
   createSubscription: Boolean
+  createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
@@ -177,6 +203,7 @@ type Mutation {
   updateQuery: Boolean
   updateRelationship: Boolean
   updateSubscription: Boolean
+  updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
 }
 
 """Mongo object id scalar type"""
@@ -200,6 +227,7 @@ type Project {
   appId: String!
   body: String
   components: [Component!]!
+  labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
 }
@@ -212,7 +240,9 @@ input ProjectInput {
 
 type Query {
   getAuth(projectId: ObjectId!): Auth
+  getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
+  getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
@@ -228,6 +258,11 @@ type Query {
   retrieveQuery: Boolean
   retrieveRelationship: Boolean
   retrieveSubscription: Boolean
+}
+
+type Translation {
+  tag: ObjectId!
+  value: [String!]!
 }
 
 input UpdateProjectInput {

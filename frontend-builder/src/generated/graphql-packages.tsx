@@ -20,29 +20,37 @@ export type Scalars = {
 export type Component = {
   __typename?: 'Component';
   _id: Scalars['ObjectId'];
+  defaultValue: Scalars['String'];
   icon: Scalars['String'];
   isContainer: Scalars['Boolean'];
   isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
-  props: Scalars['String'];
+  schema: Scalars['String'];
 };
 
 export type ComponentInput = {
+  defaultValue: Scalars['String'];
   icon: Scalars['String'];
   isContainer: Scalars['Boolean'];
   isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
-  props: Scalars['String'];
+  schema: Scalars['String'];
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
   createPackage: Package;
+  publishComponents: Array<Component>;
 };
 
 
 export type MutationCreatePackageArgs = {
   packageInput: PackageInput;
+};
+
+
+export type MutationPublishComponentsArgs = {
+  componentInput: Array<ComponentInput>;
 };
 
 export type Package = {
@@ -83,7 +91,7 @@ export type Query = {
 export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, props: string, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
+export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, schema: string, defaultValue: string, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
 
 
 export const GetPackagesDocument = gql`
@@ -97,7 +105,8 @@ export const GetPackagesDocument = gql`
     components {
       _id
       name
-      props
+      schema
+      defaultValue
       icon
       isRootElement
       isContainer

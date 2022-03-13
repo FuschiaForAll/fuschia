@@ -1,0 +1,30 @@
+#import "./Component.fragment.graphql"
+query GetComponent($componentId: ObjectId!) {
+  getComponent(componentId: $componentId) {
+    ...ComponentFragment
+    children {
+      ...ComponentFragment
+      children {
+        ...ComponentFragment
+        children {
+          ...ComponentFragment
+          children {
+            ...ComponentFragment
+            children {
+              ...ComponentFragment
+              children {
+                ...ComponentFragment
+                children {
+                  ...ComponentFragment
+                  children {
+                    ...ComponentFragment
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

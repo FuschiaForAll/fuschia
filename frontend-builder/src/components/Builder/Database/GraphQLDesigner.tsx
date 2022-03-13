@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { getIntrospectionQuery, buildClientSchema } from 'graphql'
+import { getIntrospectionQuery } from 'graphql'
 
 interface GraphQLDesignerProps {
   sandboxEndpoint?: string | null
@@ -36,8 +36,7 @@ const GraphQLDesigner: React.FC<GraphQLDesignerProps> =
     }, [sandboxEndpoint])
     useEffect(() => {
       if (introspectionData) {
-        const schema = buildClientSchema(introspectionData, {})
-        console.log(schema)
+        // const schema = buildClientSchema(introspectionData, {})
       }
     }, [introspectionData])
     if (!introspectionData) {

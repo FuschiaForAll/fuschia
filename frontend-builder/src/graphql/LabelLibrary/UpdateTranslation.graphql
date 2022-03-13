@@ -1,0 +1,15 @@
+mutation UpdateTranslation(
+  $projectId: ObjectId!
+  $languageId: ObjectId!
+  $tagId: ObjectId!
+  $translations: [String!]!
+) {
+  updateTranslation(
+    projectId: $projectId
+    languageId: $languageId
+    tagId: $tagId
+    translations: $translations
+  ) {
+    _id
+  }
+}

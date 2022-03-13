@@ -161,7 +161,6 @@ export const validateField = (
         FieldTypes[checkType.type].callables.forEach(callableItem => {
           const params =
             typeof checkType.params !== undefined ? checkType.params : {}
-          //console.log('validateField', checkType, checkType.params, fieldName, params)
           if (
             callableItem.passResult !== callableItem.callable(value, params)
           ) {
@@ -187,8 +186,6 @@ export const validateField = (
 export const validateData = (
   formFields: IFormFieldValidation
 ): IFormFieldValidation => {
-  //console.log('validateData', formFields)
-
   for (let fieldName in formFields) {
     formFields = validateField(
       formFields,
@@ -232,7 +229,6 @@ export const hasErrors = (formFields: IFormFieldValidation): boolean => {
   }
 
   let thisHasErrors = false
-  //console.log('FF', formFields)
 
   for (let keys in formFields) {
     if (formFields[keys].errors) {

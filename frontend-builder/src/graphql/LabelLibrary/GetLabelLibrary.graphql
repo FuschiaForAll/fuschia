@@ -1,0 +1,21 @@
+query GetLabelLibrary($projectId: ObjectId!) {
+  getLabelLibrary(projectId: $projectId) {
+    languages {
+      _id
+      name
+      code
+    }
+    translations {
+      language
+      translations {
+        tag
+        value
+      }
+    }
+    labelTags {
+      _id
+      name
+      numberOfStates
+    }
+  }
+}
