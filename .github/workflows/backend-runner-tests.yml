@@ -1,0 +1,21 @@
+name: Backend Runner Tests
+on: pull_request
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Remove unnecessary workspaces
+        run: rm -rf backend-builder
+        run: rm -rf frontend-builder
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 16
+      - uses: c-hive/gha-yarn-cache@v2
+      - run: yarn install --frozen-lockfile --ignore-optional
+      - name: Running tests
+        run: yarn test
+        working-directory: ./backend-runner
+        env:
+          CI: 1

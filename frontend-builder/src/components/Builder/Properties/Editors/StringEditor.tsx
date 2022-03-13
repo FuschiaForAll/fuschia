@@ -8,6 +8,7 @@ import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
+import DataBinder from './DataBinder'
 
 export type StringEditorProps = Props<StringSchema, string>
 
@@ -98,11 +99,14 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
       )
     default:
       return (
-        <LabeledTextInput
-          label={props.schema.title || 'undefined'}
-          defaultValue={props.initialValue as string}
-          onChange={e => props.updateValue(e.target.value, true)}
-        />
+        <>
+          <LabeledTextInput
+            label={props.schema.title || 'undefined'}
+            defaultValue={props.initialValue as string}
+            onChange={e => props.updateValue(e.target.value, true)}
+          />
+          <DataBinder />
+        </>
       )
   }
 }

@@ -2,10 +2,10 @@
   "fuschia": [
     {
       "projects": {
-        "_id": { "$oid": "620ea4747e41372547be8461" },
-        "appId": "63f15d3d-219d-4221-8d4b-cb10bad4a9bb",
-        "projectName": "My New Project",
-        "organization": { "$oid": "620b132662e5560e44d55a42" },
+        "_id": "622bbcbdb4a1240ba8d4d95e",
+        "appId": "0e560be9-c140-4b91-bc9b-07b9e2eafacc",
+        "projectName": "Create Project",
+        "organization": "620b132662e5560e44d55a42",
         "appConfig": {
           "apiConfig": {
             "queries": [],
@@ -14,143 +14,71 @@
             "models": [
               {
                 "name": "Users",
-                "_id": { "$oid": "620ea47c7e41372547be8470" },
+                "_id": "622e0cdd4418968a4d86bada",
                 "keys": [],
                 "auth": [],
                 "fields": [
                   {
-                    "fieldName": "email",
-                    "isUnique": true,
+                    "fieldName": "Email",
+                    "isUnique": false,
                     "isHashed": false,
-                    "nullable": false,
+                    "isList": false,
+                    "nullable": true,
                     "dataType": "String",
-                    "_id": { "$oid": "620ea4967e41372547be847e" },
+                    "_id": "622e0cec4418968a4d86bb0e",
                     "rules": [],
                     "keys": []
                   },
                   {
-                    "fieldName": "password",
+                    "fieldName": "Password",
                     "isUnique": false,
                     "isHashed": true,
+                    "isList": false,
                     "nullable": false,
                     "dataType": "String",
-                    "_id": { "$oid": "620ea49e7e41372547be848e" },
+                    "_id": "622e0d044418968a4d86bb3c",
                     "rules": [],
                     "keys": []
                   },
                   {
-                    "fieldName": "first name",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620f087c6d565d2d47d86d7f" },
-                    "rules": [],
-                    "keys": []
-                  },
-                  {
-                    "fieldName": "last name",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620f0b6c93d0eb96d0371aab" },
-                    "rules": [],
-                    "keys": []
-                  },
-                  {
-                    "fieldName": "supporter",
+                    "fieldName": "ToDos",
                     "isUnique": false,
                     "isHashed": false,
                     "isList": false,
                     "connection": true,
-                    "nullable": true,
-                    "dataType": "620ea47c7e41372547be8470",
-                    "_id": { "$oid": "6212aee70a364eb904f675e5" },
+                    "nullable": false,
+                    "dataType": "622e0ce34418968a4d86baf2",
+                    "_id": "622e0d194418968a4d86bb96",
+                    "rules": [],
+                    "keys": []
+                  }
+                ]
+              },
+              {
+                "name": "ToDo",
+                "_id": "622e0ce34418968a4d86baf2",
+                "keys": [],
+                "auth": [],
+                "fields": [
+                  {
+                    "fieldName": "Name",
+                    "isUnique": false,
+                    "isHashed": false,
+                    "isList": false,
+                    "nullable": false,
+                    "dataType": "String",
+                    "_id": "622e0d244418968a4d86bbbe",
                     "rules": [],
                     "keys": []
                   },
                   {
-                    "fieldName": "friends",
+                    "fieldName": "Completed",
                     "isUnique": false,
                     "isHashed": false,
-                    "isList": true,
-                    "connection": true,
-                    "nullable": true,
-                    "dataType": "620ea47c7e41372547be8470",
-                    "_id": { "$oid": "6212bcc2ba3bbc597b6194c7" },
-                    "rules": [],
-                    "keys": []
-                  }
-                ]
-              },
-              {
-                "name": "Meetings",
-                "_id": { "$oid": "620ea9477e41372547be8518" },
-                "keys": [],
-                "auth": [],
-                "fields": [
-                  {
-                    "fieldName": "qwer",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620f00236c184a801a169a6e" },
-                    "rules": [],
-                    "keys": []
-                  }
-                ]
-              },
-              {
-                "name": "Schedule",
-                "_id": { "$oid": "620ea9917e41372547be852c" },
-                "keys": [],
-                "auth": [],
-                "fields": [
-                  {
-                    "fieldName": "zxcv",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620f001e6c184a801a169a4e" },
-                    "rules": [],
-                    "keys": []
-                  }
-                ]
-              },
-              {
-                "name": "Test",
-                "_id": { "$oid": "620ea9e27e41372547be854c" },
-                "keys": [],
-                "auth": [],
-                "fields": [
-                  {
-                    "fieldName": "asdf",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620f00186c184a801a169a31" },
-                    "rules": [],
-                    "keys": []
-                  }
-                ]
-              },
-              {
-                "name": "Again",
-                "_id": { "$oid": "620ea9e67e41372547be8564" },
-                "keys": [],
-                "auth": [],
-                "fields": [
-                  {
-                    "fieldName": "this is a test field",
-                    "isUnique": false,
-                    "isHashed": false,
-                    "nullable": true,
-                    "dataType": "String",
-                    "_id": { "$oid": "620eaf3f753e7886757e0a6e" },
+                    "isList": false,
+                    "nullable": false,
+                    "dataType": "Boolean",
+                    "_id": "622e0d2b4418968a4d86bbea",
                     "rules": [],
                     "keys": []
                   }
@@ -160,47 +88,34 @@
             "sandboxEndpoint": "http://localhost:8000"
           },
           "authConfig": {
-            "requiresAuth": true,
-            "allowUnauthenticatedUsers": true,
+            "requiresAuth": false,
+            "allowUnauthenticatedUsers": false,
             "mfaEnabled": false,
             "mfaConfiguration": "OFF",
             "mfaTypes": "SMS",
-            "smsAuthenticationMessage": "Your verification code is {####}",
+            "smsAuthenticationMessage": "Your authentication code is {####}",
             "smsVerificationMessage": "Your verification code is {####}",
             "emailVerificationSubject": "Your verification code",
             "emailVerificationMessage": "Your verification code is {####}",
             "defaultPasswordPolicy": false,
-            "passwordPolicyMinLength": 10,
+            "passwordPolicyMinLength": 8,
             "passwordRequiresUppercase": false,
-            "passwordRequiresNumbers": true,
+            "passwordRequiresNumbers": false,
             "passwordRequiresSymbols": false,
             "requiredAttributes": [],
             "clientRefreshTokenValidity": 10,
             "usernameCaseSensitive": false,
-            "tableId": "620ea47c7e41372547be8470",
-            "usernameFieldId": "620ea4967e41372547be847e",
-            "passwordFieldId": "620ea49e7e41372547be848e",
-            "_id": { "$oid": "620ea4747e41372547be8462" }
+            "tableId": "",
+            "usernameFieldId": "",
+            "passwordFieldId": "",
+            "_id": "622bbcbdb4a1240ba8d4d95f"
           },
-          "_id": { "$oid": "620ea4747e41372547be8463" },
-          "liveJwtSecret": "SECRET",
-          "sandboxJwtSecret": "SECRET"
+          "_id": "622bbcbdb4a1240ba8d4d960"
         },
-        "__v": 18
+        "body": "{\"objects\": []}",
+        "components": ["622dfbd685c121ecc46b8b69"],
+        "__v": 7
       }
-    }
-  ],
-  "620ea4747e41372547be8461": [
-    {
-      "620ea47c7e41372547be8470": [
-        {
-          "_id": { "$oid": "621124878c6ceedaef327db8" },
-          "620ea4967e41372547be847e": "asdf",
-          "620ea49e7e41372547be848e": "asdf",
-          "620f087c6d565d2d47d86d7f": "asdf",
-          "620f0b6c93d0eb96d0371aab": "asdf"
-        }
-      ]
     }
   ]
 }

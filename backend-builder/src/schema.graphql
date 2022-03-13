@@ -8,7 +8,7 @@ type Api {
   models: [EntityModel!]!
   mutations: [String!]!
   queries: [String!]!
-  sandboxEndpoint: String!
+  sandboxEndpoint: String
   subscriptions: [String!]!
 }
 

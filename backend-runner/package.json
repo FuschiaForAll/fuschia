@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "export MONGO_DB_URL=mongodb://localhost:27017 && export PROJECT_ID=620b195abdca58147cd4fc88 && node src/index.js",
-    "test": "mocha tests/**/*.js --delay"
+    "test": "mocha tests/**/*.js --delay --exit"
   },
   "dependencies": {
     "apollo-server": "^3.6.3",
