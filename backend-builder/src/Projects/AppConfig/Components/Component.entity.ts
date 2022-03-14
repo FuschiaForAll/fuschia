@@ -39,6 +39,10 @@ export class Component {
   @Property()
   isRootElement!: boolean;
 
+  @Field((type) => [String], { nullable: true })
+  @Property()
+  parameters?: string[];
+
   @Field({ nullable: true })
   @Property()
   props?: string;

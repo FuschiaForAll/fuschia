@@ -171,6 +171,16 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
+function convertDraftJSBindings(value: string) {
+  try {
+    const jsonValue = JSON.parse(value)
+    if (jsonValue.blocks) {
+      return jsonValue.blocks.map((block: any) => block.text).join('\n')
+    }
+  } catch {}
+  return value
+}
+
 function getComponentSchema(
   packageData: GetPackagesQuery,
   layer: Component
@@ -210,6 +220,10 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   const WrapperType = layer.isContainer ? FrameLayer : InlineLayer
   const { props } = layer
   const jsonProps = JSON.parse(props || '{}')
+  Object.keys(jsonProps).forEach(
+    key => (jsonProps[key] = convertDraftJSBindings(jsonProps[key]))
+  )
+  debugger
   return (
     <>
       {selected && packageData?.getPackages && (

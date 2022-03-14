@@ -44,6 +44,7 @@ const Editor = function Editor(props: EditorProps) {
       return <NullEditor {...(props as Props<NullSchema, null>)} />
     case 'function':
       return <FunctionEditor {...(props as Props<FunctionSchema, any>)} />
+    case 'ui-component':
     case 'object':
       return (
         <ObjectEditor

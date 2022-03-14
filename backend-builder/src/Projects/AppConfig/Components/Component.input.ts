@@ -25,6 +25,9 @@ export class ComponentInput {
   @Field({ nullable: true })
   isRootElement!: boolean;
 
+  @Field((type) => [String], { nullable: true })
+  parameters?: string[];
+
   @Field((type) => ObjectIdScalar, { nullable: true })
   parent!: ObjectId;
 

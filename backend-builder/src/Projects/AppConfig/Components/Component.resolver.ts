@@ -69,6 +69,7 @@ export class ComponentResolver {
       throw new ApolloError("Unauthorized");
     }
     const newcomponent = await ComponentModel.create({
+      parameters: componentInput.isRootElement ? [] : undefined,
       ...componentInput,
     });
     if (!componentInput.parent) {
@@ -152,7 +153,7 @@ export class ComponentResolver {
     console.log(project?.components);
     return componentIds;
   }
-  
+
   @FieldResolver()
   async children(@Root() component: Component) {
     return ComponentModel.find({

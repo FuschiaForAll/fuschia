@@ -1,16 +1,42 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { Props, StringSchema } from '@fuchsia/types'
 import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import { Color, SketchPicker } from 'react-color'
 import Box from '@mui/material/Box'
 import Popper from '@mui/material/Popper'
-import Select from '@mui/material/Select'
+import MuiSelect from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
 import DataBinder from './DataBinder'
+import styled from '@emotion/styled'
+import Select from '../../../Shared/Select'
+import {
+  Editor,
+  EditorState,
+  convertToRaw,
+  convertFromRaw,
+  Entity,
+  Modifier,
+  CompositeDecorator,
+} from 'draft-js'
 
 export type StringEditorProps = Props<StringSchema, string>
+
+const EditorWrapper = styled.div`
+  margin-top: 2px;
+  margin-bottom: 2px;
+  display: block;
+  border: none;
+  border-radius: 8px;
+  border: 1px solid var(--black);
+  padding: 8px;
+  width: 100%;
+  &:focus {
+    outline-color: var(--accent) !important;
+    outline-width: 1px;
+  }
+`
 
 const ColorPicker = ({
   title,
@@ -61,7 +87,105 @@ const ColorPicker = ({
   )
 }
 
+const Placeholder = (props: any) => {
+  const data = props.contentState.getEntity(props.entityKey).getData()
+  debugger
+  return (
+    <span
+      //@ts-ignore
+      readOnly={true}
+      title={data.path?.split('.').join(' > ')}
+      {...props}
+      style={styles.placeholder}
+    >
+      <span>{props.children}</span>
+    </span>
+  )
+}
+
+const decorator = new CompositeDecorator([
+  {
+    strategy: findPlaceholders,
+    component: Placeholder,
+  },
+])
+
+function findPlaceholders(contentBlock: any, callback: any) {
+  contentBlock.findEntityRanges((character: any) => {
+    const entityKey = character.getEntity()
+    return (
+      entityKey !== null && Entity.get(entityKey).getType() === 'PLACEHOLDER'
+    )
+  }, callback)
+}
+
+function convertInitialContent(content: string) {
+  try {
+    const jsonContent = JSON.parse(content)
+    if (jsonContent.blocks) {
+      return jsonContent
+    } else {
+      return {
+        blocks: [],
+        entityMap: {
+          first: {
+            type: 'PLACEHOLDER',
+            mutability: 'IMMUTABLE',
+            data: {
+              content: 'firstName', // can be whatever
+            },
+          },
+        },
+      }
+    }
+  } catch {
+    return {
+      blocks: [
+        {
+          text: content || '',
+          type: 'unstyled',
+        },
+      ],
+      entityMap: {
+        first: {
+          type: 'PLACEHOLDER',
+          mutability: 'IMMUTABLE',
+          data: {
+            content: 'firstName', // can be whatever
+          },
+        },
+      },
+    }
+  }
+}
+
 const StringEditor = function StringEditor(props: StringEditorProps) {
+  debugger
+  const [editorFocused, setEditorFocused] = useState(false)
+  const [editorState, setEditorState] = React.useState(
+    EditorState.createWithContent(
+      convertFromRaw(convertInitialContent(props.initialValue)),
+      decorator
+    )
+  )
+  const ref = useRef<Editor>(null)
+  function insertPlaceholder(label: string, path: any) {
+    const currentContent = editorState.getCurrentContent()
+    const selection = editorState.getSelection()
+    const entityKey = Entity.create('PLACEHOLDER', 'IMMUTABLE', path)
+    const textWithEntity = Modifier.replaceText(
+      currentContent,
+      selection,
+      label,
+      undefined,
+      entityKey
+    )
+
+    setEditorState(
+      EditorState.push(editorState, textWithEntity, 'insert-characters')
+    )
+  }
+
   if (props.schema.enum) {
     return (
       <FormControl
@@ -71,7 +195,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
         <InputLabel id={`select-${props.schema.title || 'undefined'}-label`}>
           {props.schema.title}
         </InputLabel>
-        <Select
+        <MuiSelect
           labelId={`select-${props.schema.title || 'undefined'}-label`}
           label={props.schema.title}
           defaultValue={props.initialValue as string}
@@ -82,7 +206,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
               {item}
             </MenuItem>
           ))}
-        </Select>
+        </MuiSelect>
       </FormControl>
     )
   }
@@ -97,7 +221,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
           onChange={e => props.updateValue(e, true)}
         />
       )
-    default:
+    case 'ipv4':
       return (
         <>
           <LabeledTextInput
@@ -105,10 +229,55 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
             defaultValue={props.initialValue as string}
             onChange={e => props.updateValue(e.target.value, true)}
           />
-          <DataBinder />
         </>
       )
+    default:
+      return (
+        <div>
+          <div style={{ fontSize: '0.75rem' }}>{props.schema.title}</div>
+          <EditorWrapper
+            style={{
+              borderColor: editorFocused ? 'var(--accent)' : 'var(--black)',
+            }}
+          >
+            <Editor
+              onFocus={e => setEditorFocused(true)}
+              onBlur={e => {
+                setEditorFocused(false)
+              }}
+              editorState={editorState}
+              onChange={e => {
+                props.updateValue(
+                  JSON.stringify(convertToRaw(editorState.getCurrentContent())),
+                  true
+                )
+                setEditorState(e)
+              }}
+              ref={ref}
+            />
+          </EditorWrapper>
+          <DataBinder
+            onSelect={e =>
+              insertPlaceholder(e.split('.').pop() || e, { path: e })
+            }
+          />
+        </div>
+      )
   }
+}
+
+const styles = {
+  editor: {
+    border: '1px solid gray',
+    minHeight: 300,
+    cursor: 'text',
+  },
+  placeholder: {
+    color: 'var(--accent)',
+    textDecoration: 'underline',
+    fontWeight: '600',
+    display: 'inline-block',
+  },
 }
 
 export default StringEditor

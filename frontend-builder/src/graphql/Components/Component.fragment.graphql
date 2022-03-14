@@ -6,6 +6,7 @@ fragment ComponentFragment on Component {
   y
   isContainer
   isRootElement
+  parameters
   props
   parent {
     _id

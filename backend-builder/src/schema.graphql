@@ -70,6 +70,7 @@ type Component {
   isContainer: Boolean!
   isRootElement: Boolean!
   package: String!
+  parameters: [String!]
   parent: Component
   props: String
   type: String!
@@ -82,6 +83,7 @@ input ComponentInput {
   isContainer: Boolean
   isRootElement: Boolean
   package: String
+  parameters: [String!]
   parent: ObjectId
   props: String
   type: String

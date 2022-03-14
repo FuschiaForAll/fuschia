@@ -12,17 +12,46 @@ interface MenuStructure {
 
 const PlacesMenu: MenuStructure = {
   key: 'Places',
-  subMenu: [{ key: 'User' }],
+  subMenu: [
+    {
+      key: 'Building Name',
+    },
+    {
+      key: 'Owner',
+      subMenu: [
+        {
+          key: 'Email',
+        },
+        {
+          key: 'First Name',
+        },
+        { key: 'Last Name' },
+      ],
+    },
+  ],
 }
 
 const UserMenu: MenuStructure = {
-  key: 'User',
-  subMenu: [PlacesMenu],
+  key: 'Me',
+  subMenu: [
+    {
+      key: 'Email',
+    },
+    {
+      key: 'First Name',
+    },
+    { key: 'Last Name' },
+    PlacesMenu,
+  ],
 }
 
 const mockDataStructure: MenuStructure[] = [UserMenu, PlacesMenu]
 
-function SubMenu(props: { label: string; menuItems: any[] }) {
+function SubMenu(props: {
+  label: string
+  menuItems: any[]
+  onSelect: (selectedItem: string) => void
+}) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
 
@@ -34,6 +63,10 @@ function SubMenu(props: { label: string; menuItems: any[] }) {
 
   function handleSubMenuClose() {
     setAnchorEl(null)
+  }
+  function handleSubMenuSelect(e: string) {
+    props.onSelect(e)
+    handleSubMenuClose()
   }
   return (
     <>
@@ -69,9 +102,13 @@ function SubMenu(props: { label: string; menuItems: any[] }) {
               label={element.key}
               menuItems={element.subMenu}
               key={element.key}
+              onSelect={e => handleSubMenuSelect(`${element.key}.${e}`)}
             />
           ) : (
-            <MenuItem key={element.key} onClick={handleSubMenuClose}>
+            <MenuItem
+              key={element.key}
+              onClick={() => handleSubMenuSelect(element.key)}
+            >
               {element.key}
             </MenuItem>
           )
@@ -81,7 +118,13 @@ function SubMenu(props: { label: string; menuItems: any[] }) {
   )
 }
 
-const DataBinder: React.FC = function DataBinder() {
+interface DataBinderProps {
+  onSelect: (selectedItem: string) => void
+}
+
+const DataBinder: React.FC<DataBinderProps> = function DataBinder(
+  props: DataBinderProps
+) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -89,6 +132,10 @@ const DataBinder: React.FC = function DataBinder() {
   }
   const handleClose = () => {
     setAnchorEl(null)
+  }
+  const handleSelect = (e: string) => {
+    props.onSelect(`${e}`)
+    handleClose()
   }
   return (
     <>
@@ -110,9 +157,13 @@ const DataBinder: React.FC = function DataBinder() {
               label={element.key}
               menuItems={element.subMenu}
               key={element.key}
+              onSelect={e => handleSelect(`${element.key}.${e}`)}
             />
           ) : (
-            <MenuItem key={element.key} onClick={handleClose}>
+            <MenuItem
+              key={element.key}
+              onClick={() => handleSelect(element.key)}
+            >
               {element.key}
             </MenuItem>
           )

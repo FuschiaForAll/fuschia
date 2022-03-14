@@ -30,7 +30,6 @@ function generateConnections(typename) {
 
 function generateCreateInput({ typename, keys, nullable }) {
   const builder = [];
-  builder.push(`"Create a new ${typename}"`);
   builder.push(`input Create${typename}Input {`);
   keys.forEach((key) =>
     builder.push(
@@ -45,7 +44,6 @@ function generateCreateInput({ typename, keys, nullable }) {
 
 function generateUpdateInput({ typename, keys }) {
   const builder = [];
-  builder.push(`"Update an existing ${typename}"`);
   builder.push(`input Update${typename}Input {`);
   builder.push(`  _id: ID!`);
   keys.forEach((key) =>
@@ -57,7 +55,6 @@ function generateUpdateInput({ typename, keys }) {
 
 function generateDeleteInput({ typename, keys }) {
   const builder = [];
-  builder.push(`"Delete an existing ${typename}"`);
   builder.push(`input Delete${typename}Input {`);
   builder.push(`  _id: ID!`);
   builder.push(`}`);
@@ -182,10 +179,13 @@ async function publish(project) {
         context,
         info
       );
+    queryBuilder.push(`"A Single ${name}"`);
     queryBuilder.push(`  get${name}(_id: ID!): ${name}`);
+    queryBuilder.push(`"A List of ${name}s"`);
     queryBuilder.push(
       `  list${name}(filter: Model${name}FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${name}Connection`
     );
+    mutationBuilder.push(`"Create a ${name}"`);
     mutationBuilder.push(
       `  create${name}(input: Create${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -198,6 +198,7 @@ async function publish(project) {
         context,
         info
       );
+    mutationBuilder.push(`"Update a ${name}"`);
     mutationBuilder.push(
       `  update${name}(input: Update${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -210,6 +211,7 @@ async function publish(project) {
         context,
         info
       );
+    mutationBuilder.push(`"Delete a ${name}"`);
     mutationBuilder.push(
       `  delete${name}(input: Delete${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -251,25 +253,13 @@ async function publish(project) {
         if (!resolverBuilder[name]) {
           resolverBuilder[name] = {};
         }
-        resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
-          parent,
-          args,
-          context,
-          info
-        ) =>
-          resolver.genericFieldResolver(
+        if (field.isList) {
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
             parent,
             args,
             context,
-            info,
-            field.fieldName,
-            field.dataType,
-            model.name
-          );
-        if (field.isList) {
-          resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
-            field.fieldName.replaceAll(" ", "")
-          ] = (parent, args, context, info) =>
+            info
+          ) =>
             resolver.genericFieldListResolver(
               parent,
               args,
@@ -287,6 +277,21 @@ async function publish(project) {
             }Connection`
           );
         } else {
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
+            parent,
+            args,
+            context,
+            info
+          ) =>
+            resolver.genericFieldResolver(
+              parent,
+              args,
+              context,
+              info,
+              field.fieldName,
+              field.dataType,
+              model.name
+            );
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}: ${
               global.tableAndFieldIdMap[field.dataType].name

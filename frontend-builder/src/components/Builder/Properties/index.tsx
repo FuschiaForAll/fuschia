@@ -1,12 +1,16 @@
 import styled from '@emotion/styled'
-import React from 'react'
+import React, { useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Editor from './Editors/Editor'
 import {
   useGetComponentQuery,
+  useGetProjectQuery,
   useUpdateComponentMutation,
 } from '../../../generated/graphql'
 import { Schema } from '@fuchsia/types'
+import TabPanel from '../../Shared/TabPanel'
+import DataSources from './DataSources'
+import { useParams } from 'react-router-dom'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -36,7 +40,14 @@ const cardStyles = {
 }
 
 function Properties(props: { schema: Schema; elementId: string }) {
+  let { projectId } = useParams<{ projectId: string }>()
+  const [value, setValue] = useState(0)
   const [updateComponent] = useUpdateComponentMutation()
+  const { data: projectData } = useGetProjectQuery({
+    variables: {
+      projectId,
+    },
+  })
   const { data: componentData, loading } = useGetComponentQuery({
     variables: {
       componentId: props.elementId,
@@ -55,22 +66,63 @@ function Properties(props: { schema: Schema; elementId: string }) {
     return null
   }
   return (
-    <Editor
-      initialValue={JSON.parse(componentData.getComponent.props || '{}')}
-      updateValue={(value, isValid) => {
-        updateComponent({
-          variables: {
-            componentId: props.elementId,
-            componentInput: {
-              props: JSON.stringify(value),
-            },
-          },
-        })
-      }}
-      getReference={getReference}
-      required={true}
-      schema={props.schema}
-    />
+    <>
+      <div style={{ marginTop: '10px' }}>
+        <span
+          onClick={() => setValue(0)}
+          style={{
+            fontWeight: 600,
+            color: value === 0 ? 'var(--accent)' : '#808080',
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            padding: '2px 5px',
+            borderRadius: '5px',
+            borderColor: value === 0 ? 'var(--accent)' : 'transparent',
+          }}
+        >
+          Properties
+        </span>
+        <span
+          onClick={() => setValue(1)}
+          style={{
+            fontWeight: 600,
+            color: value === 1 ? 'var(--accent)' : '#808080',
+            borderWidth: '2px',
+            borderStyle: 'solid',
+            padding: '2px 5px',
+            borderRadius: '5px',
+            borderColor: value === 1 ? 'var(--accent)' : 'transparent',
+          }}
+        >
+          Data
+        </span>
+      </div>
+      <TabPanel value={value} index={0}>
+        <Editor
+          initialValue={JSON.parse(componentData.getComponent.props || '{}')}
+          updateValue={(value, isValid) => {
+            updateComponent({
+              variables: {
+                componentId: props.elementId,
+                componentInput: {
+                  props: JSON.stringify(value),
+                },
+              },
+            })
+          }}
+          getReference={getReference}
+          required={true}
+          schema={props.schema}
+        />
+      </TabPanel>
+      <TabPanel value={value} index={1}>
+        <DataSources
+          models={projectData?.getProject.appConfig.apiConfig.models || []}
+          componentId={props.elementId}
+          componentQuery={componentData}
+        />
+      </TabPanel>
+    </>
   )
 }
 

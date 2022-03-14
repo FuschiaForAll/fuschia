@@ -73,6 +73,12 @@ class Resolvers {
     entityId,
     collectionName
   ) {
+    console.log(`parent`);
+    console.log(parent);
+    console.log(`fieldName`);
+    console.log(fieldName);
+    console.log(`entityId`);
+    console.log(entityId);
     const docs = await this.db
       .collection(entityId)
       .find({ _id: new ObjectId(parent[fieldName]) })
