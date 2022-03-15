@@ -89,7 +89,7 @@ const ColorPicker = ({
 
 const Placeholder = (props: any) => {
   const data = props.contentState.getEntity(props.entityKey).getData()
-  debugger
+
   return (
     <span
       //@ts-ignore
@@ -160,7 +160,6 @@ function convertInitialContent(content: string) {
 }
 
 const StringEditor = function StringEditor(props: StringEditorProps) {
-  debugger
   const [editorFocused, setEditorFocused] = useState(false)
   const [editorState, setEditorState] = React.useState(
     EditorState.createWithContent(

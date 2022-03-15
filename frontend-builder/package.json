@@ -18,6 +18,7 @@
     "@types/node": "^16.7.13",
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
+    "draft-js": "^0.11.7",
     "eslint-config-prettier": "^8.3.0",
     "eslint-plugin-prettier": "^4.0.0",
     "graphql": "^15.0.0",
@@ -28,6 +29,7 @@
     "react": "^17.0.2",
     "react-app-rewired": "^2.1.11",
     "react-color": "^2.19.3",
+    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^17.0.2",
     "react-router-dom": "^6.2.1",
     "react-scripts": "5.0.0",
@@ -71,6 +73,8 @@
     "@graphql-codegen/typescript-operations": "^2.3.0",
     "@graphql-codegen/typescript-react-apollo": "^3.2.6",
     "@interactjs/types": "^1.10.11",
-    "@types/react-color": "^3.0.6"
+    "@types/draft-js": "^0.11.9",
+    "@types/react-color": "^3.0.6",
+    "@types/react-custom-scrollbars": "^4.0.10"
   }
 }

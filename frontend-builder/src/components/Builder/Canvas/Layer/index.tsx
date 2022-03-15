@@ -223,7 +223,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   Object.keys(jsonProps).forEach(
     key => (jsonProps[key] = convertDraftJSBindings(jsonProps[key]))
   )
-  debugger
+
   return (
     <>
       {selected && packageData?.getPackages && (
