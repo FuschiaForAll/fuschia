@@ -8,7 +8,7 @@ input ModelSizeInput {
   gt: Int
   between: [Int]
 }
-`
+`;
 
 const ModelAttributeTypes = `
 enum ModelAttributeTypes {
@@ -23,7 +23,7 @@ enum ModelAttributeTypes {
   stringSet
   _null
 }
-`
+`;
 
 const ModelStringInput = `
 input ModelStringInput {
@@ -41,7 +41,7 @@ input ModelStringInput {
   attributeType: ModelAttributeTypes
   size: ModelSizeInput
 }
-`
+`;
 
 const ModelBooleanInput = `
 input ModelBooleanInput {
@@ -50,14 +50,14 @@ input ModelBooleanInput {
   attributeExists: Boolean
   attributeType: ModelAttributeTypes
 }
-`
+`;
 
 const ModelSortDirection = `
 enum ModelSortDirection {
   ASC
   DESC
 }
-`
+`;
 const ModelIDInput = `
 input ModelIDInput {
   ne: ID
@@ -74,13 +74,71 @@ input ModelIDInput {
   attributeType: ModelAttributeTypes
   size: ModelSizeInput
 }
-`
+`;
 
+const AggregateTypes = {
+  String: [
+    {
+      key: "Min",
+      type: "String",
+    },
+    {
+      key: "Max",
+      type: "String",
+    },
+  ],
+  Datetime: [
+    {
+      key: "Min",
+      type: "Datetime",
+    },
+    {
+      key: "Max",
+      type: "Datetime",
+    },
+  ],
+  Int: [
+    {
+      key: "Min",
+      type: "Int",
+    },
+    {
+      key: "Max",
+      type: "Int",
+    },
+    {
+      key: "Sum",
+      type: "Int",
+    },
+    {
+      key: "Average",
+      type: "Float",
+    },
+  ],
+  Float: [
+    {
+      key: "Min",
+      type: "Float",
+    },
+    {
+      key: "Max",
+      type: "Float",
+    },
+    {
+      key: "Sum",
+      type: "Float",
+    },
+    {
+      key: "Average",
+      type: "Float",
+    },
+  ],
+};
 
-
-exports.ModelSortDirection = ModelSortDirection
-exports.ModelBooleanInput = ModelBooleanInput
-exports.ModelStringInput = ModelStringInput
-exports.ModelAttributeTypes = ModelAttributeTypes
-exports.ModelSizeInput = ModelSizeInput
-exports.ModelIDInput = ModelIDInput
+exports.AggregateTypes = AggregateTypes;
+exports.ModelSortDirection = ModelSortDirection;
+exports.ModelBooleanInput = ModelBooleanInput;
+exports.ModelStringInput = ModelStringInput;
+exports.ModelAttributeTypes = ModelAttributeTypes;
+exports.ModelSizeInput = ModelSizeInput;
+exports.ModelIDInput = ModelIDInput;

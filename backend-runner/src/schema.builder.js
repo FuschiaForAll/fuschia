@@ -5,9 +5,11 @@ const {
   ModelStringInput,
   ModelBooleanInput,
   ModelSortDirection,
+  AggregateTypes,
 } = require("./api.consts");
+const { GeoScalars, ModelGeoJSONType } = require("./geojson.type");
 const { resolver } = require("./resolver");
-
+const { Kind, GraphQLScalarType } = require("graphql");
 function checkTypeForPrimitive(type) {
   switch (type) {
     case "ID":
@@ -42,14 +44,32 @@ function generateCreateInput({ typename, keys, nullable }) {
   return builder.join("\n");
 }
 
+function generateAggregateType({ typename, keys, nullable }) {
+  const builder = [];
+  builder.push(`type Model${typename}Aggregate {`);
+  builder.push(`  count: Int!`);
+  keys.forEach((key) => {
+    console.log(key);
+    if (AggregateTypes[key.dataType]) {
+      AggregateTypes[key.dataType].forEach((keyType) =>
+        builder.push(
+          `  ${key.fieldName.replaceAll(" ", "")}${keyType.key}: ${
+            keyType.type
+          }`
+        )
+      );
+    }
+  });
+  builder.push(`}`);
+  return builder.join("\n");
+}
+
 function generateUpdateInput({ typename, keys }) {
   const builder = [];
   builder.push(`input Update${typename}Input {`);
   builder.push(`  _id: ID!`);
   keys.forEach((key) =>
-    builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`
-    )
+    builder.push(`  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`)
   );
   builder.push(`}`);
   return builder.join("\n");
@@ -149,6 +169,8 @@ function publish(project) {
   const deleteInputsBuilder = [];
   const filtersBuilder = [];
   const conditionalBuilder = [];
+  const aggregateBuilder = [];
+
   project.appConfig.apiConfig.models.forEach((model) => {
     const name = model.name.replaceAll(" ", "");
     global.tableAndFieldNameMap[name] = {
@@ -159,6 +181,32 @@ function publish(project) {
       name: model.name.toString(),
       fields: {},
     };
+
+    model.fields.forEach((field) => {
+      global.tableAndFieldNameMap[name].fields[
+        field.fieldName.replace(" ", "")
+      ] = {
+        id: field._id.toString(),
+        config: {
+          isUnique: field.isUnique,
+          isHashed: field.isHashed,
+        },
+      };
+      global.tableAndFieldIdMap[model._id.toString()].fields[
+        field._id.toString()
+      ] = {
+        name: field.fieldName.replace(" ", ""),
+        config: {
+          isUnique: field.isUnique,
+          isHashed: field.isHashed,
+        },
+      };
+    });
+  });
+
+  project.appConfig.apiConfig.models.forEach((model) => {
+    const name = model.name.replaceAll(" ", "");
+
     resolverBuilder.Query[`get${name}`] = (parent, args, context, info) =>
       resolver.genericGetQueryResolver(
         model._id.toString(),
@@ -180,6 +228,9 @@ function publish(project) {
     queryBuilder.push(`  get${name}(_id: ID!): ${name}`);
     queryBuilder.push(
       `  list${name}(filter: Model${name}FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${name}Connection`
+    );
+    queryBuilder.push(
+      `  aggregate${name}(filter: Model${name}FilterInput): Model${name}Aggregate`
     );
     mutationBuilder.push(
       `  create${name}(input: Create${name}Input!, condition: Model${name}ConditionalInput): ${name}`
@@ -224,52 +275,51 @@ function publish(project) {
     modelBuilder.push(`\ntype ${name} {`);
     modelBuilder.push(`  _id: ID!`);
     model.fields.forEach((field) => {
-      global.tableAndFieldNameMap[name].fields[
-        field.fieldName.replace(" ", "")
-      ] = {
-        id: field._id.toString(),
-        config: {
-          isUnique: field.isUnique,
-          isHashed: field.isHashed,
-        },
-      };
-      global.tableAndFieldIdMap[model._id.toString()].fields[
-        field._id.toString()
-      ] = {
-        name: field.fieldName.replace(" ", ""),
-        config: {
-          isUnique: field.isUnique,
-          isHashed: field.isHashed,
-        },
-      };
       if (field.connection) {
-        if (!resolverBuilder[global.tableAndFieldIdMap[field.dataType].name]) {
-          resolverBuilder[global.tableAndFieldIdMap[field.dataType].name] = {};
-        }
-        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
-          field.fieldName.replaceAll(" ", "")
-        ] = (parent, args, context, info) =>
-          resolver.genericFieldResolver(
-            parent, 
-            args, 
-            context, 
-            info,
-            field.fieldName,
-            field.dataType,
-            model.name
+        try {
+          if (!resolverBuilder[name]) {
+            resolverBuilder[name] = {};
+          }
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
+            parent,
+            args,
+            context,
+            info
+          ) =>
+            resolver.genericFieldResolver(
+              parent,
+              args,
+              context,
+              info,
+              field.fieldName,
+              field.dataType,
+              model.name
             );
+        } catch (e) {
+          console.log(`global.tableAndFieldIdMap`);
+          console.log(global.tableAndFieldIdMap);
+          console.log(`field.dataType`);
+          console.log(field.dataType);
+          throw e;
+        }
         if (field.isList) {
-        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
-          field.fieldName.replaceAll(" ", "")
-        ] = (parent, args, context, info) =>
-          resolver.genericFieldListResolver(
-            parent, 
-            args, 
-            context, 
-            info,
-            field.fieldName,
-            field.dataType,
-            model.name
+          if (!resolverBuilder[name]) {
+            resolverBuilder[name] = {};
+          }
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
+            parent,
+            args,
+            context,
+            info
+          ) =>
+            resolver.genericFieldListResolver(
+              parent,
+              args,
+              context,
+              info,
+              field.fieldName,
+              field.dataType,
+              model.name
             );
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}(filter: Model${
@@ -285,6 +335,13 @@ function publish(project) {
             }${field.isHashed || field.nullable ? "" : "!"}`
           );
         }
+        modelBuilder.push(
+          `  ${field.fieldName.replaceAll(" ", "")}Aggregate(filter: Model${
+            global.tableAndFieldIdMap[field.dataType].name
+          }FilterInput): Model${
+            global.tableAndFieldIdMap[field.dataType].name
+          }Aggregate`
+        );
       } else {
         modelBuilder.push(
           `  ${field.fieldName.replaceAll(" ", "")}: ${field.dataType}${
@@ -352,6 +409,17 @@ function publish(project) {
           })),
       })
     );
+    aggregateBuilder.push(
+      generateAggregateType({
+        typename: name,
+        keys: model.fields
+          .filter((fields) => checkTypeForPrimitive(fields.dataType))
+          .map(({ fieldName, dataType }) => ({
+            fieldName: fieldName.replaceAll(" ", ""),
+            dataType,
+          })),
+      })
+    );
     connectionsBuilder.push(generateConnections(name));
     schemaBuilder.push(modelBuilder.join("\n"));
   });
@@ -374,12 +442,31 @@ function publish(project) {
   schemaBuilder.push(deleteInputsBuilder.join("\n"));
   connectionsBuilder.push("\n");
   schemaBuilder.push(connectionsBuilder.join("\n"));
+  aggregateBuilder.push("\n");
+  schemaBuilder.push(aggregateBuilder.join("\n"));
   schemaBuilder.push(ModelSizeInput);
   schemaBuilder.push(ModelAttributeTypes);
   schemaBuilder.push(ModelStringInput);
   schemaBuilder.push(ModelBooleanInput);
   schemaBuilder.push(ModelIDInput);
   schemaBuilder.push(ModelSortDirection);
+  schemaBuilder.push(GeoScalars);
+  schemaBuilder.push(ModelGeoJSONType);
+  console.log(schemaBuilder.join("\n"));
+  console.log(
+    new GraphQLScalarType({
+      name: "Odd",
+      description: "Odd custom scalar type",
+      parseValue: (value) => value,
+      serialize: (value) => value,
+      parseLiteral(ast) {
+        if (ast.kind === Kind.INT) {
+          return oddValue(parseInt(ast.value, 10));
+        }
+        return null;
+      },
+    }).toJSON()
+  );
   return { typeDefs: schemaBuilder.join("\n"), resolvers: resolverBuilder };
 }
 
