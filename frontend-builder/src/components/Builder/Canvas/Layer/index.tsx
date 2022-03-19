@@ -223,14 +223,17 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   Object.keys(jsonProps).forEach(
     key => (jsonProps[key] = convertDraftJSBindings(jsonProps[key]))
   )
-
+  if (!packageData?.getPackages) {
+    return <div>loading...</div>
+  }
+  const schema = getComponentSchema(packageData, layer)
   return (
     <>
-      {selected && packageData?.getPackages && (
+      {selected && (
         <Portal id="property-window">
           <PropertyWindow
             elementId={layer._id}
-            schema={getComponentSchema(packageData, layer)}
+            schema={schema}
             properties={JSON.parse(layer.props || '{}')}
           />
         </Portal>

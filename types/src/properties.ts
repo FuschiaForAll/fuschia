@@ -4,6 +4,7 @@
  *
  */
 export interface Props<TSchema extends CommonSchema, TValue> {
+  componentId: string
   schema: TSchema
   initialValue: TValue
   title?: string

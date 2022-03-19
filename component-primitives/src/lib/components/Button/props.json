@@ -1,0 +1,41 @@
+{
+  "type": "ui-component",
+  "title": "Button",
+  "icon": "SmartButton",
+  "isRootElement": false,
+  "isContainer": false,
+  "description": "A plain old text field",
+  "width": 160,
+  "height": 35,
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "Display value",
+      "description": "The value to display",
+      "default": "Lorem Ipsum"
+    },
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 35
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 175
+        },
+        "color": {
+          "title": "Text Color",
+          "type": "string",
+          "format": "color",
+          "default": "#000000"
+        }
+      }
+    }
+  }
+}

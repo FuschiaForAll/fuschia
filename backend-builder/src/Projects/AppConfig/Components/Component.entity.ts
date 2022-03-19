@@ -9,6 +9,17 @@ import {
   Severity,
 } from "@typegoose/typegoose";
 
+@ObjectType()
+export class DataSource {
+  @Field()
+  @Property()
+  type!: string;
+
+  @Field((type) => [String])
+  @Property({ default: [] })
+  variables!: string[];
+}
+
 @index({ parent: 1 })
 @ObjectType()
 export class Component {
@@ -22,6 +33,10 @@ export class Component {
   @Field()
   @Property()
   type!: string;
+
+  @Field()
+  @Property()
+  name!: string;
 
   @Field({ nullable: true })
   @Property()
@@ -42,6 +57,10 @@ export class Component {
   @Field((type) => [String], { nullable: true })
   @Property()
   parameters?: string[];
+
+  @Field((type) => [DataSource], { nullable: true })
+  @Property({ type: () => DataSource, default: [] })
+  fetched?: DataSource[];
 
   @Field({ nullable: true })
   @Property()

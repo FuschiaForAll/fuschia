@@ -242,6 +242,7 @@ export const useDragDrop = (
                   const targetId =
                     parentId === 'main-canvas' ? undefined : parentId
                   createComponent({
+                    name: jsonLayer.type,
                     isRootElement: jsonLayer.isRootElement,
                     isContainer: jsonLayer.isContainer,
                     package: jsonLayer.package,

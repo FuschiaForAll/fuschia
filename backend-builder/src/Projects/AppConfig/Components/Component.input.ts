@@ -11,6 +11,9 @@ export class ComponentInput {
   package!: string;
 
   @Field({ nullable: true })
+  name?: string;
+
+  @Field({ nullable: true })
   x?: number;
 
   @Field({ nullable: true })

@@ -139,6 +139,7 @@ const Toolbar: React.FC = function Toolbar() {
               <Tool
                 key={component._id}
                 defaultLayer={{
+                  name: component.name,
                   isContainer: component.isContainer,
                   isRootElement: component.isRootElement,
                   package: _package.packageName,

@@ -5,56 +5,36 @@ import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 
-interface MenuStructure {
+export type ComponentId = string
+export type EntityId = string
+
+interface Field {
   key: string
-  subMenu?: Array<MenuStructure>
+  dataType: string
+  name: string
+  hasSubMenu: boolean
+}
+export interface DataStructure {
+  _id: string
+  name: string
+  fields: Field[]
 }
 
-const PlacesMenu: MenuStructure = {
-  key: 'Places',
-  subMenu: [
-    {
-      key: 'Building Name',
-    },
-    {
-      key: 'Owner',
-      subMenu: [
-        {
-          key: 'Email',
-        },
-        {
-          key: 'First Name',
-        },
-        { key: 'Last Name' },
-      ],
-    },
-  ],
+export interface MenuStructure {
+  source: ComponentId
+  entity: EntityId
+  label: string
+  hasSubMenu: boolean
 }
-
-const UserMenu: MenuStructure = {
-  key: 'Me',
-  subMenu: [
-    {
-      key: 'Email',
-    },
-    {
-      key: 'First Name',
-    },
-    { key: 'Last Name' },
-    PlacesMenu,
-  ],
-}
-
-const mockDataStructure: MenuStructure[] = [UserMenu, PlacesMenu]
 
 function SubMenu(props: {
   label: string
-  menuItems: any[]
-  onSelect: (selectedItem: string) => void
+  entityId: string
+  dataStructure: { [key: string]: DataStructure }
+  onSelect: (entityPath: string, labelPath: string) => void
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
-
   function handleItemClick(event: React.MouseEvent<HTMLLIElement>) {
     if (!anchorEl) {
       setAnchorEl(event.currentTarget)
@@ -64,8 +44,8 @@ function SubMenu(props: {
   function handleSubMenuClose() {
     setAnchorEl(null)
   }
-  function handleSubMenuSelect(e: string) {
-    props.onSelect(e)
+  function handleSubMenuSelect(entityPath: string, labelPath: string) {
+    props.onSelect(entityPath, labelPath)
     handleSubMenuClose()
   }
   return (
@@ -96,20 +76,26 @@ function SubMenu(props: {
           'aria-labelledby': 'basic-button',
         }}
       >
-        {props.menuItems.map(element =>
-          element.subMenu ? (
+        {props.dataStructure[props.entityId].fields.map(element =>
+          element.hasSubMenu ? (
             <SubMenu
-              label={element.key}
-              menuItems={element.subMenu}
+              label={element.name}
+              dataStructure={props.dataStructure}
+              entityId={element.dataType}
               key={element.key}
-              onSelect={e => handleSubMenuSelect(`${element.key}.${e}`)}
+              onSelect={(entityPath, labelPath) =>
+                handleSubMenuSelect(
+                  `${element.key}.${entityPath}`,
+                  `${element.name}.${labelPath}`
+                )
+              }
             />
           ) : (
             <MenuItem
               key={element.key}
-              onClick={() => handleSubMenuSelect(element.key)}
+              onClick={() => handleSubMenuSelect(element.key, element.name)}
             >
-              {element.key}
+              {element.name}
             </MenuItem>
           )
         )}
@@ -119,7 +105,9 @@ function SubMenu(props: {
 }
 
 interface DataBinderProps {
-  onSelect: (selectedItem: string) => void
+  entry: MenuStructure[]
+  dataStructure: { [key: string]: DataStructure }
+  onSelect: (entityPath: string, labelPath: string) => void
 }
 
 const DataBinder: React.FC<DataBinderProps> = function DataBinder(
@@ -133,8 +121,8 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
   const handleClose = () => {
     setAnchorEl(null)
   }
-  const handleSelect = (e: string) => {
-    props.onSelect(`${e}`)
+  const handleSelect = (entityPath: string, labelPath: string) => {
+    props.onSelect(`${entityPath}`, `${labelPath}`)
     handleClose()
   }
   return (
@@ -151,20 +139,26 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
           'aria-labelledby': 'basic-button',
         }}
       >
-        {mockDataStructure.map(element =>
-          element.subMenu ? (
+        {props.entry.map(element =>
+          element.hasSubMenu ? (
             <SubMenu
-              label={element.key}
-              menuItems={element.subMenu}
-              key={element.key}
-              onSelect={e => handleSelect(`${element.key}.${e}`)}
+              label={element.label}
+              entityId={element.entity}
+              dataStructure={props.dataStructure}
+              key={element.entity}
+              onSelect={(entityPath, labelPath) =>
+                handleSelect(
+                  `${element.entity}.${entityPath}`,
+                  `${element.label}.${labelPath}`
+                )
+              }
             />
           ) : (
             <MenuItem
-              key={element.key}
-              onClick={() => handleSelect(element.key)}
+              key={element.entity}
+              onClick={() => handleSelect(element.entity, element.label)}
             >
-              {element.key}
+              {element.label}
             </MenuItem>
           )
         )}

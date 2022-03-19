@@ -1,0 +1,67 @@
+{
+  "type": "ui-component",
+  "title": "Screen",
+  "icon": "Crop32",
+  "isRootElement": true,
+  "isContainer": true,
+  "description": "A plain old text field",
+  "width": 350,
+  "height": 667,
+  "properties": {
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "text": {
+          "type": "string",
+          "title": "Page Title",
+          "description": "The title for the page",
+          "default": "Page 1"
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "title": "Styles",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 667
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 350
+        },
+        "backgroundColor": {
+          "title": "Background Color",
+          "type": "string",
+          "default": "#ffffff",
+          "format": "color"
+        }
+      }
+    },
+    "actions": {
+      "type":"object",
+      "title": "Actions",
+      "properties": {
+        "onEnter": {
+          "title": "On Enter",
+          "type": "string"
+        }
+      }
+    },
+    "data": {
+      "type":"object",
+      "title": "Data",
+      "properties": {
+        "something": {
+          "title": "Something",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

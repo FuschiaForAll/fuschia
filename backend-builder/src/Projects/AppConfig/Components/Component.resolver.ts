@@ -4,8 +4,10 @@ import { ObjectId } from "mongoose";
 import {
   Arg,
   Ctx,
+  Field,
   FieldResolver,
   Mutation,
+  ObjectType,
   Query,
   Resolver,
   Root,
@@ -18,6 +20,55 @@ import { ProjectService } from "../../Project.service";
 import { Component } from "./Component.entity";
 import { ComponentInput } from "./Component.input";
 import * as _ from "lodash";
+
+@ObjectType()
+class DataContext {
+  @Field()
+  componentId!: string;
+  @Field()
+  name!: string;
+  @Field((type) => [String])
+  dataSources!: string[];
+}
+
+async function getParentRecursive(
+  componentId: string,
+  acc: Array<{ componentId: string; name: string; dataSources: string[] }>
+): Promise<
+  Array<{ componentId: string; name: string; dataSources: string[] }>
+> {
+  const component = await ComponentModel.findById(componentId);
+  if (!component) {
+    throw new Error(`Component with id ${componentId} does not exist`);
+  }
+  if (component.parent) {
+    const adder = await getParentRecursive(component.parent._id.toString(), [
+      ...acc,
+    ]);
+    return [...acc, ...adder];
+  }
+  if (component.isRootElement) {
+    return [
+      ...acc,
+      {
+        componentId: component._id.toString(),
+        name: component.name,
+        dataSources: component.parameters || [],
+      },
+    ];
+  }
+  if (component.isContainer) {
+    return [
+      ...acc,
+      {
+        componentId: component._id.toString(),
+        name: component.name,
+        dataSources: component.fetched?.map((f) => f.type) || [],
+      },
+    ];
+  }
+  return [] as any;
+}
 
 @Service()
 @Resolver(Component)
@@ -53,6 +104,17 @@ export class ComponentResolver {
       return project.components;
     }
     throw new ApolloError("Project does not exist");
+  }
+
+  @Query((returns) => [DataContext])
+  async getDataContext(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Ctx() ctx: Context
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to get ComponentId`
+    );
+    return getParentRecursive(componentId.toString(), []);
   }
 
   @Mutation((returns) => Component)

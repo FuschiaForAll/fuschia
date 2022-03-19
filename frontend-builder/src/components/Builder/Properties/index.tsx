@@ -11,6 +11,7 @@ import { Schema } from '@fuchsia/types'
 import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
+import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -67,6 +68,21 @@ function Properties(props: { schema: Schema; elementId: string }) {
   }
   return (
     <>
+      <LabeledTextInput
+        label="Component Name"
+        value={componentData.getComponent.name}
+        onChange={e => {
+          const newName = e.target.value
+          updateComponent({
+            variables: {
+              componentId: props.elementId,
+              componentInput: {
+                name: newName,
+              },
+            },
+          })
+        }}
+      />
       <div style={{ marginTop: '10px' }}>
         <span
           onClick={() => setValue(0)}
@@ -78,27 +94,32 @@ function Properties(props: { schema: Schema; elementId: string }) {
             padding: '2px 5px',
             borderRadius: '5px',
             borderColor: value === 0 ? 'var(--accent)' : 'transparent',
+            cursor: 'pointer',
           }}
         >
           Properties
         </span>
-        <span
-          onClick={() => setValue(1)}
-          style={{
-            fontWeight: 600,
-            color: value === 1 ? 'var(--accent)' : '#808080',
-            borderWidth: '2px',
-            borderStyle: 'solid',
-            padding: '2px 5px',
-            borderRadius: '5px',
-            borderColor: value === 1 ? 'var(--accent)' : 'transparent',
-          }}
-        >
-          Data
-        </span>
+        {componentData.getComponent.isContainer && (
+          <span
+            onClick={() => setValue(1)}
+            style={{
+              fontWeight: 600,
+              color: value === 1 ? 'var(--accent)' : '#808080',
+              borderWidth: '2px',
+              borderStyle: 'solid',
+              padding: '2px 5px',
+              borderRadius: '5px',
+              borderColor: value === 1 ? 'var(--accent)' : 'transparent',
+              cursor: 'pointer',
+            }}
+          >
+            Data
+          </span>
+        )}
       </div>
       <TabPanel value={value} index={0}>
         <Editor
+          componentId={props.elementId}
           initialValue={JSON.parse(componentData.getComponent.props || '{}')}
           updateValue={(value, isValid) => {
             updateComponent({

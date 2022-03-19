@@ -19,6 +19,7 @@ const ObjectEditor = function ObjectEditor(props: ObjectEditorProps) {
     <>
       {Object.keys(props.schema.properties).map(key => (
         <Editor
+          componentId={props.componentId}
           key={key}
           schema={props.schema.properties[key]}
           getReference={props.getReference}

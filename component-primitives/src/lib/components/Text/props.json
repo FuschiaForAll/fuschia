@@ -1,0 +1,96 @@
+{
+  "type": "ui-component",
+  "title": "Text",
+  "icon": "FormatColorText",
+  "description": "A plain old text field",
+  "isRootElement": false,
+  "isContainer": false,
+  "width": 160,
+  "height": 35,
+  "properties": {
+    "text": {
+      "type": "string",
+      "title": "Display value",
+      "description": "The value to display",
+      "default": "Lorem Ipsum"
+    },
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 24
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 160
+        },
+        "color": {
+          "title": "Text Color",
+          "type": "string",
+          "format": "color",
+          "default": "#000000"
+        },
+        "fontSize": {
+          "title": "Font Size",
+          "type": "number",
+          "default": 12
+        },
+        "fontStyle": {
+          "title": "Font Style",
+          "type": "string",
+          "enum": [
+            "normal",
+            "italic"
+          ],
+          "default": "normal"
+        },
+        "fontWeight": {
+          "title": "Font Weight",
+          "type": "string",
+          "enum": [
+            "normal",
+            "bold",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500",
+            "600",
+            "700",
+            "800",
+            "900"
+          ],
+          "default": "normal"
+        },
+        "textAlign": {
+          "title": "Text Align",
+          "type": "string",
+          "enum": [
+            "auto",
+            "left",
+            "right",
+            "center",
+            "justify"
+          ],
+          "default": "auto"
+        },
+        "textTransform": {
+          "title": "Text Transform",
+          "type": "string",
+          "enum": [
+            "none",
+            "uppercase",
+            "lowercase",
+            "capitalize"
+          ],
+          "default": "none"
+        }
+      }
+    }
+  }
+}

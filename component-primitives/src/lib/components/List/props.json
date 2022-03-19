@@ -1,0 +1,41 @@
+{
+  "type": "array",
+  "title": "List",
+  "description": "Simple List",
+  "icon": "List",
+  "isRootElement": false,
+  "isContainer": true,
+  "width": 350,
+  "height": 300,
+  "properties": {
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 175
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 350
+        },
+        "color": {
+          "title": "Text Color",
+          "type": "string",
+          "format": "color",
+          "default": "#000000"
+        },
+        "backgroundColor": {
+          "title": "Background Color",
+          "type": "string",
+          "default": "#303030",
+          "format": "color"
+        }
+      }
+    }
+  }
+}
