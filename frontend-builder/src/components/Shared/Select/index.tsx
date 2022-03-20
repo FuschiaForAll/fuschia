@@ -1,10 +1,16 @@
 import React from 'react'
+import { SelectProps } from '../primitives/Select'
 import './Select.css'
 
-const Select: React.FC = function Select() {
+export interface LabeledSelectProps extends SelectProps {
+  label: string
+}
+
+const Select: React.FC<LabeledSelectProps> = function Select(props) {
+  const { label } = props
   return (
     <>
-      <label htmlFor="standard-select">Standard Select</label>
+      <label htmlFor="standard-select">{label}</label>
       <div className="select">
         <select id="standard-select">
           <option value="Option 1">Option 1</option>

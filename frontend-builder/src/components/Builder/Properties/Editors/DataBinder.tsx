@@ -35,11 +35,6 @@ function SubMenu(props: {
 }) {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
-  function handleItemClick(event: React.MouseEvent<HTMLLIElement>) {
-    if (!anchorEl) {
-      setAnchorEl(event.currentTarget)
-    }
-  }
 
   function handleSubMenuClose() {
     setAnchorEl(null)
