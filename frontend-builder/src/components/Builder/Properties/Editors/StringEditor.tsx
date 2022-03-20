@@ -4,10 +4,11 @@ import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import { Color, SketchPicker } from 'react-color'
 import Box from '@mui/material/Box'
 import Popper from '@mui/material/Popper'
-import Select from '@mui/material/Select'
+import MuiSelect from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
 import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
+import TextInputBinding from '../../../Shared/TextInputBinding'
 
 export type StringEditorProps = Props<StringSchema, string>
 
@@ -70,7 +71,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
         <InputLabel id={`select-${props.schema.title || 'undefined'}-label`}>
           {props.schema.title}
         </InputLabel>
-        <Select
+        <MuiSelect
           labelId={`select-${props.schema.title || 'undefined'}-label`}
           label={props.schema.title}
           defaultValue={props.initialValue as string}
@@ -81,7 +82,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
               {item}
             </MenuItem>
           ))}
-        </Select>
+        </MuiSelect>
       </FormControl>
     )
   }
@@ -96,13 +97,28 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
           onChange={e => props.updateValue(e, true)}
         />
       )
+    case 'ipv4':
+      return (
+        <>
+          <LabeledTextInput
+            label={props.schema.title || 'undefined'}
+            defaultValue={props.initialValue as string}
+            onChange={e => props.updateValue(e.target.value, true)}
+          />
+        </>
+      )
     default:
       return (
-        <LabeledTextInput
-          label={props.schema.title || 'undefined'}
-          defaultValue={props.initialValue as string}
-          onChange={e => props.updateValue(e.target.value, true)}
-        />
+        <div>
+          <div style={{ fontSize: '0.75rem' }}>{props.schema.title}</div>
+          <TextInputBinding
+            componentId={props.componentId}
+            initialValue={props.initialValue}
+            onChange={value => {
+              props.updateValue(value, true)
+            }}
+          />
+        </div>
       )
   }
 }

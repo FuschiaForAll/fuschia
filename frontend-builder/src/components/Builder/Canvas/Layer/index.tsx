@@ -171,6 +171,16 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
+function convertDraftJSBindings(value: string) {
+  try {
+    const jsonValue = JSON.parse(value)
+    if (jsonValue.blocks) {
+      return jsonValue.blocks.map((block: any) => block.text).join('\n')
+    }
+  } catch {}
+  return value
+}
+
 function getComponentSchema(
   packageData: GetPackagesQuery,
   layer: Component
@@ -210,13 +220,20 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   const WrapperType = layer.isContainer ? FrameLayer : InlineLayer
   const { props } = layer
   const jsonProps = JSON.parse(props || '{}')
+  Object.keys(jsonProps).forEach(
+    key => (jsonProps[key] = convertDraftJSBindings(jsonProps[key]))
+  )
+  if (!packageData?.getPackages) {
+    return <div>loading...</div>
+  }
+  const schema = getComponentSchema(packageData, layer)
   return (
     <>
-      {selected && packageData?.getPackages && (
+      {selected && (
         <Portal id="property-window">
           <PropertyWindow
             elementId={layer._id}
-            schema={getComponentSchema(packageData, layer)}
+            schema={schema}
             properties={JSON.parse(layer.props || '{}')}
           />
         </Portal>

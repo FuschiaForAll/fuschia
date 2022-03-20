@@ -10,8 +10,7 @@ import {
 } from '../../../generated/graphql'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
-
-const DATA_TYPES = ['String', 'Date', 'Int', 'Float', 'Boolean']
+import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -189,7 +188,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 setDataType(type)
               }}
             >
-              {DATA_TYPES.map(type => (
+              {PRIMITIVE_DATA_TYPES.map(type => (
                 <option key={type} value={type}>
                   {type}
                 </option>
@@ -200,6 +199,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 </option>
               ))}
             </select>
+            <label>Is Unique</label>
             <input
               type="checkbox"
               checked={isUnique}
@@ -208,6 +208,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 setIsUnique(value)
               }}
             />
+            <label>Is Hashed</label>
             <input
               type="checkbox"
               checked={isHashed}
@@ -216,6 +217,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 setIsHashed(value)
               }}
             />
+            <label>Is Nullable</label>
             <input
               type="checkbox"
               checked={nullable}
@@ -224,6 +226,7 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 setNullable(value)
               }}
             />{' '}
+            <label>Is List</label>
             <input
               type="checkbox"
               checked={isList}

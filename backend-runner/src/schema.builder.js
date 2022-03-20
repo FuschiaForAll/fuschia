@@ -47,9 +47,7 @@ function generateUpdateInput({ typename, keys }) {
   builder.push(`input Update${typename}Input {`);
   builder.push(`  _id: ID!`);
   keys.forEach((key) =>
-    builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`
-    )
+    builder.push(`  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`)
   );
   builder.push(`}`);
   return builder.join("\n");
@@ -93,7 +91,8 @@ function generateFilterInput({ typename, keys }) {
   return builder.join("\n");
 }
 
-function publish(project) {
+async function publish(project) {
+  await resolver.connect();
   const resolverBuilder = {
     Query: {},
     Mutation: {},
@@ -159,6 +158,9 @@ function publish(project) {
       name: model.name.toString(),
       fields: {},
     };
+  });
+  project.appConfig.apiConfig.models.forEach((model) => {
+    const name = model.name.replaceAll(" ", "");
     resolverBuilder.Query[`get${name}`] = (parent, args, context, info) =>
       resolver.genericGetQueryResolver(
         model._id.toString(),
@@ -177,10 +179,13 @@ function publish(project) {
         context,
         info
       );
+    queryBuilder.push(`"A Single ${name}"`);
     queryBuilder.push(`  get${name}(_id: ID!): ${name}`);
+    queryBuilder.push(`"A List of ${name}s"`);
     queryBuilder.push(
       `  list${name}(filter: Model${name}FilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): Model${name}Connection`
     );
+    mutationBuilder.push(`"Create a ${name}"`);
     mutationBuilder.push(
       `  create${name}(input: Create${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -193,6 +198,7 @@ function publish(project) {
         context,
         info
       );
+    mutationBuilder.push(`"Update a ${name}"`);
     mutationBuilder.push(
       `  update${name}(input: Update${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -205,6 +211,7 @@ function publish(project) {
         context,
         info
       );
+    mutationBuilder.push(`"Delete a ${name}"`);
     mutationBuilder.push(
       `  delete${name}(input: Delete${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     );
@@ -243,33 +250,24 @@ function publish(project) {
         },
       };
       if (field.connection) {
-        if (!resolverBuilder[global.tableAndFieldIdMap[field.dataType].name]) {
-          resolverBuilder[global.tableAndFieldIdMap[field.dataType].name] = {};
+        if (!resolverBuilder[name]) {
+          resolverBuilder[name] = {};
         }
-        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
-          field.fieldName.replaceAll(" ", "")
-        ] = (parent, args, context, info) =>
-          resolver.genericFieldResolver(
-            parent, 
-            args, 
-            context, 
-            info,
-            field.fieldName,
-            field.dataType,
-            model.name
-            );
         if (field.isList) {
-        resolverBuilder[global.tableAndFieldIdMap[field.dataType].name][
-          field.fieldName.replaceAll(" ", "")
-        ] = (parent, args, context, info) =>
-          resolver.genericFieldListResolver(
-            parent, 
-            args, 
-            context, 
-            info,
-            field.fieldName,
-            field.dataType,
-            model.name
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
+            parent,
+            args,
+            context,
+            info
+          ) =>
+            resolver.genericFieldListResolver(
+              parent,
+              args,
+              context,
+              info,
+              field.fieldName,
+              field.dataType,
+              model.name
             );
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}(filter: Model${
@@ -279,6 +277,21 @@ function publish(project) {
             }Connection`
           );
         } else {
+          resolverBuilder[name][field.fieldName.replaceAll(" ", "")] = (
+            parent,
+            args,
+            context,
+            info
+          ) =>
+            resolver.genericFieldResolver(
+              parent,
+              args,
+              context,
+              info,
+              field.fieldName,
+              field.dataType,
+              model.name
+            );
           modelBuilder.push(
             `  ${field.fieldName.replaceAll(" ", "")}: ${
               global.tableAndFieldIdMap[field.dataType].name

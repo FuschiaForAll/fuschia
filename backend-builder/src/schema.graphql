@@ -8,7 +8,7 @@ type Api {
   models: [EntityModel!]!
   mutations: [String!]!
   queries: [String!]!
-  sandboxEndpoint: String!
+  sandboxEndpoint: String
   subscriptions: [String!]!
 }
 
@@ -67,9 +67,12 @@ input AuthInput {
 type Component {
   _id: ObjectId!
   children: [Component!]
+  fetched: [DataSource!]
   isContainer: Boolean!
   isRootElement: Boolean!
+  name: String!
   package: String!
+  parameters: [String!]
   parent: Component
   props: String
   type: String!
@@ -79,9 +82,12 @@ type Component {
 
 input ComponentInput {
   children: [ObjectId!]
+  fetched: [DataSourceInput!]
   isContainer: Boolean
   isRootElement: Boolean
+  name: String
   package: String
+  parameters: [String!]
   parent: ObjectId
   props: String
   type: String
@@ -98,6 +104,12 @@ type DataAuth {
   operations: [String!]!
   ownerField: String!
   provider: String!
+}
+
+type DataContext {
+  componentId: String!
+  dataSources: [String!]!
+  name: String!
 }
 
 type DataField {
@@ -120,6 +132,16 @@ input DataFieldInput {
   isList: Boolean!
   isUnique: Boolean!
   nullable: Boolean!
+}
+
+type DataSource {
+  type: String!
+  variables: [String!]!
+}
+
+input DataSourceInput {
+  type: String!
+  variables: [String!]!
 }
 
 """
@@ -242,6 +264,8 @@ type Query {
   getAuth(projectId: ObjectId!): Auth
   getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
+  getDataContext(componentId: ObjectId!): [DataContext!]!
+  getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
@@ -253,7 +277,6 @@ type Query {
   listRelationships: Boolean
   listSubscriptions: Boolean
   me: User
-  retrieveEntityModel: Boolean
   retrieveMutation: Boolean
   retrieveQuery: Boolean
   retrieveRelationship: Boolean

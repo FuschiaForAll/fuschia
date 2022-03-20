@@ -1,0 +1,35 @@
+{
+  "type": "ui-component",
+  "title": "Container",
+  "icon": "AutoAwesomeMosaic",
+  "isRootElement": false,
+  "isContainer": true,
+  "description": "A plain old text field",
+  "width": 160,
+  "height": 35,
+  "properties": {
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 150
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 150
+        },
+        "backgroundColor": {
+          "title": "Background Color",
+          "type": "string",
+          "default": "#303030",
+          "format": "color"
+        }
+      }
+    }
+  }
+}

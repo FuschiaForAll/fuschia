@@ -1,0 +1,16 @@
+query GetEntityModel($projectId: ObjectId!, $entityModelId: ObjectId!) {
+  getEntityModel(projectId: $projectId, entityModelId: $entityModelId) {
+    _id
+    name
+    fields {
+      _id
+      fieldName
+      isUnique
+      isHashed
+      isList
+      connection
+      nullable
+      dataType
+    }
+  }
+}

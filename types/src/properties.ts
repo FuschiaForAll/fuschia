@@ -4,6 +4,7 @@
  *
  */
 export interface Props<TSchema extends CommonSchema, TValue> {
+  componentId: string
   schema: TSchema
   initialValue: TValue
   title?: string
@@ -23,6 +24,12 @@ type IsUndefinedCondition = [string, 'isUndefined']
 
 export type AnySchema = CommonSchema & {
   type: undefined
+}
+
+export type UIComponentSchema = Omit<ObjectSchema, 'type'> & {
+  type: 'ui-component'
+  isRootElement: boolean
+  isContainer: boolean
 }
 
 export type FunctionSchema = CommonSchema & {
@@ -113,6 +120,7 @@ export type Schema =
   | NullSchema
   | AnySchema
   | FunctionSchema
+  | UIComponentSchema
 
 export type ValueType =
   | { [name: string]: any }
@@ -128,6 +136,7 @@ export interface CommonSchema {
   $ref?: string
   definitions?: { [name: string]: Schema }
   title?: string
+  id?: string
   description?: string
   default?: ValueType
   readonly?: boolean

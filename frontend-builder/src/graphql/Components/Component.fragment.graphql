@@ -2,10 +2,16 @@ fragment ComponentFragment on Component {
   _id
   package
   type
+  name
   x
   y
   isContainer
   isRootElement
+  parameters
+  fetched {
+    type
+    variables
+  }
   props
   parent {
     _id
