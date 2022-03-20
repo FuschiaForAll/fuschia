@@ -82,6 +82,7 @@ type Component {
 
 input ComponentInput {
   children: [ObjectId!]
+  fetched: [DataSourceInput!]
   isContainer: Boolean
   isRootElement: Boolean
   name: String
@@ -134,6 +135,11 @@ input DataFieldInput {
 }
 
 type DataSource {
+  type: String!
+  variables: [String!]!
+}
+
+input DataSourceInput {
   type: String!
   variables: [String!]!
 }
@@ -259,6 +265,7 @@ type Query {
   getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
   getDataContext(componentId: ObjectId!): [DataContext!]!
+  getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
@@ -270,7 +277,6 @@ type Query {
   listRelationships: Boolean
   listSubscriptions: Boolean
   me: User
-  retrieveEntityModel: Boolean
   retrieveMutation: Boolean
   retrieveQuery: Boolean
   retrieveRelationship: Boolean

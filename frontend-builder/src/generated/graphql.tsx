@@ -102,6 +102,7 @@ export type Component = {
 
 export type ComponentInput = {
   children?: InputMaybe<Array<Scalars['ObjectId']>>;
+  fetched?: InputMaybe<Array<DataSourceInput>>;
   isContainer?: InputMaybe<Scalars['Boolean']>;
   isRootElement?: InputMaybe<Scalars['Boolean']>;
   name?: InputMaybe<Scalars['String']>;
@@ -158,6 +159,11 @@ export type DataFieldInput = {
 
 export type DataSource = {
   __typename?: 'DataSource';
+  type: Scalars['String'];
+  variables: Array<Scalars['String']>;
+};
+
+export type DataSourceInput = {
   type: Scalars['String'];
   variables: Array<Scalars['String']>;
 };
@@ -415,6 +421,7 @@ export type Query = {
   getComponent?: Maybe<Component>;
   getComponents: Array<Component>;
   getDataContext: Array<DataContext>;
+  getEntityModel?: Maybe<EntityModel>;
   getLabelLibrary?: Maybe<LabelLibrary>;
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
@@ -426,7 +433,6 @@ export type Query = {
   listRelationships?: Maybe<Scalars['Boolean']>;
   listSubscriptions?: Maybe<Scalars['Boolean']>;
   me?: Maybe<User>;
-  retrieveEntityModel?: Maybe<Scalars['Boolean']>;
   retrieveMutation?: Maybe<Scalars['Boolean']>;
   retrieveQuery?: Maybe<Scalars['Boolean']>;
   retrieveRelationship?: Maybe<Scalars['Boolean']>;
@@ -451,6 +457,12 @@ export type QueryGetComponentsArgs = {
 
 export type QueryGetDataContextArgs = {
   componentId: Scalars['ObjectId'];
+};
+
+
+export type QueryGetEntityModelArgs = {
+  entityModelId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
 };
 
 
@@ -729,6 +741,14 @@ export type GetComponentsQueryVariables = Exact<{
 
 
 export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, parameters?: Array<string> | null, props?: string | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
+
+export type GetEntityModelQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  entityModelId: Scalars['ObjectId'];
+}>;
+
+
+export type GetEntityModelQuery = { __typename?: 'Query', getEntityModel?: { __typename?: 'EntityModel', _id: any, name: string, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, connection?: boolean | null, nullable: boolean, dataType: string }> } | null };
 
 export type UpdateComponentMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1267,6 +1287,53 @@ export function useGetComponentsLazyQuery(baseOptions?: Apollo.LazyQueryHookOpti
 export type GetComponentsQueryHookResult = ReturnType<typeof useGetComponentsQuery>;
 export type GetComponentsLazyQueryHookResult = ReturnType<typeof useGetComponentsLazyQuery>;
 export type GetComponentsQueryResult = Apollo.QueryResult<GetComponentsQuery, GetComponentsQueryVariables>;
+export const GetEntityModelDocument = gql`
+    query GetEntityModel($projectId: ObjectId!, $entityModelId: ObjectId!) {
+  getEntityModel(projectId: $projectId, entityModelId: $entityModelId) {
+    _id
+    name
+    fields {
+      _id
+      fieldName
+      isUnique
+      isHashed
+      isList
+      connection
+      nullable
+      dataType
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetEntityModelQuery__
+ *
+ * To run a query within a React component, call `useGetEntityModelQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetEntityModelQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetEntityModelQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      entityModelId: // value for 'entityModelId'
+ *   },
+ * });
+ */
+export function useGetEntityModelQuery(baseOptions: Apollo.QueryHookOptions<GetEntityModelQuery, GetEntityModelQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetEntityModelQuery, GetEntityModelQueryVariables>(GetEntityModelDocument, options);
+      }
+export function useGetEntityModelLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetEntityModelQuery, GetEntityModelQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetEntityModelQuery, GetEntityModelQueryVariables>(GetEntityModelDocument, options);
+        }
+export type GetEntityModelQueryHookResult = ReturnType<typeof useGetEntityModelQuery>;
+export type GetEntityModelLazyQueryHookResult = ReturnType<typeof useGetEntityModelLazyQuery>;
+export type GetEntityModelQueryResult = Apollo.QueryResult<GetEntityModelQuery, GetEntityModelQueryVariables>;
 export const UpdateComponentDocument = gql`
     mutation UpdateComponent($componentId: ObjectId!, $componentInput: ComponentInput!) {
   updateComponent(componentId: $componentId, componentInput: $componentInput) {

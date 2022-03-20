@@ -38,18 +38,21 @@ async function getParentRecursive(
   Array<{ componentId: string; name: string; dataSources: string[] }>
 > {
   const component = await ComponentModel.findById(componentId);
+  let ret = [...acc];
+  console.log(`component`);
+  console.log(component);
   if (!component) {
     throw new Error(`Component with id ${componentId} does not exist`);
   }
   if (component.parent) {
-    const adder = await getParentRecursive(component.parent._id.toString(), [
-      ...acc,
-    ]);
-    return [...acc, ...adder];
+    ret = [
+      ...ret,
+      ...(await getParentRecursive(component.parent._id.toString(), [...acc])),
+    ];
   }
   if (component.isRootElement) {
     return [
-      ...acc,
+      ...ret,
       {
         componentId: component._id.toString(),
         name: component.name,
@@ -58,8 +61,9 @@ async function getParentRecursive(
     ];
   }
   if (component.isContainer) {
+    console.log(`component.isContainer`);
     return [
-      ...acc,
+      ...ret,
       {
         componentId: component._id.toString(),
         name: component.name,
@@ -67,7 +71,8 @@ async function getParentRecursive(
       },
     ];
   }
-  return [] as any;
+  console.log(ret);
+  return ret;
 }
 
 @Service()
