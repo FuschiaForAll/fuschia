@@ -67,10 +67,6 @@ const LoginEditor = (props: {
   params: LoginProps
   onUpdate: (newValue: LoginProps) => void
 }) => {
-  const { projectId } = useParams<{ projectId: string }>()
-  const { data, loading, error } = useGetProjectQuery({
-    variables: { projectId },
-  })
   return (
     <div>
       <LabeledTextInput
@@ -101,7 +97,7 @@ const CreateEditor = (props: {
   onUpdate: (newValue: CreateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data, loading, error } = useGetProjectQuery({
+  const { data } = useGetProjectQuery({
     variables: { projectId },
   })
   if (!data || !data.getProject.appConfig) {
@@ -176,7 +172,7 @@ const UpdateEditor = (props: {
   onUpdate: (newValue: UpdateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data, loading, error } = useGetProjectQuery({
+  const { data } = useGetProjectQuery({
     variables: { projectId },
   })
   if (!data || !data.getProject.appConfig) {
@@ -251,7 +247,7 @@ const DeleteEditor = (props: {
   onUpdate: (newValue: DeleteProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data, loading, error } = useGetProjectQuery({
+  const { data } = useGetProjectQuery({
     variables: { projectId },
   })
   if (!data || !data.getProject.appConfig) {
@@ -299,11 +295,7 @@ const NavigateEditor = ({
   onUpdate: (newValue: NavigateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const {
-    data: projectData,
-    loading,
-    error,
-  } = useGetProjectQuery({
+  const { data: projectData } = useGetProjectQuery({
     variables: { projectId },
   })
   const { data: dataContextData } = useGetDataContextQuery({
@@ -383,7 +375,7 @@ const NavigateEditor = ({
     const target = navTargets.find(t => t._id === params.destination)
     if (target) {
       if (target.parameters && target.parameters.length > 0) {
-        return target.parameters.map((p, index) => (
+        return target.parameters.map(p => (
           <>
             <div>{extractModelName(p.entityId)}</div>
             <div style={{ border: 'solid 1px var(--accent)', borderRadius: 5 }}>

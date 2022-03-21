@@ -5,7 +5,7 @@ import {
   useGetEntityModelQuery,
   useRemoveParameterMutation,
   useUpdateComponentMutation,
-  useUpdateParameterMutation,
+  // useUpdateParameterMutation,
 } from '../../../generated/graphql'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { useParams } from 'react-router-dom'
@@ -411,10 +411,9 @@ function RootParameterEditor({
   models: Array<{ _id: string; name: string }>
 }) {
   const [newParameter, setNewParameter] = useState('')
-  const [updateComponent] = useUpdateComponentMutation()
   const [addParameter] = useAddParameterMutation()
   const [removeParameter] = useRemoveParameterMutation()
-  const [updatedParameter] = useUpdateParameterMutation()
+  // const [updatedParameter] = useUpdateParameterMutation()
 
   function extractModelName(parameter: string) {
     const model = models.find(model => model._id === parameter)
