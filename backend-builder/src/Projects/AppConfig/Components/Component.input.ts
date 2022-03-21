@@ -4,6 +4,15 @@ import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { DataSource } from "./Component.entity";
 
 @InputType()
+export class RequiredParameterInput {
+  @Field((type) => ObjectIdScalar)
+  entityId!: ObjectId;
+
+  @Field()
+  name!: string;
+}
+
+@InputType()
 export class DataSourceInput {
   @Field()
   type!: string;
@@ -38,8 +47,8 @@ export class ComponentInput {
   @Field({ nullable: true })
   isRootElement!: boolean;
 
-  @Field((type) => [String], { nullable: true })
-  parameters?: string[];
+  @Field((type) => [RequiredParameterInput], { nullable: true })
+  parameters?: RequiredParameterInput[];
 
   @Field((type) => [DataSourceInput], { nullable: true })
   fetched?: DataSourceInput[];

@@ -1,0 +1,6 @@
+mutation AddParameter(
+  $componentId: ObjectId!
+  $parameterInput: RequiredParameterInput!
+) {
+  addParameter(componentId: $componentId, parameterInput: $parameterInput)
+}

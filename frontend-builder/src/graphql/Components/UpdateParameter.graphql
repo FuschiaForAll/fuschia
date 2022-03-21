@@ -1,0 +1,11 @@
+mutation UpdateParameter(
+  $componentId: ObjectId!
+  $parameterId: ObjectId!
+  $parameterInput: RequiredParameterInput!
+) {
+  updateParameter(
+    componentId: $componentId
+    parameterId: $parameterId
+    parameterInput: $parameterInput
+  )
+}

@@ -17,8 +17,8 @@ import { ComponentModel, ProjectModel } from "../../../Models";
 import { Context } from "../../../types";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { ProjectService } from "../../Project.service";
-import { Component } from "./Component.entity";
-import { ComponentInput } from "./Component.input";
+import { Component, RequiredParameter } from "./Component.entity";
+import { ComponentInput, RequiredParameterInput } from "./Component.input";
 import * as _ from "lodash";
 
 @ObjectType()
@@ -56,7 +56,8 @@ async function getParentRecursive(
       {
         componentId: component._id.toString(),
         name: component.name,
-        dataSources: component.parameters || [],
+        dataSources:
+          component.parameters?.map((p) => p.entityId.toString()) || [],
       },
     ];
   }
@@ -219,6 +220,75 @@ export class ComponentResolver {
     );
     console.log(project?.components);
     return componentIds;
+  }
+
+  @Mutation((returns) => Boolean)
+  async addParameter(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("parameterInput", (type) => RequiredParameterInput)
+    parameterInput: RequiredParameterInput
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to add parameters`
+    );
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      if (!component.parameters) {
+        component.parameters = [parameterInput];
+      } else {
+        component.parameters.push(parameterInput);
+      }
+      await component.save();
+      return true;
+    }
+  }
+  @Mutation((returns) => Boolean)
+  async updateParameter(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("parameterId", (type) => ObjectIdScalar) parameterId: ObjectId,
+    @Arg("parameterInput", (type) => RequiredParameterInput)
+    parameterInput: RequiredParameterInput
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to add parameters`
+    );
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      if (component.parameters) {
+        const param = component.parameters.findIndex(
+          (p) => p._id!.toString() === parameterId.toString()
+        );
+        if (param !== -1) {
+          component.parameters[param] = {
+            ...component.parameters[param],
+            ...parameterInput,
+          };
+        }
+      }
+      await component.save();
+      return true;
+    }
+  }
+
+  @Mutation((returns) => Boolean)
+  async removeParameter(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("parameterId", (type) => ObjectIdScalar)
+    parameterId: ObjectId
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to remove parameters`
+    );
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      if (component.parameters) {
+        component.parameters = component.parameters.filter(
+          (p) => p._id!.toString() !== parameterId.toString()
+        );
+      }
+      await component.save();
+      return true;
+    }
   }
 
   @FieldResolver()

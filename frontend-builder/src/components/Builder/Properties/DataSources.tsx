@@ -1,8 +1,11 @@
 import React, { useState } from 'react'
 import {
   GetComponentQuery,
+  useAddParameterMutation,
   useGetEntityModelQuery,
+  useRemoveParameterMutation,
   useUpdateComponentMutation,
+  useUpdateParameterMutation,
 } from '../../../generated/graphql'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { useParams } from 'react-router-dom'
@@ -301,7 +304,7 @@ function ContainerParameterEditor({
   models,
 }: {
   componentId: string
-  parameters: string[]
+  parameters: Array<{ _id: string; entityId: string; name: string }>
   fetched: Array<{ type: string; variables: string[] }>
   models: Array<{ _id: string; name: string }>
 }) {
@@ -403,12 +406,15 @@ function RootParameterEditor({
   models,
 }: {
   componentId: string
-  parameters: string[]
+  parameters: Array<{ _id: string; entityId: string; name: string }>
   fetched: Array<{ type: string; variables: string[] }>
   models: Array<{ _id: string; name: string }>
 }) {
   const [newParameter, setNewParameter] = useState('')
   const [updateComponent] = useUpdateComponentMutation()
+  const [addParameter] = useAddParameterMutation()
+  const [removeParameter] = useRemoveParameterMutation()
+  const [updatedParameter] = useUpdateParameterMutation()
 
   function extractModelName(parameter: string) {
     const model = models.find(model => model._id === parameter)
@@ -431,16 +437,13 @@ function RootParameterEditor({
       )}
       {parameters.map(param => (
         <div>
-          <span>{extractModelName(param)}</span>
+          <span>{extractModelName(param.entityId)}</span>
           <button
             onClick={() => {
-              const newParams = parameters.filter(p => p !== param)
-              updateComponent({
+              removeParameter({
                 variables: {
                   componentId,
-                  componentInput: {
-                    parameters: newParams,
-                  },
+                  parameterId: param._id,
                 },
               })
             }}
@@ -464,11 +467,12 @@ function RootParameterEditor({
       </select>
       <button
         onClick={async () => {
-          await updateComponent({
+          await addParameter({
             variables: {
               componentId,
-              componentInput: {
-                parameters: [...parameters, newParameter],
+              parameterInput: {
+                entityId: newParameter,
+                name: extractModelName(newParameter),
               },
             },
           })
