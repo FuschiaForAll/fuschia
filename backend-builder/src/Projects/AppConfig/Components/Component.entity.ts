@@ -10,6 +10,20 @@ import {
 } from "@typegoose/typegoose";
 
 @ObjectType()
+export class RequiredParameter {
+  @Field((type) => ObjectIdScalar)
+  readonly _id?: ObjectId;
+
+  @Field((type) => ObjectIdScalar)
+  @Property()
+  entityId!: ObjectId;
+
+  @Field()
+  @Property()
+  name!: string;
+}
+
+@ObjectType()
 export class DataSource {
   @Field()
   @Property()
@@ -54,9 +68,9 @@ export class Component {
   @Property()
   isRootElement!: boolean;
 
-  @Field((type) => [String], { nullable: true })
-  @Property()
-  parameters?: string[];
+  @Field((type) => [RequiredParameter], { nullable: true })
+  @Property({ type: () => RequiredParameter })
+  parameters?: RequiredParameter[];
 
   @Field((type) => [DataSource], { nullable: true })
   @Property({ type: () => DataSource, default: [] })

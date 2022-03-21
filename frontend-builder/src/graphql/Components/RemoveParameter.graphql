@@ -1,0 +1,3 @@
+mutation RemoveParameter($componentId: ObjectId!, $parameterId: ObjectId!) {
+  removeParameter(componentId: $componentId, parameterId: $parameterId)
+}

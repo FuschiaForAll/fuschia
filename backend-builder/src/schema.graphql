@@ -72,7 +72,7 @@ type Component {
   isRootElement: Boolean!
   name: String!
   package: String!
-  parameters: [String!]
+  parameters: [RequiredParameter!]
   parent: Component
   props: String
   type: String!
@@ -87,7 +87,7 @@ input ComponentInput {
   isRootElement: Boolean
   name: String
   package: String
-  parameters: [String!]
+  parameters: [RequiredParameterInput!]
   parent: ObjectId
   props: String
   type: String
@@ -191,6 +191,7 @@ type LanguageTranslation {
 }
 
 type Mutation {
+  addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
@@ -217,10 +218,12 @@ type Mutation {
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   register(email: String!, password: String!): UserResponse!
+  removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateEntityModel: Boolean
   updateMutation: Boolean
+  updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
@@ -281,6 +284,17 @@ type Query {
   retrieveQuery: Boolean
   retrieveRelationship: Boolean
   retrieveSubscription: Boolean
+}
+
+type RequiredParameter {
+  _id: ObjectId!
+  entityId: ObjectId!
+  name: String!
+}
+
+input RequiredParameterInput {
+  entityId: ObjectId!
+  name: String!
 }
 
 type Translation {

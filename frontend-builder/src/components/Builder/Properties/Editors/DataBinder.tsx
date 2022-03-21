@@ -28,6 +28,7 @@ export interface MenuStructure {
 }
 
 function SubMenu(props: {
+  targetType?: string
   label: string
   entityId: string
   dataStructure: { [key: string]: DataStructure }
@@ -47,10 +48,20 @@ function SubMenu(props: {
     <>
       <MenuItem
         key={props.label}
-        onMouseOver={e => setAnchorEl(e.currentTarget)}
+        style={{
+          color:
+            props.targetType === props.entityId
+              ? 'var(--accent)'
+              : 'var(--black)',
+        }}
+        onClick={() => {
+          if (props.targetType === props.entityId || !props.targetType) {
+            handleSubMenuSelect(props.entityId, props.label)
+          }
+        }}
       >
         <ListItemText>{props.label}</ListItemText>
-        <ListItemIcon>
+        <ListItemIcon onMouseOver={e => setAnchorEl(e.currentTarget)}>
           <ArrowForwardIosIcon fontSize="small" />
         </ListItemIcon>
       </MenuItem>
@@ -74,6 +85,7 @@ function SubMenu(props: {
         {props.dataStructure[props.entityId].fields.map(element =>
           element.hasSubMenu ? (
             <SubMenu
+              targetType={props.targetType}
               label={element.name}
               dataStructure={props.dataStructure}
               entityId={element.dataType}
@@ -88,7 +100,11 @@ function SubMenu(props: {
           ) : (
             <MenuItem
               key={element.key}
-              onClick={() => handleSubMenuSelect(element.key, element.name)}
+              onClick={() => {
+                if (props.targetType === props.entityId || !props.targetType) {
+                  handleSubMenuSelect(element.key, element.name)
+                }
+              }}
             >
               {element.name}
             </MenuItem>
@@ -100,6 +116,7 @@ function SubMenu(props: {
 }
 
 interface DataBinderProps {
+  targetType?: string
   entry: MenuStructure[]
   dataStructure: { [key: string]: DataStructure }
   onSelect: (entityPath: string, labelPath: string) => void
@@ -137,6 +154,7 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
         {props.entry.map(element =>
           element.hasSubMenu ? (
             <SubMenu
+              targetType={props.targetType}
               label={element.label}
               entityId={element.entity}
               dataStructure={props.dataStructure}

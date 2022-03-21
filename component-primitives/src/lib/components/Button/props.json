@@ -36,6 +36,12 @@
           "default": "#000000"
         }
       }
+    },
+    "onClick": {
+      "title": "onClick",
+      "type": "function",
+      "arguments": [],
+      "returnType": "null"
     }
   }
 }
