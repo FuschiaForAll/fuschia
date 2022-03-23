@@ -2,10 +2,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import Paper from '@mui/material/Paper'
 import IconButton from '@mui/material/IconButton'
-import Popper from '@mui/material/Popper'
-
 import PersonIcon from '@mui/icons-material/Person'
-import Fade from '@mui/material/Fade'
 import Typography from '@mui/material/Typography'
 import { Project } from '../../../generated/graphql'
 import { Button, MenuItem, Select } from '@mui/material'
@@ -56,12 +53,6 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
 }: TopbarProps) {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
-  const [anchorEl, setAnchorEl] = React.useState<HTMLButtonElement | null>(null)
-  const [open, setOpen] = React.useState(false)
-  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget)
-    setOpen(prev => !prev)
-  }
   return (
     <Wrapper>
       <Box sx={{ display: 'grid', gridAutoFlow: 'column', gap: '1rem' }}>
@@ -136,26 +127,10 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             padding: '0.5rem',
           }}
         >
-          <Item onClick={handleClick}>
+          <Item onClick={() => navigate('dashboard')}>
             <PersonIcon />
           </Item>
         </Paper>
-        <Popper
-          open={open}
-          anchorEl={anchorEl}
-          placement="bottom-end"
-          transition
-        >
-          {({ TransitionProps }) => (
-            <Fade {...TransitionProps} timeout={350}>
-              <Paper>
-                <Typography sx={{ p: 2 }}>
-                  The content of the Popper.
-                </Typography>
-              </Paper>
-            </Fade>
-          )}
-        </Popper>
       </Box>
     </Wrapper>
   )

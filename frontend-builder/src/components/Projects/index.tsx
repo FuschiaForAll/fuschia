@@ -47,6 +47,12 @@ const Projects: React.FC = function Projects() {
       <h1>Projects</h1>
       <div>
         <span>Select an organization to create a project for</span>
+        <div>
+          <div>All Teams</div>
+          {organizations?.listOrganizations.map(org => (
+            <div key={org._id}>{org.name}</div>
+          ))}
+        </div>
         <select
           value={selectedOrganization}
           onChange={e => {

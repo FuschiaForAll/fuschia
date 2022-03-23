@@ -43,25 +43,11 @@
         }
       }
     },
-    "actions": {
-      "type":"object",
-      "title": "Actions",
-      "properties": {
-        "onEnter": {
-          "title": "On Enter",
-          "type": "string"
-        }
-      }
-    },
-    "data": {
-      "type":"object",
-      "title": "Data",
-      "properties": {
-        "something": {
-          "title": "Something",
-          "type": "string"
-        }
-      }
+    "onLoad": {
+      "type": "function",
+      "title": "onLoad",
+      "arguments": [],
+      "returnType": "null"
     }
   }
 }
