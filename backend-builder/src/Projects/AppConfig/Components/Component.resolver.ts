@@ -31,12 +31,20 @@ class DataContext {
   dataSources!: string[];
 }
 
+@ObjectType()
+class DataComponent {
+  @Field()
+  componentId!: string;
+  @Field()
+  name!: string;
+  @Field()
+  dataType!: string;
+}
+
 async function getParentRecursive(
   componentId: string,
-  acc: Array<{ componentId: string; name: string; dataSources: string[] }>
-): Promise<
-  Array<{ componentId: string; name: string; dataSources: string[] }>
-> {
+  acc: DataContext[]
+): Promise<DataContext[]> {
   const component = await ComponentModel.findById(componentId);
   let ret = [...acc];
   console.log(`component`);
@@ -174,15 +182,15 @@ export class ComponentResolver {
     // merge the props from old and new...
     const component = await ComponentModel.findById(componentId);
     if (component) {
-      const oldProps = JSON.parse(component.props || "{}");
+      const oldProps = component.props;
       console.log(`oldProps`);
       console.log(oldProps);
-      const newProps = JSON.parse(componentInput.props || "{}");
+      const newProps = componentInput.props;
       console.log(`newProps`);
       console.log(newProps);
       const updates = { ...componentInput };
       const mergeProps = _.merge(oldProps, newProps);
-      updates.props = JSON.stringify(mergeProps);
+      updates.props = mergeProps;
       console.log(`updates`);
       console.log(updates);
       return ComponentModel.findByIdAndUpdate(

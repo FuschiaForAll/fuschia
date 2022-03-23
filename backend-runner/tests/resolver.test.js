@@ -25,7 +25,7 @@ describe("resolver", () => {
     global.filterParser = require("../src/filter.builder")(resolvers);
     const { resolver } = require("../src/resolver");
     testResolver = resolver;
-  });
+  }).timeout(5000);
   it("should insert an item", async () => {
     const newUser = await testResolver.genericCreateResolver(
       "622e0cdd4418968a4d86bada",

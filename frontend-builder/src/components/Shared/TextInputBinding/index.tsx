@@ -17,7 +17,9 @@ import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
+  useGetComponentsQuery,
 } from '../../../generated/graphql'
+import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 
 const EditorWrapper = styled.div`
   margin-top: 2px;
@@ -111,6 +113,14 @@ interface TextInputBindingProps {
   componentId: string
 }
 
+interface Component {
+  _id: any
+  package: string
+  type: string
+  name: string
+  children?: Array<Component> | null
+}
+
 const TextInputBinding: React.FC<TextInputBindingProps> =
   function TextInputBinding({
     componentId,
@@ -155,6 +165,12 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         componentId,
       },
     })
+    const { data: componentsData } = useGetComponentsQuery({
+      variables: {
+        projectId,
+      },
+    })
+    const { data: packageData } = useGetPackagesQuery()
     const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
     const extractModelName = useCallback(
       (parameter: string): [string, boolean] => {
@@ -168,45 +184,114 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       [projectData]
     )
     useEffect(() => {
-      if (dataContextData) {
-        const modelStruct =
-          projectData?.getProject.appConfig.apiConfig.models.reduce(
-            (acc, item) => {
-              acc[item._id] = {
-                _id: item._id,
-                name: item.name,
-                fields: item.fields
-                  .filter(field => !field.isList) // don't add lists for now
-                  .map(field => ({
-                    dataType: field.dataType,
-                    hasSubMenu: !!field.connection,
-                    key: field._id,
-                    name: field.fieldName,
-                  })),
-              }
-              return acc
-            },
-            {} as {
-              [key: string]: DataStructure
+      if (dataContextData && packageData && componentsData) {
+        // find all packages that emit data
+        const dataComponents = packageData.getPackages.flatMap(p =>
+          p.components
+            .filter(c => !!c.schema.data)
+            .flatMap(c =>
+              Object.keys(c.schema.data).map(key => ({
+                packageName: p.packageName,
+                componentName: c.name,
+                data: key,
+                type: c.schema.data[key],
+              }))
+            )
+        )
+        // find all components with accessible data
+        const structure = [] as MenuStructure[]
+        structure.push({
+          label: 'Inputs',
+          hasSubMenu: true,
+          entity: 'InputObject',
+          source: 'InputObject',
+        })
+        const modelStructure = {
+          InputObject: {
+            _id: 'InputObject',
+            name: 'Inputs',
+            fields: componentsData.getComponents.map(c => ({
+              dataType: c._id,
+              hasSubMenu: !!(c.children && c.children.length > 0),
+              key: c._id,
+              name: c.name,
+            })),
+          },
+        } as { [key: string]: DataStructure }
+        const search = (c: Component) => {
+          modelStructure[c._id] = {
+            _id: c._id,
+            name: c.name,
+            fields: [],
+          }
+          c.children?.forEach(ch => {
+            if (ch.children && ch.children.length > 0) {
+              modelStructure[c._id].fields.push({
+                key: ch._id,
+                dataType: ch._id,
+                name: ch.name,
+                hasSubMenu: !!(ch.children && ch.children.length > 0),
+              })
             }
-          )
-        setModelStructures(modelStruct || {})
+            dataComponents
+              .filter(
+                dc =>
+                  dc.packageName === ch.package && dc.componentName === ch.type
+              )
+              .forEach(dc =>
+                modelStructure[c._id].fields.push({
+                  key: ch._id,
+                  hasSubMenu: false,
+                  dataType: ch._id,
+                  name: `${ch.name}'s ${dc.data}`,
+                })
+              )
+          })
+          if (c.children) {
+            c.children.forEach(ch => search(ch))
+          }
+        }
+        componentsData.getComponents.forEach(c => search(c))
+        console.log(`structure`)
+        console.log(structure)
 
-        const structure = dataContextData.getDataContext.reduce((acc, item) => {
+        debugger
+        projectData?.getProject.appConfig.apiConfig.models.forEach(item => {
+          modelStructure[item._id] = {
+            _id: item._id,
+            name: item.name,
+            fields: item.fields
+              .filter(field => !field.isList) // don't add lists for now
+              .map(field => ({
+                dataType: field.dataType,
+                hasSubMenu: !!field.connection,
+                key: field._id,
+                name: field.fieldName,
+              })),
+          }
+        })
+        setModelStructures(modelStructure || {})
+
+        dataContextData.getDataContext.forEach(item => {
           item.dataSources.forEach(source => {
             const [name, hasSubMenu] = extractModelName(source)
-            acc.push({
+            structure.push({
               source: item.componentId,
               entity: source,
               label: `${item.name}'s ${name}`,
               hasSubMenu,
             })
           })
-          return acc
-        }, [] as MenuStructure[])
+        })
         setDataStructure(structure)
       }
-    }, [dataContextData, extractModelName, projectData])
+    }, [
+      dataContextData,
+      extractModelName,
+      projectData,
+      packageData,
+      componentsData,
+    ])
     return (
       <EditorWrapper
         style={{

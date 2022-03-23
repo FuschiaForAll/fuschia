@@ -120,13 +120,15 @@ function Properties(props: { schema: Schema; elementId: string }) {
       <TabPanel value={value} index={0}>
         <Editor
           componentId={props.elementId}
-          initialValue={JSON.parse(componentData.getComponent.props || '{}')}
+          initialValue={JSON.parse(
+            JSON.stringify(componentData.getComponent.props)
+          )}
           updateValue={(value, isValid) => {
             updateComponent({
               variables: {
                 componentId: props.elementId,
                 componentInput: {
-                  props: JSON.stringify(value),
+                  props: value,
                 },
               },
             })

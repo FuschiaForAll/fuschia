@@ -35,8 +35,6 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   onDrag,
   onDragEnd,
 }) {
-  const { props } = layer
-  const jsonProps = JSON.parse(props || '{}')
   const { ref } = useDragDrop('new-element', {
     draggable: {
       onDragEnd,
@@ -50,13 +48,13 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     position: 'fixed',
     zIndex: 1000,
   }
-  styles.width = jsonProps.style?.width || 50
-  styles.height = jsonProps.style?.height || 50
+  styles.width = layer.props.style?.width || 50
+  styles.height = layer.props.style?.height || 50
   styles.left = `${
-    drag.position[0] - parseFloat(jsonProps.style?.width || '0') / 2
+    drag.position[0] - parseFloat(layer.props.style?.width || '0') / 2
   }px`
   styles.top = `${
-    drag.position[1] - parseFloat(jsonProps.style?.height || '0') / 2
+    drag.position[1] - parseFloat(layer.props.style?.height || '0') / 2
   }px`
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
@@ -69,7 +67,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
       style={styles}
       data-layer={JSON.stringify(layer)}
     >
-      <InlineComponent {...jsonProps} />
+      <InlineComponent {...layer.props} />
     </div>
   )
 }

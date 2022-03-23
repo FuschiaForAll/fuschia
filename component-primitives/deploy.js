@@ -57,8 +57,8 @@ function getPackage() {
   const componentProps = props.map((prop) => JSON.parse(fs.readFileSync(prop)));
   package.components = [];
   package.components = componentProps.map((component) => ({
-    schema: JSON.stringify(component),
-    defaultValue: JSON.stringify(getDefaultProps(component, {})),
+    schema: component,
+    defaultValue: getDefaultProps(component, {}),
     name: component.title || "",
     icon: component.icon || "",
     isRootElement: !!component.isRootElement,

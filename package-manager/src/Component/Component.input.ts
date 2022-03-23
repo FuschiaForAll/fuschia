@@ -9,13 +9,13 @@ export class ComponentInput implements Partial<Component> {
   @Field()
   name!: String;
 
-  @Field()
+  @Field((type) => Object)
   @Property({ required: true })
-  schema!: String;
+  schema!: Object;
 
-  @Field()
+  @Field((type) => Object)
   @Property({ required: true })
-  defaultValue!: String;
+  defaultValue!: Object;
 
   @Field()
   isRootElement!: boolean;

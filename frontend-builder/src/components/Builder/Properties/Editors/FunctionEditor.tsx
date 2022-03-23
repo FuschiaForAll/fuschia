@@ -8,6 +8,7 @@ import {
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
 import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
+import TextInputBinding from '../../../Shared/TextInputBinding'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -69,21 +70,23 @@ const LoginEditor = (props: {
 }) => {
   return (
     <div>
-      <LabeledTextInput
-        label="Username"
-        value={props.params.username}
-        onChange={e => {
+      <div style={{ fontSize: '0.75rem' }}>Username</div>
+      <TextInputBinding
+        componentId={props.componentId}
+        initialValue={props.params.username}
+        onChange={value => {
           const newParams = { ...props.params }
-          newParams.username = e.target.value
+          newParams.username = value
           props.onUpdate(newParams)
         }}
       />
-      <LabeledTextInput
-        label="Password"
-        value={props.params.password}
-        onChange={e => {
+      <div style={{ fontSize: '0.75rem' }}>Password</div>
+      <TextInputBinding
+        componentId={props.componentId}
+        initialValue={props.params.password}
+        onChange={value => {
           const newParams = { ...props.params }
-          newParams.password = e.target.value
+          newParams.password = value
           props.onUpdate(newParams)
         }}
       />
