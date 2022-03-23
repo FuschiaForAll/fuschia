@@ -10,6 +10,17 @@ import {
 } from "@typegoose/typegoose";
 
 @ObjectType()
+export class DataMembers {
+  @Field()
+  @Property()
+  name!: string;
+
+  @Field()
+  @Property()
+  type!: string;
+}
+
+@ObjectType()
 export class RequiredParameter {
   @Field((type) => ObjectIdScalar)
   readonly _id?: ObjectId;
@@ -76,9 +87,9 @@ export class Component {
   @Property({ type: () => DataSource, default: [] })
   fetched?: DataSource[];
 
-  @Field({ nullable: true })
+  @Field((type) => Object, { nullable: true })
   @Property()
-  props?: string;
+  props?: Object;
 
   @Field((type) => Component, { nullable: true })
   @Property({ ref: () => Component })

@@ -16,6 +16,7 @@ export interface Props<TSchema extends CommonSchema, TValue> {
   disableCollapse?: boolean
   minItemCountIfNeedFilter?: number
   getReference: (name: string) => TSchema | undefined
+  data?: { [key: string]: string }
 }
 
 type EqualCondition = [string, '===', any]

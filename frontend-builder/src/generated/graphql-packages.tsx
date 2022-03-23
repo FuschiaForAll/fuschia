@@ -13,6 +13,8 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  /** The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
+  JSONObject: any;
   /** Mongo object id scalar type */
   ObjectId: any;
 };
@@ -20,21 +22,21 @@ export type Scalars = {
 export type Component = {
   __typename?: 'Component';
   _id: Scalars['ObjectId'];
-  defaultValue: Scalars['String'];
+  defaultValue: Scalars['JSONObject'];
   icon: Scalars['String'];
   isContainer: Scalars['Boolean'];
   isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
-  schema: Scalars['String'];
+  schema: Scalars['JSONObject'];
 };
 
 export type ComponentInput = {
-  defaultValue: Scalars['String'];
+  defaultValue: Scalars['JSONObject'];
   icon: Scalars['String'];
   isContainer: Scalars['Boolean'];
   isRootElement: Scalars['Boolean'];
   name: Scalars['String'];
-  schema: Scalars['String'];
+  schema: Scalars['JSONObject'];
 };
 
 export type Mutation = {
@@ -91,7 +93,7 @@ export type Query = {
 export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, schema: string, defaultValue: string, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
+export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'Component', _id: any, name: string, schema: any, defaultValue: any, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
 
 
 export const GetPackagesDocument = gql`

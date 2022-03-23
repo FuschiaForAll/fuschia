@@ -20,13 +20,13 @@ export class Component {
   @Property({ required: true })
   isContainer!: boolean;
 
-  @Field()
+  @Field((type) => Object)
   @Property({ required: true })
-  schema!: String;
+  schema!: Object;
 
-  @Field()
+  @Field((type) => Object)
   @Property({ required: true })
-  defaultValue!: String;
+  defaultValue!: Object;
 
   @Field()
   @Property({ required: true })

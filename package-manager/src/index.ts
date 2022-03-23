@@ -1,4 +1,3 @@
-
 import { connect } from "mongoose";
 import { buildSchema } from "type-graphql";
 import { ComponentResolver } from "./Component/Component.resolver";
@@ -10,30 +9,30 @@ import { ObjectId } from "mongodb";
 import { Container } from "typedi";
 import { ApolloServer } from "apollo-server";
 import { PackageResolver } from "./Package/Package.resolver";
+import { GraphQLJSONObject } from "graphql-type-json";
 
 (async () => {
   const mongoose = await connect(MONGO_DB_URL, { dbName: "fuschia" });
 
   const schema = await buildSchema({
-    resolvers: [
-      PackageResolver,
-      ComponentResolver
-    ],
+    resolvers: [PackageResolver, ComponentResolver],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],
-    scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }],
+    scalarsMap: [
+      { type: ObjectId, scalar: ObjectIdScalar },
+      { type: Object, scalar: GraphQLJSONObject },
+    ],
     validate: true,
-    container: Container
+    container: Container,
   });
 
   const server = new ApolloServer({
     schema,
     cors: {
-      origin: '*'
-    }
+      origin: "*",
+    },
   });
 
   const { url } = await server.listen(4006);
   console.log(`Server is running, GraphQL Playground available at ${url}`);
-
-})()
+})();

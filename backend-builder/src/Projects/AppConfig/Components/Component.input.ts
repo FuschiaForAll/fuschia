@@ -38,8 +38,8 @@ export class ComponentInput {
   @Field({ nullable: true })
   y?: number;
 
-  @Field({ nullable: true })
-  props?: string;
+  @Field((type) => Object, { nullable: true })
+  props?: Object;
 
   @Field({ nullable: true })
   isContainer!: boolean;

@@ -47,7 +47,6 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   onClick,
 }) {
   const { x, y, props } = layer
-  const jsonProps = JSON.parse(props || '{}')
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {
@@ -61,10 +60,10 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
             componentInput: {
               x,
               y,
-              props: JSON.stringify({
-                ...jsonProps,
+              props: {
+                ...props,
                 style: { width, height },
-              }),
+              },
             },
           },
         })
@@ -77,8 +76,8 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   })
 
   const styles: React.CSSProperties = {
-    width: jsonProps.style?.width || 50,
-    height: jsonProps.style?.height || 50,
+    width: props.style?.width || 50,
+    height: props.style?.height || 50,
     left: x || 0,
     top: y || 0,
     pointerEvents: 'all',
@@ -131,10 +130,10 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
             componentInput: {
               x,
               y,
-              props: JSON.stringify({
-                ...jsonProps,
+              props: {
+                ...props,
                 style: { width, height },
-              }),
+              },
             },
           },
         })
@@ -142,11 +141,10 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
     },
   })
   const { x, y, props } = layer
-  const jsonProps = JSON.parse(props || '{}')
 
   const styles: React.CSSProperties = {
-    width: jsonProps.style?.width || 50,
-    height: jsonProps.style?.height || 50,
+    width: props.style?.width || 50,
+    height: props.style?.height || 50,
     pointerEvents: 'all',
     zIndex: 1000,
     position: 'absolute',
@@ -193,7 +191,7 @@ function getComponentSchema(
       component => component.name === layer.type
     )
     if (component) {
-      return JSON.parse(component.schema || '{}')
+      return component.schema
     }
   }
   throw new Error('Schema not found')
@@ -218,10 +216,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
   const WrapperType = layer.isContainer ? FrameLayer : InlineLayer
-  const { props } = layer
-  const jsonProps = JSON.parse(props || '{}')
-  Object.keys(jsonProps).forEach(
-    key => (jsonProps[key] = convertDraftJSBindings(jsonProps[key]))
+  const props = { ...layer.props }
+  Object.keys(props).forEach(
+    key => (props[key] = convertDraftJSBindings(props[key]))
   )
   if (!packageData?.getPackages) {
     return <div>loading...</div>
@@ -233,8 +230,8 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
         <Portal id="property-window">
           <PropertyWindow
             elementId={layer._id}
-            schema={schema}
-            properties={JSON.parse(layer.props || '{}')}
+            schema={JSON.parse(JSON.stringify(schema))}
+            properties={JSON.parse(JSON.stringify(props))}
           />
         </Portal>
       )}
@@ -242,9 +239,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
         {layer.isContainer ? (
           <InlineComponent
             id={`component=${layer._id}`}
-            {...jsonProps}
+            {...props}
             style={{
-              ...jsonProps.style,
+              ...props.style,
               width: '100%',
               height: '100%',
               position: 'absolute',
@@ -269,9 +266,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
             >
               <InlineComponent
                 id={`component=${layer._id}`}
-                {...jsonProps}
+                {...props}
                 style={{
-                  ...jsonProps.style,
+                  ...props.style,
                   width: '100%',
                   height: '100%',
                   position: 'absolute',
