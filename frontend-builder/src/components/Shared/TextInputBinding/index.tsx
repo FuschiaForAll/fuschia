@@ -255,7 +255,6 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         console.log(`structure`)
         console.log(structure)
 
-        debugger
         projectData?.getProject.appConfig.apiConfig.models.forEach(item => {
           modelStructure[item._id] = {
             _id: item._id,

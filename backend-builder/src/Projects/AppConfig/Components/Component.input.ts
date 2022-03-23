@@ -41,6 +41,9 @@ export class ComponentInput {
   @Field((type) => Object, { nullable: true })
   props?: Object;
 
+  @Field((type) => Object, { nullable: true })
+  data?: Object;
+
   @Field({ nullable: true })
   isContainer!: boolean;
 

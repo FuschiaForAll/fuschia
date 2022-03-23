@@ -14,6 +14,7 @@ type Api {
 
 type AppConfig {
   apiConfig: Api!
+  appEntryComponentId: ObjectId
   authConfig: Auth!
 }
 
@@ -67,6 +68,7 @@ input AuthInput {
 type Component {
   _id: ObjectId!
   children: [Component!]
+  data: JSONObject
   fetched: [DataSource!]
   isContainer: Boolean!
   isRootElement: Boolean!
@@ -82,6 +84,7 @@ type Component {
 
 input ComponentInput {
   children: [ObjectId!]
+  data: JSONObject
   fetched: [DataSourceInput!]
   isContainer: Boolean
   isRootElement: Boolean

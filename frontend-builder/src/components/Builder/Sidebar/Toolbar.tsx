@@ -56,8 +56,18 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   styles.top = `${
     drag.position[1] - parseFloat(layer.props.style?.height || '0') / 2
   }px`
+  const props = { ...layer.props }
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
+  if (layer.data) {
+    if (layer.data) {
+      Object.keys(layer.data).forEach(key => {
+        props[key] = {
+          onChange: (e: any) => {},
+        }
+      })
+    }
+  }
   return (
     <div
       className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
@@ -67,7 +77,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
       style={styles}
       data-layer={JSON.stringify(layer)}
     >
-      <InlineComponent {...layer.props} />
+      <InlineComponent {...props} />
     </div>
   )
 }
@@ -144,6 +154,7 @@ const Toolbar: React.FC = function Toolbar() {
                   _id: '',
                   type: component.name,
                   props: component.defaultValue,
+                  data: component.schema.data,
                 }}
               >
                 {/* @ts-ignore */}

@@ -220,6 +220,13 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   Object.keys(props).forEach(
     key => (props[key] = convertDraftJSBindings(props[key]))
   )
+  if (layer.data) {
+    Object.keys(layer.data).forEach(key => {
+      props[key] = {
+        onChange: (e: any) => {},
+      }
+    })
+  }
   if (!packageData?.getPackages) {
     return <div>loading...</div>
   }

@@ -323,7 +323,6 @@ function ContainerParameterEditor({
           models={models}
           key={index}
           onFilterUpdate={async newFilter => {
-            debugger
             const newFetched = [...fetched]
             newFetched[index] = newFilter
 
@@ -372,7 +371,6 @@ function ContainerParameterEditor({
       </select>
       <button
         onClick={async () => {
-          debugger
           await updateComponent({
             variables: {
               componentId,

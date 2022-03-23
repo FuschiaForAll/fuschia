@@ -11,6 +11,7 @@ import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
 import Scalebar from './Scalebar'
 import LabelLibrary from './LabelLibrary'
+import Previewer from '../Previewer'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -55,6 +56,7 @@ const Builder: React.FC = function Builder() {
       </div>
       <Routes>
         <Route path="database" element={<Database />} />
+        <Route path="previewer" element={<Previewer />} />
         <Route path="app-settings" element={<Settings />} />
         <Route path="label-library" element={<LabelLibrary />} />
       </Routes>

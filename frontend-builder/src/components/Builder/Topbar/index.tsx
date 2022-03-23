@@ -124,7 +124,9 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
         <Select value={'editingMode'}>
           <MenuItem value={'editingMode'}>Editing Mode</MenuItem>
         </Select>
-        <Button variant="contained">Preview</Button>
+        <Button variant="contained" onClick={() => navigate('previewer')}>
+          Preview
+        </Button>
         <Paper
           elevation={12}
           sx={{

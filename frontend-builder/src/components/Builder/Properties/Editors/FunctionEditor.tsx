@@ -56,7 +56,7 @@ interface UpdateProps {
   fields: { [key: string]: string | number | boolean }
 }
 
-type ActionProps =
+export type ActionProps =
   | NavigateProps
   | CreateProps
   | DeleteProps
@@ -356,7 +356,6 @@ const NavigateEditor = ({
             [key: string]: DataStructure
           }
         )
-      debugger
       setModelStructures(modelStruct || {})
 
       const structure = dataContextData.getDataContext.reduce((acc, item) => {
@@ -385,7 +384,6 @@ const NavigateEditor = ({
               <DataBinder
                 targetType={p.entityId}
                 onSelect={(entityId, label) => {
-                  debugger
                   onUpdate({
                     ...params,
                     parameters: {
@@ -527,7 +525,6 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
             X
           </button>
           {editor(f, newValue => {
-            debugger
             setFunctions(fs => {
               fs[index] = newValue
               return [...fs]

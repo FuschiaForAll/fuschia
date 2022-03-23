@@ -91,6 +91,10 @@ export class Component {
   @Property()
   props?: Object;
 
+  @Field((type) => Object, { nullable: true })
+  @Property()
+  data?: Object;
+
   @Field((type) => Component, { nullable: true })
   @Property({ ref: () => Component })
   parent!: Ref<Component>;

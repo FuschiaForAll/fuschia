@@ -37,8 +37,8 @@
         }
       }
     },
-    "onClick": {
-      "title": "onClick",
+    "onPress": {
+      "title": "onPress",
       "type": "function",
       "arguments": [],
       "returnType": "null"

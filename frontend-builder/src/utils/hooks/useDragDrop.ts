@@ -249,6 +249,7 @@ export const useDragDrop = (
                     type: jsonLayer.type,
                     parent: targetId,
                     props: jsonLayer.props,
+                    data: jsonLayer.data,
                     x: newX,
                     y: newY,
                   })

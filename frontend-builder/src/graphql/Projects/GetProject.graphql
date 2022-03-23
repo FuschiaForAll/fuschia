@@ -4,6 +4,7 @@ query GetProject($projectId: ObjectId!) {
     appId
     projectName
     appConfig {
+      appEntryComponentId
       apiConfig {
         sandboxEndpoint
         liveEndpoint
