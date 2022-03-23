@@ -8,7 +8,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Remove unnecessary workspaces
         run: rm -rf backend-builder
-        run: rm -rf frontend-builder
       - uses: actions/setup-node@v1
         with:
           node-version: 16

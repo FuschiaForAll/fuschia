@@ -17,12 +17,9 @@ import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
-  useGetComponentQuery,
   useGetComponentsQuery,
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import { chdir } from 'process'
-import { Search } from '@mui/icons-material'
 
 const EditorWrapper = styled.div`
   margin-top: 2px;
