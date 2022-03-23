@@ -1,6 +1,9 @@
 query Me {
   me {
+    _id
     email
     userRole
+    fullName
+    username
   }
 }

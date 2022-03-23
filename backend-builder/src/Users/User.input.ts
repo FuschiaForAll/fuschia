@@ -1,4 +1,3 @@
-
 import { Field, InputType } from "type-graphql";
 import { User } from "./User.entity";
 
@@ -7,6 +6,9 @@ export class UserInput implements Partial<User> {
   @Field()
   email!: string;
 
-  @Field()
-  password!: string;
+  @Field({ nullable: true })
+  username!: string;
+
+  @Field({ nullable: true })
+  fullName!: string;
 }

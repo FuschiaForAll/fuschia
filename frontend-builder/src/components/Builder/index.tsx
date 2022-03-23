@@ -1,7 +1,6 @@
 import React from 'react'
 import { useQuery, gql } from '@apollo/client'
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom'
-import { useListProjectsQuery } from '../../generated/graphql'
 import Settings from '../App/Settings'
 
 import Canvas from './Canvas'
@@ -29,7 +28,6 @@ const GET_PROJECT = gql`
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { data: projects } = useListProjectsQuery()
   const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
 
   const project = data?.project
@@ -48,11 +46,7 @@ const Builder: React.FC = function Builder() {
     <>
       <div>
         <Canvas />
-        <Topbar
-          projects={projects?.listProjects}
-          currentProject={projectId}
-          projectName={project.projectName}
-        />
+        <Topbar projectName={project.projectName} />
         <Sidebar />
         <Scalebar />
       </div>

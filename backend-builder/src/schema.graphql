@@ -200,6 +200,7 @@ type LanguageTranslation {
 
 type Mutation {
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
+  changePassword(newPassword: String!, oldPassword: String!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(name: String!, projectId: ObjectId!): EntityModel
@@ -230,6 +231,7 @@ type Mutation {
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateEntityModel: Boolean
+  updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
   updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
@@ -318,15 +320,18 @@ input UpdateProjectInput {
 type User {
   _id: ObjectId!
   email: String!
+  fullName: String
   lastLogin: DateTime
   organizations: [Organization!]!
   status: String!
   userRole: String!
+  username: String
 }
 
 input UserInput {
   email: String!
-  password: String!
+  fullName: String
+  username: String
 }
 
 type UserResponse {

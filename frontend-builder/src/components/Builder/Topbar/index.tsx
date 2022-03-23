@@ -4,7 +4,6 @@ import Paper from '@mui/material/Paper'
 import IconButton from '@mui/material/IconButton'
 import PersonIcon from '@mui/icons-material/Person'
 import Typography from '@mui/material/Typography'
-import { Project } from '../../../generated/graphql'
 import { Button, MenuItem, Select } from '@mui/material'
 import { Box } from '@mui/system'
 import SettingsIcon from '@mui/icons-material/Settings'
@@ -13,11 +12,9 @@ import RedditIcon from '@mui/icons-material/Reddit'
 import UndoIcon from '@mui/icons-material/Undo'
 import RedoIcon from '@mui/icons-material/Redo'
 import HistoryIcon from '@mui/icons-material/History'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 interface TopbarProps {
-  projects?: Partial<Project>[]
-  currentProject?: string
   projectName: string
 }
 const buttonStyles = {
@@ -47,11 +44,8 @@ const Wrapper = styled.div`
 `
 
 const Topbar: React.FC<TopbarProps> = function Topbar({
-  projects,
-  currentProject,
   projectName,
 }: TopbarProps) {
-  const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   return (
     <Wrapper>
@@ -68,12 +62,7 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           <Item>
             <RedditIcon />
           </Item>
-          <Typography>
-            {projects?.find(project => project._id === projectId)
-              ? projects?.find(project => project._id === projectId)
-                  ?.projectName
-              : 'ProjectName'}
-          </Typography>
+          <Typography>{projectName}</Typography>
           <Item onClick={() => navigate('app-settings')}>
             <SettingsIcon />
           </Item>

@@ -1,11 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from '@emotion/styled'
 import SearchIcon from '@mui/icons-material/Search'
 import {
+  useChangePasswordMutation,
   useCreateProjectMutation,
   useListOrganizationsQuery,
   useListProjectsQuery,
   useMeQuery,
+  useUpdateMeMutation,
 } from '../../generated/graphql'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ListIcon from '@mui/icons-material/List'
@@ -14,6 +16,7 @@ import { IconButton } from '@mui/material'
 import { LabeledTextInput } from '../Shared/primitives/LabeledTextInput'
 import { useNavigate } from 'react-router-dom'
 import { gql } from '@apollo/client'
+import { Button } from '../Shared/primitives/Button'
 
 const DashboardWrapper = styled.div`
   padding: 2em;
@@ -97,19 +100,126 @@ function Profile({
   pageIndex: number
 }) {
   const { data: meData } = useMeQuery()
+  const [updateMe] = useUpdateMeMutation()
+  const [changePassword] = useChangePasswordMutation()
+  const [oldPassword, setOldPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [me, setMe] = useState({
+    email: '',
+    name: '',
+    username: '',
+  })
+  useEffect(() => {
+    if (meData) {
+      setMe({
+        email: meData.me?.email || '',
+        name: meData.me?.fullName || '',
+        username: meData.me?.username || '',
+      })
+    }
+  }, [meData])
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
       <ProfileWrapper>
         <div>AVATAR</div>
         <div>
           <SettingsWrapper>
-            <LabeledTextInput label="Name" />
-            <LabeledTextInput label="Username" />
-            <LabeledTextInput label="Email Address" value={meData?.me?.email} />
+            <LabeledTextInput
+              label="Name"
+              value={me.name}
+              onChange={e => {
+                const val = e.target.value
+                setMe(m => ({
+                  ...m,
+                  name: val,
+                }))
+              }}
+            />
+            <LabeledTextInput
+              label="Username"
+              value={me.username}
+              onChange={e => {
+                const val = e.target.value
+                setMe(m => ({
+                  ...m,
+                  username: val,
+                }))
+              }}
+            />
+            <LabeledTextInput
+              label="Email Address"
+              value={me.email}
+              onChange={e => {
+                const val = e.target.value
+                setMe(m => ({
+                  ...m,
+                  email: val,
+                }))
+              }}
+            />
+            <Button
+              style={{ width: '200px' }}
+              disabled={
+                me.email === (meData?.me?.email || '') &&
+                me.name === (meData?.me?.fullName || '') &&
+                me.username === (meData?.me?.username || '')
+              }
+              onClick={() => {
+                updateMe({
+                  variables: {
+                    userInput: {
+                      email: me.email,
+                      fullName: me.name,
+                      username: me.username,
+                    },
+                  },
+                })
+              }}
+            >
+              Update
+            </Button>
           </SettingsWrapper>
           <SettingsWrapper>
-            <LabeledTextInput label="Old Password" type="password" />
-            <LabeledTextInput label="New Password" type="password" />
+            <LabeledTextInput
+              label="Old Password"
+              type="password"
+              value={oldPassword}
+              onChange={e => {
+                const val = e.target.value
+                setOldPassword(val)
+              }}
+            />
+            <LabeledTextInput
+              label="New Password"
+              type="password"
+              value={newPassword}
+              onChange={e => {
+                const val = e.target.value
+                setNewPassword(val)
+              }}
+            />
+            <Button
+              style={{ width: '200px' }}
+              disabled={!newPassword || !oldPassword}
+              onClick={async () => {
+                try {
+                  const passwordChange = await changePassword({
+                    variables: {
+                      newPassword,
+                      oldPassword,
+                    },
+                  })
+                  if (passwordChange) {
+                    setNewPassword('')
+                    setOldPassword('')
+                  }
+                } catch {
+                  // error
+                }
+              }}
+            >
+              Change Password
+            </Button>
           </SettingsWrapper>
         </div>
       </ProfileWrapper>

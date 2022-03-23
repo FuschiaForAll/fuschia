@@ -8,29 +8,37 @@ import { ObjectIdScalar } from "../utils/object-id.scalar";
 
 @ObjectType()
 export class User {
-    @Field(type => ObjectIdScalar)
-    readonly _id!: ObjectId;
+  @Field((type) => ObjectIdScalar)
+  readonly _id!: ObjectId;
 
-    @Field()
-    @Property({ required: true, unique: true })
-    email!: string;
+  @Field()
+  @Property({ required: true, unique: true })
+  email!: string;
 
-    @Property({ required: true })
-    password!: string;
+  @Field({ nullable: true })
+  @Property({ unique: true })
+  username!: string;
 
-    @Field()
-    @Property({ required: true, default: UserRole.USER})
-    userRole!: UserRole;
+  @Field({ nullable: true })
+  @Property()
+  fullName!: string;
 
-    @Field(() => Date, { nullable: true })
-    @Property({ required: false })
-    lastLogin?: Date;
+  @Property({ required: true })
+  password!: string;
 
-    @Field()
-    @Property({ required: false })
-    status?: string;
+  @Field()
+  @Property({ required: true, default: UserRole.USER })
+  userRole!: UserRole;
 
-    @Field(type => [Organization])
-    @Property({ ref: () => Organization, default: [] })
-    organizations?: Ref<Organization>[];
+  @Field(() => Date, { nullable: true })
+  @Property({ required: false })
+  lastLogin?: Date;
+
+  @Field()
+  @Property({ required: false })
+  status?: string;
+
+  @Field((type) => [Organization])
+  @Property({ ref: () => Organization, default: [] })
+  organizations?: Ref<Organization>[];
 }
