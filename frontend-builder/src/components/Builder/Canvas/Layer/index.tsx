@@ -35,7 +35,13 @@ interface FrameProps extends InlineProps {
 
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
 
-const FrameWrapper = styled.div`
+const FrameWrapper = styled.div<{ name?: string }>`
+  &:before {
+    content: '${p => p.name}';
+    position: absolute;
+    top: -20px;
+    color: var(--attention);
+  }
   pointer-events: all;
   position: absolute;
 `
@@ -98,6 +104,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   }
   return (
     <FrameWrapper
+      name={layer.isRootElement ? layer.name : ''}
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}

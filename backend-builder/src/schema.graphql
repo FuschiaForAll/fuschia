@@ -223,6 +223,7 @@ type Mutation {
   deleteQuery: Boolean
   deleteRelationship: Boolean
   deleteSubscription: Boolean
+  duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!

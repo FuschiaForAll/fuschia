@@ -299,6 +299,65 @@ export class ComponentResolver {
     }
   }
 
+  @Mutation((returns) => Boolean)
+  async duplicateComponent(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to duplicate parameters`
+    );
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      // duplicate all nested components as well
+      const duplicateNested = async (
+        originalId: ObjectId,
+        nestedComponent: Component
+      ) => {
+        const children = await ComponentModel.find({
+          parent: originalId,
+        });
+        children.forEach(async (child) => {
+          const childClone = { ...child.toJSON() } as any;
+          childClone.parent = nestedComponent;
+          delete childClone._id;
+          const newChildComponent = await ComponentModel.create({
+            ...childClone,
+          });
+          duplicateNested(child._id, newChildComponent);
+        });
+      };
+
+      console.log(`component`);
+      console.log(component);
+      const clone = { ...component.toJSON() } as any;
+      console.log(`clone`);
+      console.log(clone);
+      delete clone._id;
+      clone.x = (component.x || 0) + 10;
+      clone.y = (component.y || 0) + 10;
+      const newComponent = await ComponentModel.create({
+        ...clone,
+      });
+      if (!component.parent) {
+        const project = await ProjectModel.findByIdAndUpdate(
+          projectId,
+          {
+            $push: {
+              components: {
+                _id: newComponent._id,
+              },
+            },
+          },
+          { new: true, useFindAndModify: false }
+        );
+        console.log(project);
+      }
+      duplicateNested(component._id, newComponent);
+    }
+    return true;
+  }
+
   @FieldResolver()
   async children(@Root() component: Component) {
     return ComponentModel.find({

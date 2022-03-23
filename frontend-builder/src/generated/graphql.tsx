@@ -247,6 +247,7 @@ export type Mutation = {
   deleteQuery?: Maybe<Scalars['Boolean']>;
   deleteRelationship?: Maybe<Scalars['Boolean']>;
   deleteSubscription?: Maybe<Scalars['Boolean']>;
+  duplicateComponent: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
   publishApi: Scalars['Boolean'];
@@ -359,6 +360,12 @@ export type MutationDeleteOrganizationArgs = {
 
 
 export type MutationDeleteProjectArgs = {
+  projectId: Scalars['ObjectId'];
+};
+
+
+export type MutationDuplicateComponentArgs = {
+  componentId: Scalars['ObjectId'];
   projectId: Scalars['ObjectId'];
 };
 
@@ -783,6 +790,14 @@ export type DeleteComponentsMutationVariables = Exact<{
 
 
 export type DeleteComponentsMutation = { __typename?: 'Mutation', deleteComponents: Array<any> };
+
+export type DuplicateComponentMutationVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type DuplicateComponentMutation = { __typename?: 'Mutation', duplicateComponent: boolean };
 
 export type GetComponentQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1269,6 +1284,38 @@ export function useDeleteComponentsMutation(baseOptions?: Apollo.MutationHookOpt
 export type DeleteComponentsMutationHookResult = ReturnType<typeof useDeleteComponentsMutation>;
 export type DeleteComponentsMutationResult = Apollo.MutationResult<DeleteComponentsMutation>;
 export type DeleteComponentsMutationOptions = Apollo.BaseMutationOptions<DeleteComponentsMutation, DeleteComponentsMutationVariables>;
+export const DuplicateComponentDocument = gql`
+    mutation DuplicateComponent($componentId: ObjectId!, $projectId: ObjectId!) {
+  duplicateComponent(componentId: $componentId, projectId: $projectId)
+}
+    `;
+export type DuplicateComponentMutationFn = Apollo.MutationFunction<DuplicateComponentMutation, DuplicateComponentMutationVariables>;
+
+/**
+ * __useDuplicateComponentMutation__
+ *
+ * To run a mutation, you first call `useDuplicateComponentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDuplicateComponentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [duplicateComponentMutation, { data, loading, error }] = useDuplicateComponentMutation({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useDuplicateComponentMutation(baseOptions?: Apollo.MutationHookOptions<DuplicateComponentMutation, DuplicateComponentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DuplicateComponentMutation, DuplicateComponentMutationVariables>(DuplicateComponentDocument, options);
+      }
+export type DuplicateComponentMutationHookResult = ReturnType<typeof useDuplicateComponentMutation>;
+export type DuplicateComponentMutationResult = Apollo.MutationResult<DuplicateComponentMutation>;
+export type DuplicateComponentMutationOptions = Apollo.BaseMutationOptions<DuplicateComponentMutation, DuplicateComponentMutationVariables>;
 export const GetComponentDocument = gql`
     query GetComponent($componentId: ObjectId!) {
   getComponent(componentId: $componentId) {

@@ -53,7 +53,7 @@ const Login: React.FC = function Login() {
             password,
           },
         })
-        navigate('/projects')
+        navigate('/dashboard')
       } catch (err) {
         console.log('Login Error', err)
         setError(true)
