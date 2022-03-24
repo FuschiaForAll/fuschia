@@ -19,6 +19,7 @@ const FUNCTION_TYPES = [
   'NAVIGATE',
   'LOGIN',
   'LOGOUT',
+  'ALERT',
 ]
 
 type ComponentId = string
@@ -29,6 +30,13 @@ interface LoginProps {
   type: 'LOGIN'
   username: string
   password: string
+  onSucess: () => void
+  onFail: () => void
+}
+
+interface AlertProps {
+  type: 'ALERT'
+  message: string
 }
 
 interface NavigateProps {
@@ -62,6 +70,7 @@ export type ActionProps =
   | DeleteProps
   | UpdateProps
   | LoginProps
+  | AlertProps
 
 const LoginEditor = (props: {
   componentId: string

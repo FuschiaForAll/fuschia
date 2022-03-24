@@ -112,6 +112,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
+      data-parentid={layer.parent?._id}
     >
       {children}
     </FrameWrapper>

@@ -82,7 +82,10 @@ export const useDragDrop = (
                    * so that it will be rendered on top of the other objects to maintain
                    * visibility
                    */
+                  debugger
                   const target = event.target
+                  event.target.dataset['originaltop'] = event.target.style.top
+                  event.target.dataset['originalleft'] = event.target.style.left
                   updateAttribues(target, 0, 0)
                   if (
                     event.target.classList.contains('root-element') &&
@@ -259,11 +262,23 @@ export const useDragDrop = (
                 const targetId =
                   parentId === 'main-canvas' ? undefined : parentId
                 updateAttribues(event.relatedTarget, 0, 0)
-                updateComponent(event.relatedTarget.id, {
-                  parent: targetId,
-                  x: newX,
-                  y: newY,
-                })
+                updateComponent(
+                  event.relatedTarget.id,
+                  {
+                    parent: targetId,
+                    x: newX,
+                    y: newY,
+                  },
+                  {
+                    parent: event.relatedTarget.dataset['parentid'],
+                    x: parseFloat(
+                      event.relatedTarget.dataset['originalleft'] || '0'
+                    ),
+                    y: parseFloat(
+                      event.relatedTarget.dataset['originaltop'] || '0'
+                    ),
+                  }
+                )
               }
             },
           })

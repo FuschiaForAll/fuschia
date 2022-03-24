@@ -5,13 +5,13 @@ import Editor from './Editors/Editor'
 import {
   useGetComponentQuery,
   useGetProjectQuery,
-  useUpdateComponentMutation,
 } from '../../../generated/graphql'
 import { Schema } from '@fuchsia/types'
 import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
+import { useUpdateComponent } from '../../../utils/hooks'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -43,7 +43,7 @@ const cardStyles = {
 function Properties(props: { schema: Schema; elementId: string }) {
   let { projectId } = useParams<{ projectId: string }>()
   const [value, setValue] = useState(0)
-  const [updateComponent] = useUpdateComponentMutation()
+  const updateComponent = useUpdateComponent()
   const { data: projectData } = useGetProjectQuery({
     variables: {
       projectId,
@@ -72,15 +72,17 @@ function Properties(props: { schema: Schema; elementId: string }) {
         label="Component Name"
         value={componentData.getComponent.name}
         onChange={e => {
+          debugger
           const newName = e.target.value
-          updateComponent({
-            variables: {
-              componentId: props.elementId,
-              componentInput: {
-                name: newName,
-              },
+          updateComponent(
+            props.elementId,
+            {
+              name: newName,
             },
-          })
+            {
+              name: componentData?.getComponent?.name,
+            }
+          )
         }}
       />
       <div style={{ marginTop: '10px' }}>
@@ -124,14 +126,15 @@ function Properties(props: { schema: Schema; elementId: string }) {
             JSON.stringify(componentData.getComponent.props)
           )}
           updateValue={(value, isValid) => {
-            updateComponent({
-              variables: {
-                componentId: props.elementId,
-                componentInput: {
-                  props: value,
-                },
+            updateComponent(
+              props.elementId,
+              {
+                props: value,
               },
-            })
+              {
+                props: componentData?.getComponent?.props,
+              }
+            )
           }}
           getReference={getReference}
           required={true}

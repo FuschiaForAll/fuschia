@@ -13,6 +13,7 @@ import UndoIcon from '@mui/icons-material/Undo'
 import RedoIcon from '@mui/icons-material/Redo'
 import HistoryIcon from '@mui/icons-material/History'
 import { useNavigate } from 'react-router-dom'
+import { useDesignerHistory } from '../../../utils/hooks/useDesignerHistory'
 
 interface TopbarProps {
   projectName: string
@@ -46,6 +47,8 @@ const Wrapper = styled.div`
 const Topbar: React.FC<TopbarProps> = function Topbar({
   projectName,
 }: TopbarProps) {
+  const { undo, redo } = useDesignerHistory()
+
   const navigate = useNavigate()
   return (
     <Wrapper>
@@ -79,10 +82,10 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             padding: '0.5rem',
           }}
         >
-          <Item>
+          <Item onClick={undo}>
             <UndoIcon />
           </Item>
-          <Item>
+          <Item onClick={redo}>
             <RedoIcon />
           </Item>
         </Paper>

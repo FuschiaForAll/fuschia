@@ -9,6 +9,7 @@ import {
   useSelection,
   useUpdateComponent,
 } from '../../../utils/hooks'
+import { useDesignerHistory } from '../../../utils/hooks/useDesignerHistory'
 
 const DELETE = 'Delete'
 const RIGHT_ARROW = 'ArrowRight'
@@ -33,7 +34,7 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
     deleteLayers(...selection)
     setSelection([])
   }, [selection, deleteLayers, setSelection])
-
+  const { undo, redo } = useDesignerHistory()
   const handleMove = useCallback(
     ({ x, y }: { x: number; y: number }) => {
       if (!selection) return
@@ -41,10 +42,17 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
       selection.forEach(id => {
         const element = document.getElementById(id)
         if (element) {
-          updateLayers(id, {
-            x: parseInt(element.style.left) + x,
-            y: parseInt(element.style.top) + y,
-          })
+          updateLayers(
+            id,
+            {
+              x: parseInt(element.style.left) + x,
+              y: parseInt(element.style.top) + y,
+            },
+            {
+              x: parseInt(element.style.left),
+              y: parseInt(element.style.top),
+            }
+          )
         }
       })
     },
@@ -55,6 +63,14 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
     if (!selection) return
     setCopyReferences(selection)
   }, [selection])
+
+  const handleUndo = useCallback(() => {
+    undo()
+  }, [undo])
+
+  const handleRedo = useCallback(() => {
+    redo()
+  }, [redo])
 
   const handlePaste = useCallback(() => {
     if (!copyReferences || copyReferences.length === 0) return
@@ -88,6 +104,16 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
             handlePaste()
           }
           break
+        case 'z':
+          if (e.ctrlKey) {
+            handleUndo()
+          }
+          break
+        case 'y':
+          if (e.ctrlKey) {
+            handleRedo()
+          }
+          break
 
         case RIGHT_ARROW:
           handleMove({ x: e.shiftKey ? 10 : 1, y: 0 })
@@ -108,7 +134,15 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
           console.log(key)
       }
     },
-    [handleClearSelection, handleCopy, handleDelete, handleMove, handlePaste]
+    [
+      handleClearSelection,
+      handleCopy,
+      handleDelete,
+      handleMove,
+      handlePaste,
+      handleRedo,
+      handleUndo,
+    ]
   )
 
   useEffect(() => {

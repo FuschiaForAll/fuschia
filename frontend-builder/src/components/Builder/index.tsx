@@ -13,6 +13,7 @@ import LabelLibrary from './LabelLibrary'
 import Previewer from '../Previewer'
 import { Modal, Paper } from '@mui/material'
 import Dashboard from '../Dashboard'
+import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -43,7 +44,7 @@ const Builder: React.FC = function Builder() {
   }
 
   return (
-    <>
+    <DesignerHistoryProvider>
       <div>
         <Canvas />
         <Topbar projectName={project.projectName} />
@@ -78,7 +79,7 @@ const Builder: React.FC = function Builder() {
           }
         />
       </Routes>
-    </>
+    </DesignerHistoryProvider>
   )
 }
 

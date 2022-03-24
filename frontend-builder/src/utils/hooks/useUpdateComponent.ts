@@ -5,11 +5,17 @@ import {
   GetComponentsDocument,
   useUpdateComponentMutation,
 } from '../../generated/graphql'
+import { useDesignerHistory } from './useDesignerHistory'
 
-type UpdateFunc = (id: string, value: ComponentInput) => void
+type UpdateFunc = (
+  id: string,
+  newvalue: ComponentInput,
+  oldvalue: ComponentInput
+) => void
 
 export const useUpdateComponent = (): UpdateFunc => {
   const { projectId } = useParams()
+  const { performAction } = useDesignerHistory()
   const [updateComponent] = useUpdateComponentMutation({
     refetchQueries: [
       { query: GetComponentsDocument, variables: { projectId } },
@@ -17,15 +23,31 @@ export const useUpdateComponent = (): UpdateFunc => {
   })
 
   const updateFunc = useCallback<UpdateFunc>(
-    (id, value) => {
+    (id, newvalue, oldvalue) => {
+      performAction({
+        up: () =>
+          updateComponent({
+            variables: {
+              componentId: id,
+              componentInput: newvalue,
+            },
+          }),
+        down: () =>
+          updateComponent({
+            variables: {
+              componentId: id,
+              componentInput: oldvalue,
+            },
+          }),
+      })
       updateComponent({
         variables: {
           componentId: id,
-          componentInput: value,
+          componentInput: newvalue,
         },
       })
     },
-    [updateComponent]
+    [performAction, updateComponent]
   )
 
   return updateFunc
