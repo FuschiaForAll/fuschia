@@ -38,6 +38,7 @@ const cardStyles = {
   display: 'flex',
   flexDirection: 'column',
   pointerEvents: 'all',
+  overflowY: 'auto',
 }
 
 function Properties(props: { schema: Schema; elementId: string }) {
@@ -72,7 +73,6 @@ function Properties(props: { schema: Schema; elementId: string }) {
         label="Component Name"
         value={componentData.getComponent.name}
         onChange={e => {
-          debugger
           const newName = e.target.value
           updateComponent(
             props.elementId,

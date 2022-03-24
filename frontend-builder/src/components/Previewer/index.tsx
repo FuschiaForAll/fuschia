@@ -86,7 +86,6 @@ function Viewer(props: {
           // @ts-ignore
           value: dataState[key],
           onChange: (e: any) => {
-            debugger
             setDataState(ds => ({
               ...ds,
               [key]: e,
@@ -98,7 +97,6 @@ function Viewer(props: {
     if (componentProperties.onPress) {
       componentProperties.onPressActions = componentProperties.onPress
       componentProperties.onPress = () => {
-        debugger
         const currentActions = JSON.parse(
           componentProperties.onPressActions
         ) as ActionProps[]

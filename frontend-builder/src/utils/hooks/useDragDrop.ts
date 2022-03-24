@@ -82,7 +82,6 @@ export const useDragDrop = (
                    * so that it will be rendered on top of the other objects to maintain
                    * visibility
                    */
-                  debugger
                   const target = event.target
                   event.target.dataset['originaltop'] = event.target.style.top
                   event.target.dataset['originalleft'] = event.target.style.left

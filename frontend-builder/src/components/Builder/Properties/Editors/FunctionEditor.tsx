@@ -9,6 +9,9 @@ import {
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
 import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import TextInputBinding from '../../../Shared/TextInputBinding'
+import { OutlinedButton } from '../../../Shared/primitives/Button'
+import styled from '@emotion/styled'
+import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -72,6 +75,13 @@ export type ActionProps =
   | LoginProps
   | AlertProps
 
+const FunctionWrapper = styled.div`
+  background: var(--canvasBg);
+  border: 1px dotted var(--text);
+  border-radius: 0.5em;
+  padding: 1em;
+`
+
 const LoginEditor = (props: {
   componentId: string
   params: LoginProps
@@ -99,6 +109,28 @@ const LoginEditor = (props: {
           props.onUpdate(newParams)
         }}
       />
+      <ConfigureFunction
+        title="On Success"
+        componentId={props.componentId}
+        value={props.params.onSucess}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onSucess: value,
+          })
+        }}
+      />
+      <ConfigureFunction
+        title="On Failure"
+        componentId={props.componentId}
+        value={props.params.onFail}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onFail: value,
+          })
+        }}
+      />
     </div>
   )
 }
@@ -118,7 +150,8 @@ const CreateEditor = (props: {
   const models = data.getProject.appConfig.apiConfig.models
   return (
     <div>
-      <select
+      <LabeledSelect
+        label="Record type"
         onChange={e => {
           const newParams = { ...props.params }
           newParams.dataType = e.target.value
@@ -136,17 +169,12 @@ const CreateEditor = (props: {
             props.onUpdate(newParams)
           }
         }}
-        value={props.params.dataType}
-      >
-        {models.map(model => (
-          <option
-            value={model._id}
-            selected={props.params.dataType === model._id}
-          >
-            {model.name}
-          </option>
-        ))}
-      </select>
+        selectedValue={props.params.dataType}
+        options={models.map(model => ({
+          label: model.name,
+          value: model._id,
+        }))}
+      />
       {props.params &&
         props.params.fields &&
         Object.keys(props.params.fields).map(f => {
@@ -193,7 +221,8 @@ const UpdateEditor = (props: {
   const models = data.getProject.appConfig.apiConfig.models
   return (
     <div>
-      <select
+      <LabeledSelect
+        label="Record to update"
         onChange={e => {
           const newParams = { ...props.params }
           newParams.dataType = e.target.value
@@ -211,17 +240,12 @@ const UpdateEditor = (props: {
             props.onUpdate(newParams)
           }
         }}
-        value={props.params.dataType}
-      >
-        {models.map(model => (
-          <option
-            value={model._id}
-            selected={props.params.dataType === model._id}
-          >
-            {model.name}
-          </option>
-        ))}
-      </select>
+        selectedValue={props.params.dataType}
+        options={models.map(model => ({
+          label: model.name,
+          value: model._id,
+        }))}
+      />
       {props.params &&
         props.params.fields &&
         Object.keys(props.params.fields).map(f => {
@@ -252,6 +276,13 @@ const UpdateEditor = (props: {
         })}
     </div>
   )
+}
+const AlertEditor = (props: {
+  componentId: string
+  params: AlertProps
+  onUpdate: (newValue: AlertProps) => void
+}) => {
+  return <div>AlertEditor</div>
 }
 const DeleteEditor = (props: {
   componentId: string
@@ -445,7 +476,19 @@ const NavigateEditor = ({
   )
 }
 
-const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
+interface ConfigureFunctionProps {
+  title?: string
+  value: any
+  componentId: string
+  updateValue: (newValue: any, isValue: boolean) => void
+}
+
+function ConfigureFunction({
+  title,
+  value,
+  componentId,
+  updateValue,
+}: ConfigureFunctionProps) {
   const [functions, setFunctions] = useState<ActionProps[]>([])
   const editor = (
     actionProps: ActionProps,
@@ -455,7 +498,7 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
       case 'CREATE':
         return (
           <CreateEditor
-            componentId={props.componentId}
+            componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}
           />
@@ -463,7 +506,7 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
       case 'UPDATE':
         return (
           <UpdateEditor
-            componentId={props.componentId}
+            componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}
           />
@@ -471,7 +514,7 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
       case 'DELETE':
         return (
           <DeleteEditor
-            componentId={props.componentId}
+            componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}
           />
@@ -479,7 +522,7 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
       case 'NAVIGATE':
         return (
           <NavigateEditor
-            componentId={props.componentId}
+            componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}
           />
@@ -487,7 +530,15 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
       case 'LOGIN':
         return (
           <LoginEditor
-            componentId={props.componentId}
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
+      case 'ALERT':
+        return (
+          <AlertEditor
+            componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}
           />
@@ -498,61 +549,73 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
   }
   useEffect(() => {
     let initialValue: ActionProps[]
-    if (props.initialValue) {
-      initialValue = JSON.parse(props.initialValue) as ActionProps[]
+    if (value) {
+      initialValue = JSON.parse(value) as ActionProps[]
     } else {
       initialValue = []
     }
     setFunctions(initialValue)
-  }, [props.initialValue])
+  }, [value])
   return (
     <div>
-      <span>{props.schema.title || 'undefined'}</span>
-      {functions.map((f, index) => (
-        <>
-          <select
-            onChange={e => {
-              const newFunctions = [...functions]
-              // @ts-ignore
-              newFunctions[index] = { type: e.target.value }
-              props.updateValue(JSON.stringify(newFunctions), true)
-            }}
-          >
-            {FUNCTION_TYPES.map(t => (
-              <option value={t} key={t} selected={f.type === t}>
-                {t}
-              </option>
-            ))}
-          </select>
-          <button
-            onClick={() => {
-              const newFunctions = [...functions]
-              newFunctions.splice(index, 1)
-              props.updateValue(JSON.stringify(newFunctions), true)
-            }}
-          >
-            X
-          </button>
-          {editor(f, newValue => {
-            setFunctions(fs => {
-              fs[index] = newValue
-              return [...fs]
-            })
-            props.updateValue(JSON.stringify(functions), true)
-          })}
-        </>
-      ))}
-      <button
-        onClick={() => {
-          props.updateValue(
-            JSON.stringify([...functions, { type: 'CREATE' }]),
-            true
-          )
-        }}
-      >
-        Add Function
-      </button>
+      <span style={{ fontSize: '0.75em' }}>{title || 'undefined'}</span>
+      <FunctionWrapper>
+        {functions.map((f, index) => (
+          <div>
+            <div style={{ display: 'grid', gridAutoFlow: 'column' }}>
+              <OutlinedButton
+                onClick={() => {
+                  const newFunctions = [...functions]
+                  newFunctions.splice(index, 1)
+                  updateValue(JSON.stringify(newFunctions), true)
+                }}
+              >
+                X
+              </OutlinedButton>
+              <LabeledSelect
+                label="action type"
+                selectedValue={f.type}
+                onChange={e => {
+                  const newFunctions = [...functions]
+                  // @ts-ignore
+                  newFunctions[index] = { type: e.target.value }
+                  updateValue(JSON.stringify(newFunctions), true)
+                }}
+                options={FUNCTION_TYPES.map(t => ({ label: t, value: t }))}
+              />
+            </div>
+            {editor(f, newValue => {
+              setFunctions(fs => {
+                fs[index] = newValue
+                return [...fs]
+              })
+              updateValue(JSON.stringify(functions), true)
+            })}
+          </div>
+        ))}
+        <OutlinedButton
+          onClick={() => {
+            updateValue(
+              JSON.stringify([...functions, { type: 'CREATE' }]),
+              true
+            )
+          }}
+        >
+          New Action
+        </OutlinedButton>
+      </FunctionWrapper>
     </div>
+  )
+}
+
+const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
+  return (
+    <ConfigureFunction
+      componentId={props.componentId}
+      value={props.initialValue}
+      title={props.schema.title}
+      updateValue={props.updateValue}
+    />
   )
 }
 
