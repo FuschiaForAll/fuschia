@@ -23,6 +23,7 @@ const StyledSelect = styled.select`
   cursor: pointer;
   background-color: #fff;
   background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
+  font-size: 0.75em;
   &:after {
     grid-area: select;
   }
@@ -47,6 +48,9 @@ export function Select(props: SelectProps) {
   return (
     <div className="select">
       <StyledSelect className="select" {...rest}>
+        <option value="" disabled selected={!selectedValue} hidden>
+          Please Choose...
+        </option>
         {options.map(option => (
           <option
             key={option.value}

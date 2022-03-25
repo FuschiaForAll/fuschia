@@ -85,7 +85,7 @@ function Properties(props: { schema: Schema; elementId: string }) {
           )
         }}
       />
-      <div style={{ marginTop: '10px' }}>
+      <div style={{ marginTop: '10px', marginBottom: '10px' }}>
         <span
           onClick={() => setValue(0)}
           style={{

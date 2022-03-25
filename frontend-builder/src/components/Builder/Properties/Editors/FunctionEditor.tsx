@@ -12,17 +12,22 @@ import TextInputBinding from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
 import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
+import { IconButton } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
 const FUNCTION_TYPES = [
-  'CREATE',
-  'UPDATE',
-  'DELETE',
-  'NAVIGATE',
-  'LOGIN',
-  'LOGOUT',
-  'ALERT',
+  { label: 'Create a record...', value: 'CREATE' },
+  { label: 'Update a record...', value: 'UPDATE' },
+  { label: 'Delete a record...', value: 'DELETE' },
+  { label: 'Navigate to a screen...', value: 'NAVIGATE' },
+  { label: 'Login a user...', value: 'LOGIN' },
+  { label: 'Register a user...', value: 'REGISTER' },
+  { label: 'Forgot password...', value: 'PASSWORD_RECOVERY' },
+  { label: 'Logout the user ....', value: 'LOGOUT' },
+  { label: 'Display alert...', value: 'ALERT' },
+  { label: 'Change an input...', value: 'CHANGE_INPUT' },
 ]
 
 type ComponentId = string
@@ -35,6 +40,22 @@ interface LoginProps {
   password: string
   onSucess: () => void
   onFail: () => void
+}
+
+interface RegistrationProps {
+  type: 'REGISTER'
+  onSucess: () => void
+  onFail: () => void
+}
+interface ChangeInputProps {
+  type: 'CHANGE_INPUT'
+  onSucess: () => void
+  onFail: () => void
+}
+
+interface PasswordRecoveryProps {
+  type: 'PASSWORD_RECOVERY'
+  message: string
 }
 
 interface AlertProps {
@@ -52,12 +73,16 @@ interface CreateProps {
   type: 'CREATE'
   dataType: EntityId
   fields: { [key: string]: string | number | boolean }
+  onSucess: () => void
+  onFail: () => void
 }
 
 interface DeleteProps {
   type: 'DELETE'
   dataType: EntityId
   deleteId: RecordId
+  onSucess: () => void
+  onFail: () => void
 }
 
 interface UpdateProps {
@@ -65,6 +90,8 @@ interface UpdateProps {
   dataType: EntityId
   updateId: RecordId
   fields: { [key: string]: string | number | boolean }
+  onSucess: () => void
+  onFail: () => void
 }
 
 export type ActionProps =
@@ -74,12 +101,22 @@ export type ActionProps =
   | UpdateProps
   | LoginProps
   | AlertProps
+  | RegistrationProps
+  | PasswordRecoveryProps
+  | ChangeInputProps
 
 const FunctionWrapper = styled.div`
   background: var(--canvasBg);
   border: 1px dotted var(--text);
   border-radius: 0.5em;
-  padding: 1em;
+  padding: 0.5em;
+`
+
+const ActionWrapper = styled.div`
+  &:not(:last-child) {
+    border-bottom: dashed 1px black;
+    padding-bottom: 0.5em;
+  }
 `
 
 const LoginEditor = (props: {
@@ -185,24 +222,48 @@ const CreateEditor = (props: {
             const field = model.fields.find(field => field._id === f)
             if (field) {
               return (
-                <LabeledTextInput
-                  style={{
-                    borderColor:
-                      field.nullable || !!field.connection ? 'black' : 'red',
-                  }}
-                  label={field.fieldName}
-                  value={`${props.params.fields[f]}`}
-                  onChange={e => {
-                    const newProps = { ...props.params }
-                    newProps.fields[f] = e.target.value
-                    props.onUpdate(newProps)
-                  }}
-                />
+                <React.Fragment key={field._id}>
+                  <div>
+                    {field.fieldName}{' '}
+                    {field.nullable || !!field.connection ? '' : '(required)'}
+                  </div>
+                  <TextInputBinding
+                    componentId={props.componentId}
+                    initialValue={`${props.params.fields[f]}`}
+                    onChange={value => {
+                      const newProps = { ...props.params }
+                      newProps.fields[f] = value
+                      props.onUpdate(newProps)
+                    }}
+                  />
+                </React.Fragment>
               )
             }
           }
           return null
         })}
+      <ConfigureFunction
+        title="On Success"
+        componentId={props.componentId}
+        value={props.params.onSucess}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onSucess: value,
+          })
+        }}
+      />
+      <ConfigureFunction
+        title="On Failure"
+        componentId={props.componentId}
+        value={props.params.onFail}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onFail: value,
+          })
+        }}
+      />
     </div>
   )
 }
@@ -277,12 +338,67 @@ const UpdateEditor = (props: {
     </div>
   )
 }
+const ForgotPasswordEditor = (props: {
+  componentId: string
+  params: PasswordRecoveryProps
+  onUpdate: (newValue: PasswordRecoveryProps) => void
+}) => {
+  return (
+    <div>
+      <div>Message</div>
+      <TextInputBinding
+        componentId={props.componentId}
+        initialValue={props.params.message}
+        onChange={value => {
+          const newParams = { ...props.params }
+          newParams.message = value
+          props.onUpdate(newParams)
+        }}
+      />
+    </div>
+  )
+}
+const ChangeInputEditor = (props: {
+  componentId: string
+  params: ChangeInputProps
+  onUpdate: (newValue: ChangeInputProps) => void
+}) => {
+  return (
+    <div>
+      <div>Chane Input</div>
+    </div>
+  )
+}
+const RegisterEditor = (props: {
+  componentId: string
+  params: RegistrationProps
+  onUpdate: (newValue: RegistrationProps) => void
+}) => {
+  return (
+    <div>
+      <div>Register</div>
+    </div>
+  )
+}
 const AlertEditor = (props: {
   componentId: string
   params: AlertProps
   onUpdate: (newValue: AlertProps) => void
 }) => {
-  return <div>AlertEditor</div>
+  return (
+    <div>
+      <div>Message</div>
+      <TextInputBinding
+        componentId={props.componentId}
+        initialValue={props.params.message}
+        onChange={value => {
+          const newParams = { ...props.params }
+          newParams.message = value
+          props.onUpdate(newParams)
+        }}
+      />
+    </div>
+  )
 }
 const DeleteEditor = (props: {
   componentId: string
@@ -299,23 +415,20 @@ const DeleteEditor = (props: {
   const models = data.getProject.appConfig.apiConfig.models
   return (
     <div>
-      <select
+      <LabeledSelect
+        label="Record Id"
+        selectedValue={props.params.dataType}
+        options={models.map(model => ({
+          label: model.name,
+          value: model._id,
+        }))}
         onChange={e => {
           const newParams = { ...props.params }
           newParams.dataType = e.target.value
           props.onUpdate(newParams)
         }}
-        value={props.params.dataType}
-      >
-        {models.map(model => (
-          <option
-            value={model._id}
-            selected={props.params.dataType === model._id}
-          >
-            {model.name}
-          </option>
-        ))}
-      </select>
+      />
+
       <LabeledTextInput
         label={'Record Id'}
         value={props.params.deleteId}
@@ -458,7 +571,8 @@ const NavigateEditor = ({
   }, [componentData])
   return (
     <div>
-      <select
+      <LabeledSelect
+        label="Target"
         onChange={e => {
           const newScreen = e.target.value
           onUpdate({
@@ -466,11 +580,12 @@ const NavigateEditor = ({
             destination: newScreen,
           })
         }}
-      >
-        {navTargets.map(t => (
-          <option value={t._id}>{t.name}</option>
-        ))}
-      </select>
+        options={navTargets.map(t => ({
+          label: t.name,
+          value: t._id,
+        }))}
+        selectedValue={params.destination}
+      />
       {buildParameters()}
     </div>
   )
@@ -543,6 +658,31 @@ function ConfigureFunction({
             onUpdate={onUpdate}
           />
         )
+
+      case 'CHANGE_INPUT':
+        return (
+          <ChangeInputEditor
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
+      case 'PASSWORD_RECOVERY':
+        return (
+          <ForgotPasswordEditor
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
+      case 'REGISTER':
+        return (
+          <RegisterEditor
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
       default:
         return null
     }
@@ -561,17 +701,8 @@ function ConfigureFunction({
       <span style={{ fontSize: '0.75em' }}>{title || 'undefined'}</span>
       <FunctionWrapper>
         {functions.map((f, index) => (
-          <div>
-            <div style={{ display: 'grid', gridAutoFlow: 'column' }}>
-              <OutlinedButton
-                onClick={() => {
-                  const newFunctions = [...functions]
-                  newFunctions.splice(index, 1)
-                  updateValue(JSON.stringify(newFunctions), true)
-                }}
-              >
-                X
-              </OutlinedButton>
+          <ActionWrapper key={index}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto' }}>
               <LabeledSelect
                 label="action type"
                 selectedValue={f.type}
@@ -581,8 +712,20 @@ function ConfigureFunction({
                   newFunctions[index] = { type: e.target.value }
                   updateValue(JSON.stringify(newFunctions), true)
                 }}
-                options={FUNCTION_TYPES.map(t => ({ label: t, value: t }))}
+                options={FUNCTION_TYPES.map(t => ({
+                  label: t.label,
+                  value: t.value,
+                }))}
               />
+              <IconButton
+                onClick={() => {
+                  const newFunctions = [...functions]
+                  newFunctions.splice(index, 1)
+                  updateValue(JSON.stringify(newFunctions), true)
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
             </div>
             {editor(f, newValue => {
               setFunctions(fs => {
@@ -591,7 +734,7 @@ function ConfigureFunction({
               })
               updateValue(JSON.stringify(functions), true)
             })}
-          </div>
+          </ActionWrapper>
         ))}
         <OutlinedButton
           onClick={() => {
