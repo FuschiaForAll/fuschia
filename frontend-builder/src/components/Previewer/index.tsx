@@ -20,11 +20,10 @@ const FrameWrapper = styled.div`
   justify-self: center;
 `
 
-function convertDraftJSBindings(value: string) {
+function convertDraftJSBindings(value: any) {
   try {
-    const jsonValue = JSON.parse(value)
-    if (jsonValue.blocks) {
-      return jsonValue.blocks.map((block: any) => block.text).join('\n')
+    if (value.blocks) {
+      return value.blocks.map((block: any) => block.text).join('\n')
     }
   } catch {}
   return value

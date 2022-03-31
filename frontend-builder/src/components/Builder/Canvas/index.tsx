@@ -68,10 +68,10 @@ const Canvas: React.FC = function Canvas() {
     e.stopPropagation()
     if (objectCollectionRef.current) {
       const zoomOut = e.deltaY < 0
-      const x =
-        parseFloat(objectCollectionRef.current.getAttribute('data-x')!) || 0
-      const y =
-        parseFloat(objectCollectionRef.current.getAttribute('data-y')!) || 0
+      // const x =
+      //   parseFloat(objectCollectionRef.current.getAttribute('data-x')!) || 0
+      // const y =
+      //   parseFloat(objectCollectionRef.current.getAttribute('data-y')!) || 0
       const z =
         (parseFloat(objectCollectionRef.current.getAttribute('data-z')!) || 1) +
         (zoomOut ? -ZOOM_INCEMENT : ZOOM_INCEMENT)
@@ -137,7 +137,6 @@ const Canvas: React.FC = function Canvas() {
         ref={objectCollectionRef}
         style={{
           transformOrigin: `0 0`,
-          border: 'solid 1px red',
         }}
       >
         <div id="drag-holder">

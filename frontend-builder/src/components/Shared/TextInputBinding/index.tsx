@@ -7,7 +7,6 @@ import {
   Entity,
   Modifier,
   CompositeDecorator,
-  RawDraftContentState,
 } from 'draft-js'
 import styled from '@emotion/styled'
 import DataBinder, {
@@ -37,43 +36,29 @@ const EditorWrapper = styled.div`
   }
 `
 
-function convertInitialContent(content: string) {
-  try {
-    const jsonContent = JSON.parse(content)
-    if (jsonContent.blocks) {
-      return jsonContent
-    } else {
-      return {
-        blocks: [],
-        entityMap: {
-          first: {
-            type: 'PLACEHOLDER',
-            mutability: 'IMMUTABLE',
-            data: {
-              content: 'firstName', // can be whatever
-            },
-          },
-        },
-      }
+function convertInitialContent(content: any) {
+  if (content && content.blocks) {
+    if (!content.entityMap) {
+      content.entityMap = {}
     }
-  } catch {
-    return {
-      blocks: [
-        {
-          text: content || '',
-          type: 'unstyled',
-        },
-      ],
-      entityMap: {
-        first: {
-          type: 'PLACEHOLDER',
-          mutability: 'IMMUTABLE',
-          data: {
-            content: 'firstName', // can be whatever
-          },
+    return content
+  }
+  return {
+    blocks: [
+      {
+        text: content || '',
+        type: 'unstyled',
+      },
+    ],
+    entityMap: {
+      first: {
+        type: 'PLACEHOLDER',
+        mutability: 'IMMUTABLE',
+        data: {
+          content: 'firstName', // can be whatever
         },
       },
-    }
+    },
   }
 }
 
@@ -147,7 +132,10 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       )
     }
     const [editorState, setEditorState] = React.useState(
-      EditorState.createEmpty()
+      EditorState.createWithContent(
+        convertFromRaw(convertInitialContent(initialValue)),
+        decorator
+      )
     )
     let { projectId } = useParams<{ projectId: string }>()
     const [modelStructures, setModelStructures] = useState<{
@@ -323,6 +311,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           }}
           editorState={editorState}
           onChange={e => {
+            debugger
             onChange(convertToRaw(editorState.getCurrentContent()))
             setEditorState(e)
           }}

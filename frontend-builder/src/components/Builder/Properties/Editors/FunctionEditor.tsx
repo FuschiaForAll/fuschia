@@ -9,7 +9,7 @@ import {
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
 import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
-import TextInputBinding, { Component } from '../../../Shared/TextInputBinding'
+import TextInputBinding from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
 import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
@@ -24,8 +24,7 @@ import {
   PrimitiveFilter,
 } from '../DataSources'
 import { Select } from '../../../Shared/primitives/Select'
-import { useGetPackagesQuery } from '../../../../generated/graphql-packages'
-import { EditorState, RawDraftContentState } from 'draft-js'
+import { EditorState } from 'draft-js'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
