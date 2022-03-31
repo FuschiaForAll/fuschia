@@ -1,4 +1,4 @@
-import { SelectChangeEvent } from '@mui/material'
+// import { SelectChangeEvent } from '@mui/material'
 import React from 'react'
 import {
   useGetAuthQuery,
@@ -44,10 +44,10 @@ export function AuthConfig({ projectId }: { projectId: string }) {
     }
   }
 
-  function onSelectChangeHandler(
-    event: SelectChangeEvent<unknown>,
-    child: React.ReactNode
-  ) {}
+  // function onSelectChangeHandler(
+  //   event: SelectChangeEvent<unknown>,
+  //   child: React.ReactNode
+  // ) {}
 
   if (error) {
     return <div>Error</div>
