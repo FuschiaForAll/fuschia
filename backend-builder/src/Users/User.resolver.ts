@@ -44,6 +44,20 @@ export class UserResolver {
   }
 
   @Mutation((returns) => User)
+  async updateMe(@Arg("userInput") userInput: UserInput, @Ctx() ctx: Context) {
+    if (!ctx.req.session.email) {
+      throw new ApolloError("Unauthorized");
+    }
+    return UserModel.findOneAndUpdate(
+      { email: ctx.req.session.email },
+      { ...userInput },
+      {
+        new: true,
+      }
+    );
+  }
+
+  @Mutation((returns) => User)
   async createUser(@Arg("user") user: UserInput) {
     const newUser = new UserModel({
       ...User,
@@ -70,11 +84,11 @@ export class UserResolver {
       throw new ApolloError("Failed to register your account");
     });
     const newOrganization = await OrganizationModel.create({
-      name: 'New',
-      owner: createResult._id
-    })
-    createResult.organizations?.push(newOrganization)
-    createResult.save()
+      name: "New",
+      owner: createResult._id,
+    });
+    createResult.organizations?.push(newOrganization);
+    createResult.save();
     if (!createResult || !createResult.id) {
       throw new ApolloError("Unable to register your account at this time");
     }
@@ -106,6 +120,26 @@ export class UserResolver {
     ctx.req.session.userId = user._id;
 
     return { user, sessionId: ctx.req.session.id };
+  }
+
+  @Mutation(() => Boolean)
+  async changePassword(
+    @Arg("oldPassword") oldPassword: string,
+    @Arg("newPassword") newPassword: string,
+    @Ctx() ctx: Context
+  ) {
+    const user = await UserModel.findOne({ email: ctx.req.session.email });
+    if (!user) {
+      throw new ApolloError("Login error");
+    }
+    const valid = await verify(user.password, oldPassword);
+    if (valid) {
+      const hashedPassword = await hash(newPassword);
+      user.password = hashedPassword;
+      user.save();
+      return true;
+    }
+    return false;
   }
 
   @Mutation(() => Boolean)

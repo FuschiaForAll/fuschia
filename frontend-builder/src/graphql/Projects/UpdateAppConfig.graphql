@@ -1,0 +1,3 @@
+mutation UpdateAppConfig($projectId: ObjectId!, $appConfig: AppConfigInput!) {
+  updateAppConfig(projectId: $projectId, appConfig: $appConfig)
+}

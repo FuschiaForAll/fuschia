@@ -1,0 +1,32 @@
+{
+  "name": "@fuchsia-for-all/action-primitives",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --copy-files",
+    "package": "webpack build --config ./webpack.config.js --stats verbose --mode production --entry ./src/lib/index.js",
+    "deploy": "yarn package && node ./deploy"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.17.6",
+    "@babel/core": "^7.17.5",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "babel-loader": "^8.2.3",
+    "babel-plugin-react-native-web": "^0.17.6",
+    "core-js": "^3.21.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-native": "^0.67.3",
+    "react-native-web": "^0.17.6",
+    "regenerator-runtime": "^0.13.9",
+    "typescript-json-schema": "^0.53.0",
+    "webpack": "^5.69.1",
+    "webpack-cli": "^4.9.2"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "axios": "^0.26.1"
+  }
+}

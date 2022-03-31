@@ -34,7 +34,12 @@ export type Api = {
 export type AppConfig = {
   __typename?: 'AppConfig';
   apiConfig: Api;
+  appEntryComponentId?: Maybe<Scalars['ObjectId']>;
   authConfig: Auth;
+};
+
+export type AppConfigInput = {
+  appEntryComponentId?: InputMaybe<Scalars['ObjectId']>;
 };
 
 export type Auth = {
@@ -85,10 +90,17 @@ export type AuthInput = {
   usernameFieldId?: InputMaybe<Scalars['String']>;
 };
 
+export type BindingContext = {
+  __typename?: 'BindingContext';
+  menu: Array<MenuStructure>;
+  structure: Array<DataStructure>;
+};
+
 export type Component = {
   __typename?: 'Component';
   _id: Scalars['ObjectId'];
   children?: Maybe<Array<Component>>;
+  data?: Maybe<Scalars['JSONObject']>;
   fetched?: Maybe<Array<DataSource>>;
   isContainer: Scalars['Boolean'];
   isRootElement: Scalars['Boolean'];
@@ -104,6 +116,7 @@ export type Component = {
 
 export type ComponentInput = {
   children?: InputMaybe<Array<Scalars['ObjectId']>>;
+  data?: InputMaybe<Scalars['JSONObject']>;
   fetched?: InputMaybe<Array<DataSourceInput>>;
   isContainer?: InputMaybe<Scalars['Boolean']>;
   isRootElement?: InputMaybe<Scalars['Boolean']>;
@@ -162,12 +175,27 @@ export type DataFieldInput = {
 export type DataSource = {
   __typename?: 'DataSource';
   type: Scalars['String'];
-  variables: Array<Scalars['String']>;
+  variables: Array<Scalars['JSONObject']>;
 };
 
 export type DataSourceInput = {
   type: Scalars['String'];
-  variables: Array<Scalars['String']>;
+  variables: Array<Scalars['JSONObject']>;
+};
+
+export type DataStructure = {
+  __typename?: 'DataStructure';
+  _id: Scalars['String'];
+  fields: Array<DataStructureField>;
+  name: Scalars['String'];
+};
+
+export type DataStructureField = {
+  __typename?: 'DataStructureField';
+  dataType: Scalars['String'];
+  hasSubMenu: Scalars['Boolean'];
+  key: Scalars['String'];
+  name: Scalars['String'];
 };
 
 export type EntityModel = {
@@ -218,9 +246,18 @@ export type LanguageTranslation = {
   translations: Array<Translation>;
 };
 
+export type MenuStructure = {
+  __typename?: 'MenuStructure';
+  entity: Scalars['String'];
+  hasSubMenu: Scalars['Boolean'];
+  label: Scalars['String'];
+  source: Scalars['String'];
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   addParameter: Scalars['Boolean'];
+  changePassword: Scalars['Boolean'];
   createComponent: Component;
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
@@ -228,6 +265,7 @@ export type Mutation = {
   createLanguage: Project;
   createMutation?: Maybe<Scalars['Boolean']>;
   createOrganization: Organization;
+  createPackage: Package;
   createProject: Project;
   createQuery?: Maybe<Scalars['Boolean']>;
   createRelationship?: Maybe<Scalars['Boolean']>;
@@ -243,14 +281,19 @@ export type Mutation = {
   deleteQuery?: Maybe<Scalars['Boolean']>;
   deleteRelationship?: Maybe<Scalars['Boolean']>;
   deleteSubscription?: Maybe<Scalars['Boolean']>;
+  duplicateComponent: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
   publishApi: Scalars['Boolean'];
+  publishPackageComponents: Array<PackageComponent>;
   register: UserResponse;
   removeParameter: Scalars['Boolean'];
+  updateAppConfig: Scalars['Boolean'];
   updateAuth?: Maybe<Auth>;
   updateComponent: Component;
+  updateComponentProps: Component;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
+  updateMe: User;
   updateMutation?: Maybe<Scalars['Boolean']>;
   updateParameter: Scalars['Boolean'];
   updateProject: Project;
@@ -264,6 +307,12 @@ export type Mutation = {
 export type MutationAddParameterArgs = {
   componentId: Scalars['ObjectId'];
   parameterInput: RequiredParameterInput;
+};
+
+
+export type MutationChangePasswordArgs = {
+  newPassword: Scalars['String'];
+  oldPassword: Scalars['String'];
 };
 
 
@@ -302,6 +351,11 @@ export type MutationCreateLanguageArgs = {
 
 export type MutationCreateOrganizationArgs = {
   organization: OrganizationInput;
+};
+
+
+export type MutationCreatePackageArgs = {
+  packageInput: PackageInput;
 };
 
 
@@ -352,6 +406,12 @@ export type MutationDeleteProjectArgs = {
 };
 
 
+export type MutationDuplicateComponentArgs = {
+  componentId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type MutationLoginArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -361,6 +421,11 @@ export type MutationLoginArgs = {
 export type MutationPublishApiArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+};
+
+
+export type MutationPublishPackageComponentsArgs = {
+  componentInput: Array<PackageComponentInput>;
 };
 
 
@@ -376,6 +441,12 @@ export type MutationRemoveParameterArgs = {
 };
 
 
+export type MutationUpdateAppConfigArgs = {
+  appConfig: AppConfigInput;
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type MutationUpdateAuthArgs = {
   input: AuthInput;
   projectId: Scalars['ObjectId'];
@@ -385,6 +456,17 @@ export type MutationUpdateAuthArgs = {
 export type MutationUpdateComponentArgs = {
   componentId: Scalars['ObjectId'];
   componentInput: ComponentInput;
+};
+
+
+export type MutationUpdateComponentPropsArgs = {
+  componentId: Scalars['ObjectId'];
+  props: Scalars['JSONObject'];
+};
+
+
+export type MutationUpdateMeArgs = {
+  userInput: UserInput;
 };
 
 
@@ -421,6 +503,55 @@ export type OrganizationInput = {
   name: Scalars['String'];
 };
 
+export type Package = {
+  __typename?: 'Package';
+  _id: Scalars['ObjectId'];
+  authorId: Scalars['ObjectId'];
+  bundle: Scalars['String'];
+  components: Array<PackageComponent>;
+  packageName: Scalars['String'];
+  repositoryUrl: Scalars['String'];
+  scope: PackageScope;
+  version: Scalars['String'];
+};
+
+export type PackageComponent = {
+  __typename?: 'PackageComponent';
+  _id: Scalars['ObjectId'];
+  defaultValue: Scalars['JSONObject'];
+  icon: Scalars['String'];
+  isContainer: Scalars['Boolean'];
+  isRootElement: Scalars['Boolean'];
+  name: Scalars['String'];
+  schema: Scalars['JSONObject'];
+};
+
+export type PackageComponentInput = {
+  defaultValue: Scalars['JSONObject'];
+  icon: Scalars['String'];
+  isContainer: Scalars['Boolean'];
+  isRootElement: Scalars['Boolean'];
+  name: Scalars['String'];
+  schema: Scalars['JSONObject'];
+};
+
+export type PackageInput = {
+  authorId: Scalars['ObjectId'];
+  bundle: Scalars['String'];
+  components: Array<PackageComponentInput>;
+  packageName: Scalars['String'];
+  repositoryUrl: Scalars['String'];
+  scope: PackageScope;
+  version: Scalars['String'];
+};
+
+/** The scope of the package. Globals are default available to everyone, Public are usable by everyone, Private is usable by permissions */
+export enum PackageScope {
+  Global = 'Global',
+  Private = 'Private',
+  Public = 'Public'
+}
+
 export type Project = {
   __typename?: 'Project';
   _id: Scalars['ObjectId'];
@@ -442,11 +573,14 @@ export type ProjectInput = {
 export type Query = {
   __typename?: 'Query';
   getAuth?: Maybe<Auth>;
+  getBindingTree: BindingContext;
   getComponent?: Maybe<Component>;
   getComponents: Array<Component>;
   getDataContext: Array<DataContext>;
   getEntityModel?: Maybe<EntityModel>;
   getLabelLibrary?: Maybe<LabelLibrary>;
+  getPackageComponents: Array<PackageComponent>;
+  getPackages: Array<Package>;
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
   listEntityModel?: Maybe<Scalars['Boolean']>;
@@ -465,6 +599,12 @@ export type Query = {
 
 
 export type QueryGetAuthArgs = {
+  projectId: Scalars['ObjectId'];
+};
+
+
+export type QueryGetBindingTreeArgs = {
+  componentId: Scalars['ObjectId'];
   projectId: Scalars['ObjectId'];
 };
 
@@ -532,15 +672,18 @@ export type User = {
   __typename?: 'User';
   _id: Scalars['ObjectId'];
   email: Scalars['String'];
+  fullName?: Maybe<Scalars['String']>;
   lastLogin?: Maybe<Scalars['DateTime']>;
   organizations: Array<Organization>;
   status: Scalars['String'];
   userRole: Scalars['String'];
+  username?: Maybe<Scalars['String']>;
 };
 
 export type UserInput = {
   email: Scalars['String'];
-  password: Scalars['String'];
+  fullName?: InputMaybe<Scalars['String']>;
+  username?: InputMaybe<Scalars['String']>;
 };
 
 export type UserResponse = {
@@ -747,7 +890,7 @@ export type AddParameterMutationVariables = Exact<{
 
 export type AddParameterMutation = { __typename?: 'Mutation', addParameter: boolean };
 
-export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null };
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null };
 
 export type CreateComponentMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -755,7 +898,7 @@ export type CreateComponentMutationVariables = Exact<{
 }>;
 
 
-export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type DeleteComponentsMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -765,12 +908,28 @@ export type DeleteComponentsMutationVariables = Exact<{
 
 export type DeleteComponentsMutation = { __typename?: 'Mutation', deleteComponents: Array<any> };
 
+export type DuplicateComponentMutationVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type DuplicateComponentMutation = { __typename?: 'Mutation', duplicateComponent: boolean };
+
+export type GetBindingTreeQueryVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type GetBindingTreeQuery = { __typename?: 'Query', getBindingTree: { __typename?: 'BindingContext', menu: Array<{ __typename?: 'MenuStructure', entity: string, hasSubMenu: boolean, label: string, source: string }>, structure: Array<{ __typename?: 'DataStructure', _id: string, name: string, fields: Array<{ __typename?: 'DataStructureField', dataType: string, hasSubMenu: boolean, key: string, name: string }> }> } };
+
 export type GetComponentQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
 }>;
 
 
-export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null } | null };
+export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } | null };
 
 export type GetDataContextQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -784,7 +943,7 @@ export type GetComponentsQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
 
 export type GetEntityModelQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -808,7 +967,15 @@ export type UpdateComponentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<string> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+
+export type UpdateComponentPropsMutationVariables = Exact<{
+  componentId: Scalars['ObjectId'];
+  props: Scalars['JSONObject'];
+}>;
+
+
+export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type UpdateParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -928,6 +1095,11 @@ export type ListOrganizationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ListOrganizationsQuery = { __typename?: 'Query', listOrganizations: Array<{ __typename?: 'Organization', _id: any, name: string, owner: { __typename?: 'User', _id: any }, members: Array<{ __typename?: 'User', _id: any, email: string }> }> };
 
+export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue: any, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
+
 export type AuthFragmentFragment = { __typename?: 'Auth', _id: any, requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string };
 
 export type CreateProjectMutationVariables = Exact<{
@@ -956,7 +1128,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -969,7 +1141,7 @@ export type GetServerStatusQuery = { __typename?: 'Query', getServerStatus: bool
 export type ListProjectsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListProjectsQuery = { __typename?: 'Query', listProjects: Array<{ __typename?: 'Project', _id: any, projectName: string, appId: string }> };
+export type ListProjectsQuery = { __typename?: 'Query', listProjects: Array<{ __typename?: 'Project', _id: any, projectName: string, appId: string, organization: { __typename?: 'Organization', _id: any } }> };
 
 export type PublishApiMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -979,6 +1151,14 @@ export type PublishApiMutationVariables = Exact<{
 
 export type PublishApiMutation = { __typename?: 'Mutation', publishApi: boolean };
 
+export type UpdateAppConfigMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  appConfig: AppConfigInput;
+}>;
+
+
+export type UpdateAppConfigMutation = { __typename?: 'Mutation', updateAppConfig: boolean };
+
 export type UpdateAuthMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   input: AuthInput;
@@ -986,6 +1166,19 @@ export type UpdateAuthMutationVariables = Exact<{
 
 
 export type UpdateAuthMutation = { __typename?: 'Mutation', updateAuth?: { __typename?: 'Auth', _id: any, requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } | null };
+
+export type ChangePasswordMutationVariables = Exact<{
+  oldPassword: Scalars['String'];
+  newPassword: Scalars['String'];
+}>;
+
+
+export type ChangePasswordMutation = { __typename?: 'Mutation', changePassword: boolean };
+
+export type MeQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MeQuery = { __typename?: 'Query', me?: { __typename?: 'User', _id: any, email: string, userRole: string, fullName?: string | null, username?: string | null } | null };
 
 export type LoginMutationVariables = Exact<{
   email: Scalars['String'];
@@ -1002,6 +1195,13 @@ export type RegisterMutationVariables = Exact<{
 
 
 export type RegisterMutation = { __typename?: 'Mutation', register: { __typename?: 'UserResponse', errors?: Array<{ __typename?: 'FieldError', field: string, message: string }> | null, user?: { __typename?: 'User', email: string, userRole: string } | null } };
+
+export type UpdateMeMutationVariables = Exact<{
+  userInput: UserInput;
+}>;
+
+
+export type UpdateMeMutation = { __typename?: 'Mutation', updateMe: { __typename?: 'User', _id: any, email: string, userRole: string, fullName?: string | null, username?: string | null } };
 
 export const ComponentFragmentFragmentDoc = gql`
     fragment ComponentFragment on Component {
@@ -1023,6 +1223,7 @@ export const ComponentFragmentFragmentDoc = gql`
     variables
   }
   props
+  data
   parent {
     _id
   }
@@ -1229,6 +1430,89 @@ export function useDeleteComponentsMutation(baseOptions?: Apollo.MutationHookOpt
 export type DeleteComponentsMutationHookResult = ReturnType<typeof useDeleteComponentsMutation>;
 export type DeleteComponentsMutationResult = Apollo.MutationResult<DeleteComponentsMutation>;
 export type DeleteComponentsMutationOptions = Apollo.BaseMutationOptions<DeleteComponentsMutation, DeleteComponentsMutationVariables>;
+export const DuplicateComponentDocument = gql`
+    mutation DuplicateComponent($componentId: ObjectId!, $projectId: ObjectId!) {
+  duplicateComponent(componentId: $componentId, projectId: $projectId)
+}
+    `;
+export type DuplicateComponentMutationFn = Apollo.MutationFunction<DuplicateComponentMutation, DuplicateComponentMutationVariables>;
+
+/**
+ * __useDuplicateComponentMutation__
+ *
+ * To run a mutation, you first call `useDuplicateComponentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDuplicateComponentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [duplicateComponentMutation, { data, loading, error }] = useDuplicateComponentMutation({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useDuplicateComponentMutation(baseOptions?: Apollo.MutationHookOptions<DuplicateComponentMutation, DuplicateComponentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DuplicateComponentMutation, DuplicateComponentMutationVariables>(DuplicateComponentDocument, options);
+      }
+export type DuplicateComponentMutationHookResult = ReturnType<typeof useDuplicateComponentMutation>;
+export type DuplicateComponentMutationResult = Apollo.MutationResult<DuplicateComponentMutation>;
+export type DuplicateComponentMutationOptions = Apollo.BaseMutationOptions<DuplicateComponentMutation, DuplicateComponentMutationVariables>;
+export const GetBindingTreeDocument = gql`
+    query GetBindingTree($componentId: ObjectId!, $projectId: ObjectId!) {
+  getBindingTree(componentId: $componentId, projectId: $projectId) {
+    menu {
+      entity
+      hasSubMenu
+      label
+      source
+    }
+    structure {
+      _id
+      fields {
+        dataType
+        hasSubMenu
+        key
+        name
+      }
+      name
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetBindingTreeQuery__
+ *
+ * To run a query within a React component, call `useGetBindingTreeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetBindingTreeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetBindingTreeQuery({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useGetBindingTreeQuery(baseOptions: Apollo.QueryHookOptions<GetBindingTreeQuery, GetBindingTreeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetBindingTreeQuery, GetBindingTreeQueryVariables>(GetBindingTreeDocument, options);
+      }
+export function useGetBindingTreeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetBindingTreeQuery, GetBindingTreeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetBindingTreeQuery, GetBindingTreeQueryVariables>(GetBindingTreeDocument, options);
+        }
+export type GetBindingTreeQueryHookResult = ReturnType<typeof useGetBindingTreeQuery>;
+export type GetBindingTreeLazyQueryHookResult = ReturnType<typeof useGetBindingTreeLazyQuery>;
+export type GetBindingTreeQueryResult = Apollo.QueryResult<GetBindingTreeQuery, GetBindingTreeQueryVariables>;
 export const GetComponentDocument = gql`
     query GetComponent($componentId: ObjectId!) {
   getComponent(componentId: $componentId) {
@@ -1497,6 +1781,40 @@ export function useUpdateComponentMutation(baseOptions?: Apollo.MutationHookOpti
 export type UpdateComponentMutationHookResult = ReturnType<typeof useUpdateComponentMutation>;
 export type UpdateComponentMutationResult = Apollo.MutationResult<UpdateComponentMutation>;
 export type UpdateComponentMutationOptions = Apollo.BaseMutationOptions<UpdateComponentMutation, UpdateComponentMutationVariables>;
+export const UpdateComponentPropsDocument = gql`
+    mutation UpdateComponentProps($componentId: ObjectId!, $props: JSONObject!) {
+  updateComponentProps(componentId: $componentId, props: $props) {
+    ...ComponentFragment
+  }
+}
+    ${ComponentFragmentFragmentDoc}`;
+export type UpdateComponentPropsMutationFn = Apollo.MutationFunction<UpdateComponentPropsMutation, UpdateComponentPropsMutationVariables>;
+
+/**
+ * __useUpdateComponentPropsMutation__
+ *
+ * To run a mutation, you first call `useUpdateComponentPropsMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateComponentPropsMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateComponentPropsMutation, { data, loading, error }] = useUpdateComponentPropsMutation({
+ *   variables: {
+ *      componentId: // value for 'componentId'
+ *      props: // value for 'props'
+ *   },
+ * });
+ */
+export function useUpdateComponentPropsMutation(baseOptions?: Apollo.MutationHookOptions<UpdateComponentPropsMutation, UpdateComponentPropsMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateComponentPropsMutation, UpdateComponentPropsMutationVariables>(UpdateComponentPropsDocument, options);
+      }
+export type UpdateComponentPropsMutationHookResult = ReturnType<typeof useUpdateComponentPropsMutation>;
+export type UpdateComponentPropsMutationResult = Apollo.MutationResult<UpdateComponentPropsMutation>;
+export type UpdateComponentPropsMutationOptions = Apollo.BaseMutationOptions<UpdateComponentPropsMutation, UpdateComponentPropsMutationVariables>;
 export const UpdateParameterDocument = gql`
     mutation UpdateParameter($componentId: ObjectId!, $parameterId: ObjectId!, $parameterInput: RequiredParameterInput!) {
   updateParameter(
@@ -2076,6 +2394,55 @@ export function useListOrganizationsLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type ListOrganizationsQueryHookResult = ReturnType<typeof useListOrganizationsQuery>;
 export type ListOrganizationsLazyQueryHookResult = ReturnType<typeof useListOrganizationsLazyQuery>;
 export type ListOrganizationsQueryResult = Apollo.QueryResult<ListOrganizationsQuery, ListOrganizationsQueryVariables>;
+export const GetPackagesDocument = gql`
+    query GetPackages {
+  getPackages {
+    _id
+    packageName
+    repositoryUrl
+    version
+    bundle
+    components {
+      _id
+      name
+      schema
+      defaultValue
+      icon
+      isRootElement
+      isContainer
+    }
+    authorId
+    scope
+  }
+}
+    `;
+
+/**
+ * __useGetPackagesQuery__
+ *
+ * To run a query within a React component, call `useGetPackagesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPackagesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPackagesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetPackagesQuery(baseOptions?: Apollo.QueryHookOptions<GetPackagesQuery, GetPackagesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPackagesQuery, GetPackagesQueryVariables>(GetPackagesDocument, options);
+      }
+export function useGetPackagesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPackagesQuery, GetPackagesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPackagesQuery, GetPackagesQueryVariables>(GetPackagesDocument, options);
+        }
+export type GetPackagesQueryHookResult = ReturnType<typeof useGetPackagesQuery>;
+export type GetPackagesLazyQueryHookResult = ReturnType<typeof useGetPackagesLazyQuery>;
+export type GetPackagesQueryResult = Apollo.QueryResult<GetPackagesQuery, GetPackagesQueryVariables>;
 export const CreateProjectDocument = gql`
     mutation CreateProject($project: ProjectInput!) {
   createProject(project: $project) {
@@ -2184,6 +2551,7 @@ export const GetProjectDocument = gql`
     appId
     projectName
     appConfig {
+      appEntryComponentId
       apiConfig {
         sandboxEndpoint
         liveEndpoint
@@ -2327,6 +2695,9 @@ export const ListProjectsDocument = gql`
     _id
     projectName
     appId
+    organization {
+      _id
+    }
   }
 }
     `;
@@ -2389,6 +2760,38 @@ export function usePublishApiMutation(baseOptions?: Apollo.MutationHookOptions<P
 export type PublishApiMutationHookResult = ReturnType<typeof usePublishApiMutation>;
 export type PublishApiMutationResult = Apollo.MutationResult<PublishApiMutation>;
 export type PublishApiMutationOptions = Apollo.BaseMutationOptions<PublishApiMutation, PublishApiMutationVariables>;
+export const UpdateAppConfigDocument = gql`
+    mutation UpdateAppConfig($projectId: ObjectId!, $appConfig: AppConfigInput!) {
+  updateAppConfig(projectId: $projectId, appConfig: $appConfig)
+}
+    `;
+export type UpdateAppConfigMutationFn = Apollo.MutationFunction<UpdateAppConfigMutation, UpdateAppConfigMutationVariables>;
+
+/**
+ * __useUpdateAppConfigMutation__
+ *
+ * To run a mutation, you first call `useUpdateAppConfigMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateAppConfigMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateAppConfigMutation, { data, loading, error }] = useUpdateAppConfigMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      appConfig: // value for 'appConfig'
+ *   },
+ * });
+ */
+export function useUpdateAppConfigMutation(baseOptions?: Apollo.MutationHookOptions<UpdateAppConfigMutation, UpdateAppConfigMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateAppConfigMutation, UpdateAppConfigMutationVariables>(UpdateAppConfigDocument, options);
+      }
+export type UpdateAppConfigMutationHookResult = ReturnType<typeof useUpdateAppConfigMutation>;
+export type UpdateAppConfigMutationResult = Apollo.MutationResult<UpdateAppConfigMutation>;
+export type UpdateAppConfigMutationOptions = Apollo.BaseMutationOptions<UpdateAppConfigMutation, UpdateAppConfigMutationVariables>;
 export const UpdateAuthDocument = gql`
     mutation UpdateAuth($projectId: ObjectId!, $input: AuthInput!) {
   updateAuth(projectId: $projectId, input: $input) {
@@ -2423,6 +2826,76 @@ export function useUpdateAuthMutation(baseOptions?: Apollo.MutationHookOptions<U
 export type UpdateAuthMutationHookResult = ReturnType<typeof useUpdateAuthMutation>;
 export type UpdateAuthMutationResult = Apollo.MutationResult<UpdateAuthMutation>;
 export type UpdateAuthMutationOptions = Apollo.BaseMutationOptions<UpdateAuthMutation, UpdateAuthMutationVariables>;
+export const ChangePasswordDocument = gql`
+    mutation ChangePassword($oldPassword: String!, $newPassword: String!) {
+  changePassword(oldPassword: $oldPassword, newPassword: $newPassword)
+}
+    `;
+export type ChangePasswordMutationFn = Apollo.MutationFunction<ChangePasswordMutation, ChangePasswordMutationVariables>;
+
+/**
+ * __useChangePasswordMutation__
+ *
+ * To run a mutation, you first call `useChangePasswordMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useChangePasswordMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [changePasswordMutation, { data, loading, error }] = useChangePasswordMutation({
+ *   variables: {
+ *      oldPassword: // value for 'oldPassword'
+ *      newPassword: // value for 'newPassword'
+ *   },
+ * });
+ */
+export function useChangePasswordMutation(baseOptions?: Apollo.MutationHookOptions<ChangePasswordMutation, ChangePasswordMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ChangePasswordMutation, ChangePasswordMutationVariables>(ChangePasswordDocument, options);
+      }
+export type ChangePasswordMutationHookResult = ReturnType<typeof useChangePasswordMutation>;
+export type ChangePasswordMutationResult = Apollo.MutationResult<ChangePasswordMutation>;
+export type ChangePasswordMutationOptions = Apollo.BaseMutationOptions<ChangePasswordMutation, ChangePasswordMutationVariables>;
+export const MeDocument = gql`
+    query Me {
+  me {
+    _id
+    email
+    userRole
+    fullName
+    username
+  }
+}
+    `;
+
+/**
+ * __useMeQuery__
+ *
+ * To run a query within a React component, call `useMeQuery` and pass it any options that fit your needs.
+ * When your component renders, `useMeQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useMeQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useMeQuery(baseOptions?: Apollo.QueryHookOptions<MeQuery, MeQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+      }
+export function useMeLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<MeQuery, MeQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<MeQuery, MeQueryVariables>(MeDocument, options);
+        }
+export type MeQueryHookResult = ReturnType<typeof useMeQuery>;
+export type MeLazyQueryHookResult = ReturnType<typeof useMeLazyQuery>;
+export type MeQueryResult = Apollo.QueryResult<MeQuery, MeQueryVariables>;
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
   login(email: $email, password: $password) {
@@ -2507,3 +2980,40 @@ export function useRegisterMutation(baseOptions?: Apollo.MutationHookOptions<Reg
 export type RegisterMutationHookResult = ReturnType<typeof useRegisterMutation>;
 export type RegisterMutationResult = Apollo.MutationResult<RegisterMutation>;
 export type RegisterMutationOptions = Apollo.BaseMutationOptions<RegisterMutation, RegisterMutationVariables>;
+export const UpdateMeDocument = gql`
+    mutation UpdateMe($userInput: UserInput!) {
+  updateMe(userInput: $userInput) {
+    _id
+    email
+    userRole
+    fullName
+    username
+  }
+}
+    `;
+export type UpdateMeMutationFn = Apollo.MutationFunction<UpdateMeMutation, UpdateMeMutationVariables>;
+
+/**
+ * __useUpdateMeMutation__
+ *
+ * To run a mutation, you first call `useUpdateMeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateMeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateMeMutation, { data, loading, error }] = useUpdateMeMutation({
+ *   variables: {
+ *      userInput: // value for 'userInput'
+ *   },
+ * });
+ */
+export function useUpdateMeMutation(baseOptions?: Apollo.MutationHookOptions<UpdateMeMutation, UpdateMeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateMeMutation, UpdateMeMutationVariables>(UpdateMeDocument, options);
+      }
+export type UpdateMeMutationHookResult = ReturnType<typeof useUpdateMeMutation>;
+export type UpdateMeMutationResult = Apollo.MutationResult<UpdateMeMutation>;
+export type UpdateMeMutationOptions = Apollo.BaseMutationOptions<UpdateMeMutation, UpdateMeMutationVariables>;

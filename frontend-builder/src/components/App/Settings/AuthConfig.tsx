@@ -1,4 +1,4 @@
-import { SelectChangeEvent } from '@mui/material'
+// import { SelectChangeEvent } from '@mui/material'
 import React from 'react'
 import {
   useGetAuthQuery,
@@ -44,10 +44,10 @@ export function AuthConfig({ projectId }: { projectId: string }) {
     }
   }
 
-  function onSelectChangeHandler(
-    event: SelectChangeEvent<unknown>,
-    child: React.ReactNode
-  ) {}
+  // function onSelectChangeHandler(
+  //   event: SelectChangeEvent<unknown>,
+  //   child: React.ReactNode
+  // ) {}
 
   if (error) {
     return <div>Error</div>
@@ -88,23 +88,23 @@ export function AuthConfig({ projectId }: { projectId: string }) {
             </div>
             <div>
               <LabeledSelect
+                labelPlacement="start"
                 label="mfa Configuration"
-                name="mfaConfiguration"
                 options={[
                   { label: 'OFF', value: 'OFF' },
                   { label: 'ON', value: 'ON' },
                   { label: 'OPTIONAL', value: 'OPTIONAL' },
                 ]}
-                value={authConfigData.getAuth.mfaConfiguration}
-                onChange={onSelectChangeHandler}
+                selectedValue={authConfigData.getAuth.mfaConfiguration}
+                onChange={() => {}}
               />
             </div>
             <div>
               <LabeledSelect
+                labelPlacement="start"
                 label="mfa types"
-                name="mfaTypes"
-                value={authConfigData.getAuth.mfaTypes}
-                onChange={onSelectChangeHandler}
+                selectedValue={authConfigData.getAuth.mfaTypes}
+                onChange={() => {}}
                 options={[
                   { label: 'SMS', value: 'SMS' },
                   { label: 'TOTP', value: 'TOTP' },
@@ -238,23 +238,20 @@ export function AuthConfig({ projectId }: { projectId: string }) {
               />
             </div>
             <div>
-              <label htmlFor="tableId">
-                Where is the user login information stored?
-              </label>
-              <select
-                name="tableId"
-                value={authConfigData.getAuth.tableId}
+              <LabeledSelect
+                label="Where is the user login information stored?"
+                selectedValue={authConfigData.getAuth.tableId}
+                options={[
+                  { label: 'Undefined', value: '' },
+                  ...(data?.getProject.appConfig.apiConfig.models.map(
+                    model => ({
+                      label: model.name,
+                      value: model._id,
+                    })
+                  ) || []),
+                ]}
                 onChange={onChangeHandler}
-              >
-                {!authConfigData.getAuth.tableId && (
-                  <option value="">Undefined</option>
-                )}
-                {data?.getProject.appConfig.apiConfig.models.map(model => (
-                  <option key={model._id} value={model._id}>
-                    {model.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             <div>
               <label htmlFor="usernameFieldId">

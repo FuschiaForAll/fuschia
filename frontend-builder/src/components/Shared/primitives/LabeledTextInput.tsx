@@ -15,7 +15,7 @@ export function LabeledTextInput(props: LabeledTextInputProps) {
       sx={{
         color: 'var(--text)',
         alignItems: 'start',
-
+        userSelect: 'none',
         marginLeft: 0,
         marginRight: 0,
       }}

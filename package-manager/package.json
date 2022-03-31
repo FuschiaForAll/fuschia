@@ -13,6 +13,7 @@
     "start": "ts-node src/index.ts"
   },
   "dependencies": {
+    "@react-native-community/checkbox": "^0.5.12",
     "@typegoose/typegoose": "^9.7.0",
     "apollo-server": "^3.6.3",
     "graphql-type-json": "^0.3.2",

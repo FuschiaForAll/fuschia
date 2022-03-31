@@ -8,6 +8,12 @@
   "width": 160,
   "height": 35,
   "properties": {
+    "placeholder": {
+      "type": "string",
+      "title": "Placeholder",
+      "description": "Placeholder text for the input",
+      "default": "Enter..."
+    },
     "style": {
       "type": "object",
       "title": "Component Styling",

@@ -1,0 +1,20 @@
+query GetBindingTree($componentId: ObjectId!, $projectId: ObjectId!) {
+  getBindingTree(componentId: $componentId, projectId: $projectId) {
+    menu {
+      entity
+      hasSubMenu
+      label
+      source
+    }
+    structure {
+      _id
+      fields {
+        dataType
+        hasSubMenu
+        key
+        name
+      }
+      name
+    }
+  }
+}

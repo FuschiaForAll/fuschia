@@ -35,7 +35,13 @@ interface FrameProps extends InlineProps {
 
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
 
-const FrameWrapper = styled.div`
+const FrameWrapper = styled.div<{ name?: string }>`
+  &:before {
+    content: '${p => p.name}';
+    position: absolute;
+    top: -20px;
+    color: var(--attention);
+  }
   pointer-events: all;
   position: absolute;
 `
@@ -98,6 +104,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   }
   return (
     <FrameWrapper
+      name={layer.isRootElement ? layer.name : ''}
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}
@@ -105,6 +112,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
+      data-parentid={layer.parent?._id}
     >
       {children}
     </FrameWrapper>
@@ -169,11 +177,10 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
-function convertDraftJSBindings(value: string) {
+function convertDraftJSBindings(value: any) {
   try {
-    const jsonValue = JSON.parse(value)
-    if (jsonValue.blocks) {
-      return jsonValue.blocks.map((block: any) => block.text).join('\n')
+    if (value.blocks) {
+      return value.blocks.map((block: any) => block.text).join('\n')
     }
   } catch {}
   return value
@@ -220,6 +227,13 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   Object.keys(props).forEach(
     key => (props[key] = convertDraftJSBindings(props[key]))
   )
+  if (layer.data) {
+    Object.keys(layer.data).forEach(key => {
+      props[key] = {
+        onChange: (e: any) => {},
+      }
+    })
+  }
   if (!packageData?.getPackages) {
     return <div>loading...</div>
   }
@@ -237,24 +251,47 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
       )}
       <WrapperType layer={layer} selected={selected} onClick={onSelect}>
         {layer.isContainer ? (
-          <InlineComponent
-            id={`component=${layer._id}`}
-            {...props}
-            style={{
-              ...props.style,
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-            }}
-          >
-            {layer.children?.map(child => (
-              <LayerSub
-                layer={child}
-                selection={selection}
-                onSelect={onSelect}
-              />
-            ))}
-          </InlineComponent>
+          schema.type === 'array' ? (
+            [0, 1, 2].map(item => (
+              <InlineComponent
+                id={`component=${layer._id}-${item}`}
+                {...props}
+                style={{
+                  ...props.style,
+                  width: '100%',
+                  height: '100%',
+                  opacity: item ? 0.2 : 1,
+                }}
+              >
+                {layer.children?.map(child => (
+                  <LayerSub
+                    layer={child}
+                    selection={selection}
+                    onSelect={onSelect}
+                  />
+                ))}
+              </InlineComponent>
+            ))
+          ) : (
+            <InlineComponent
+              id={`component=${layer._id}`}
+              {...props}
+              style={{
+                ...props.style,
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+              }}
+            >
+              {layer.children?.map(child => (
+                <LayerSub
+                  layer={child}
+                  selection={selection}
+                  onSelect={onSelect}
+                />
+              ))}
+            </InlineComponent>
+          )
         ) : (
           <div>
             <div

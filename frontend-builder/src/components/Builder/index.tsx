@@ -1,7 +1,6 @@
 import React from 'react'
 import { useQuery, gql } from '@apollo/client'
-import { Route, Routes, useParams } from 'react-router-dom'
-import { useListProjectsQuery } from '../../generated/graphql'
+import { Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import Settings from '../App/Settings'
 
 import Canvas from './Canvas'
@@ -11,6 +10,10 @@ import Topbar from './Topbar'
 import FullScreenLoader from '../Shared/FullScreenLoader'
 import Scalebar from './Scalebar'
 import LabelLibrary from './LabelLibrary'
+import Previewer from '../Previewer'
+import { Modal, Paper } from '@mui/material'
+import Dashboard from '../Dashboard'
+import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
 
 const GET_PROJECT = gql`
   query GetBuilderProject($projectId: ObjectId!) {
@@ -25,8 +28,7 @@ const GET_PROJECT = gql`
 
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
-
-  const { data: projects } = useListProjectsQuery()
+  const navigate = useNavigate()
   const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
 
   const project = data?.project
@@ -42,23 +44,42 @@ const Builder: React.FC = function Builder() {
   }
 
   return (
-    <>
+    <DesignerHistoryProvider>
       <div>
         <Canvas />
-        <Topbar
-          projects={projects?.listProjects}
-          currentProject={projectId}
-          projectName={project.projectName}
-        />
+        <Topbar projectName={project.projectName} />
         <Sidebar />
         <Scalebar />
       </div>
       <Routes>
         <Route path="database" element={<Database />} />
+        <Route path="previewer" element={<Previewer />} />
         <Route path="app-settings" element={<Settings />} />
         <Route path="label-library" element={<LabelLibrary />} />
+        <Route
+          path="dashboard"
+          element={
+            <Modal
+              open={true}
+              onClose={() => navigate('./')}
+              sx={{ padding: '5rem' }}
+            >
+              <Paper
+                sx={{
+                  height: '100%',
+                  width: '100%',
+                  padding: '1rem',
+                  display: 'grid',
+                  gridTemplateRows: 'auto 1fr',
+                }}
+              >
+                <Dashboard />
+              </Paper>
+            </Modal>
+          }
+        />
       </Routes>
-    </>
+    </DesignerHistoryProvider>
   )
 }
 

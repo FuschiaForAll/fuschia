@@ -17,8 +17,8 @@ export class DataSourceInput {
   @Field()
   type!: string;
 
-  @Field((type) => [String])
-  variables!: string[];
+  @Field((type) => [Object])
+  variables!: Object[];
 }
 
 @InputType()
@@ -40,6 +40,9 @@ export class ComponentInput {
 
   @Field((type) => Object, { nullable: true })
   props?: Object;
+
+  @Field((type) => Object, { nullable: true })
+  data?: Object;
 
   @Field({ nullable: true })
   isContainer!: boolean;

@@ -67,11 +67,30 @@ const Canvas: React.FC = function Canvas() {
   const handleWheel = useCallback((e: React.WheelEvent<HTMLDivElement>) => {
     e.stopPropagation()
     if (objectCollectionRef.current) {
+      const zoomOut = e.deltaY < 0
+      // const x =
+      //   parseFloat(objectCollectionRef.current.getAttribute('data-x')!) || 0
+      // const y =
+      //   parseFloat(objectCollectionRef.current.getAttribute('data-y')!) || 0
       const z =
         (parseFloat(objectCollectionRef.current.getAttribute('data-z')!) || 1) +
-        (e.deltaY < 0 ? -ZOOM_INCEMENT : ZOOM_INCEMENT)
+        (zoomOut ? -ZOOM_INCEMENT : ZOOM_INCEMENT)
       if (z > ZOOM_INCEMENT) {
         scaleFactorVar(`${z}`)
+        // objectCollectionRef.current.style.transform = `translate(${
+        //   x + e.clientX * (zoomOut ? ZOOM_INCEMENT : -ZOOM_INCEMENT)
+        // }px, ${
+        //   y + e.clientY * (zoomOut ? ZOOM_INCEMENT : -ZOOM_INCEMENT)
+        // }px) scale(${z})`
+        // objectCollectionRef.current.setAttribute(
+        //   'data-x',
+        //   `${x + e.clientX * (zoomOut ? ZOOM_INCEMENT : -ZOOM_INCEMENT)}`
+        // )
+        // objectCollectionRef.current.setAttribute(
+        //   'data-y',
+        //   `${y + e.clientY * (zoomOut ? ZOOM_INCEMENT : -ZOOM_INCEMENT)}`
+        // )
+        // objectCollectionRef.current.setAttribute('data-z', `${z}`)
       }
     }
   }, [])

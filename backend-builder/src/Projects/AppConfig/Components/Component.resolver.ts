@@ -13,7 +13,7 @@ import {
   Root,
 } from "type-graphql";
 import { Service } from "typedi";
-import { ComponentModel, ProjectModel } from "../../../Models";
+import { ComponentModel, PackageModel, ProjectModel } from "../../../Models";
 import { Context } from "../../../types";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { ProjectService } from "../../Project.service";
@@ -39,6 +39,48 @@ class DataComponent {
   name!: string;
   @Field()
   dataType!: string;
+}
+
+@ObjectType()
+class DataStructureField {
+  @Field()
+  key!: string;
+  @Field()
+  dataType!: string;
+  @Field()
+  name!: string;
+  @Field()
+  hasSubMenu!: boolean;
+}
+
+@ObjectType()
+class DataStructure {
+  @Field()
+  _id!: string;
+  @Field()
+  name!: string;
+  @Field((type) => [DataStructureField])
+  fields!: DataStructureField[];
+}
+
+@ObjectType()
+class MenuStructure {
+  @Field()
+  source!: string;
+  @Field()
+  entity!: string;
+  @Field()
+  label!: string;
+  @Field()
+  hasSubMenu!: boolean;
+}
+
+@ObjectType()
+class BindingContext {
+  @Field((type) => [DataStructure])
+  structure!: DataStructure[];
+  @Field((type) => [MenuStructure])
+  menu!: MenuStructure[];
 }
 
 async function getParentRecursive(
@@ -129,6 +171,166 @@ export class ComponentResolver {
       `SECURITY WARNING: Validate that the user has access to get ComponentId`
     );
     return getParentRecursive(componentId.toString(), []);
+  }
+
+  @Query((returns) => BindingContext)
+  async getBindingTree(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Ctx() ctx: Context
+  ): Promise<BindingContext> {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to get ComponentId`
+    );
+    let menuStructure = [] as MenuStructure[];
+    let dataStructure = [] as DataStructure[];
+    const project = await ProjectModel.findById(projectId).populate(
+      "components"
+    );
+    const packages = await PackageModel.find();
+    console.log(project);
+    if (project) {
+      const authTable = project.appConfig.apiConfig.models.find(
+        (m) => m._id.toString() === project.appConfig.authConfig.tableId
+      );
+      if (authTable) {
+        menuStructure.push({
+          label: "Current User",
+          hasSubMenu: true,
+          entity: project.appConfig.authConfig.tableId,
+          source: "CurrentUser",
+        });
+      }
+
+      menuStructure.push({
+        label: "Inputs",
+        hasSubMenu: true,
+        entity: "InputObject",
+        source: "InputObject",
+      });
+      const inputObjects = {
+        _id: "InputObject",
+        name: "Inputs",
+        fields: (project.components as Component[]).map((c) => ({
+          dataType: c._id.toString(),
+          hasSubMenu: !!(c.children && c.children.length > 0),
+          key: c._id.toString(),
+          name: c.name,
+        })),
+      };
+      dataStructure.push(inputObjects);
+
+      const search = async (c: Component) => {
+        const newStructure = {
+          _id: c._id.toString(),
+          name: c.name,
+          fields: [],
+        } as DataStructure;
+        const children = await ComponentModel.find({
+          parent: c._id,
+        });
+        console.log(children);
+        children.forEach((ch) => {
+          if (ch.children && ch.children.length > 0) {
+            newStructure.fields.push({
+              key: ch._id.toString(),
+              dataType: ch._id.toString(),
+              name: ch.name,
+              hasSubMenu: !!(ch.children && ch.children.length > 0),
+            });
+          }
+
+          packages
+            .flatMap((p) =>
+              p.components.map((c) => ({
+                packageName: p.packageName,
+                componentName: c.name,
+                data: c.schema.data,
+              }))
+            )
+            .filter(
+              (dc) =>
+                dc.packageName === ch.package &&
+                dc.componentName === ch.type &&
+                dc.data
+            )
+            .forEach((dc) => {
+              Object.keys(dc.data).forEach((dataKey) =>
+                newStructure.fields.push({
+                  key: ch._id.toString(),
+                  hasSubMenu: false,
+                  dataType: dc.data[dataKey],
+                  name: `${ch.name}'s ${dataKey}`,
+                })
+              );
+            });
+        });
+
+        dataStructure.push(newStructure);
+        console.log(dataStructure);
+        children.forEach((ch) => search(ch));
+      };
+      await Promise.all(
+        (project.components as Component[]).map(async (c) => await search(c))
+      );
+
+      project.appConfig.apiConfig.models.forEach((model) =>
+        dataStructure.push({
+          _id: model._id.toString(),
+          name: model.name,
+          fields: [
+            {
+              dataType: "string",
+              hasSubMenu: false,
+              key: "_id",
+              name: "ID",
+            },
+            ...model.fields
+              .filter((field) => !field.isList) // don't add lists for now
+              .map((field) => ({
+                dataType: field.dataType,
+                hasSubMenu: !!field.connection,
+                key: field._id.toString(),
+                name: field.fieldName,
+              })),
+          ],
+        })
+      );
+
+      const extractModelName = (name: string): [string, boolean] => {
+        const entity = dataStructure.find((d) => d._id === name);
+        if (entity) {
+          return [entity.name, true];
+        }
+        const input = inputObjects.fields.find((i) => i.key === name);
+        if (input) {
+          return [input.name, true];
+        }
+        return [name, false];
+      };
+
+      const dataContext = await getParentRecursive(componentId.toString(), []);
+      dataContext.forEach((item) => {
+        item.dataSources.forEach((source) => {
+          const [name, hasSubMenu] = extractModelName(source);
+          menuStructure.push({
+            source: item.componentId,
+            entity: source,
+            label: `${item.name}'s ${name}`,
+            hasSubMenu,
+          });
+        });
+      });
+    }
+    // Current User
+    // Inputs
+    // Entities
+    console.log(`RETURNING`);
+    console.log(dataStructure);
+    return {
+      menu: menuStructure,
+      structure: dataStructure,
+    } as BindingContext;
   }
 
   @Mutation((returns) => Component)
@@ -250,6 +452,7 @@ export class ComponentResolver {
       return true;
     }
   }
+
   @Mutation((returns) => Boolean)
   async updateParameter(
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
@@ -297,6 +500,82 @@ export class ComponentResolver {
       await component.save();
       return true;
     }
+  }
+
+  @Mutation((returns) => Boolean)
+  async duplicateComponent(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to duplicate parameters`
+    );
+    const component = await ComponentModel.findById(componentId);
+    if (component) {
+      // duplicate all nested components as well
+      const duplicateNested = async (
+        originalId: ObjectId,
+        nestedComponent: Component
+      ) => {
+        const children = await ComponentModel.find({
+          parent: originalId,
+        });
+        children.forEach(async (child) => {
+          const childClone = { ...child.toJSON() } as any;
+          childClone.parent = nestedComponent;
+          delete childClone._id;
+          const newChildComponent = await ComponentModel.create({
+            ...childClone,
+          });
+          duplicateNested(child._id, newChildComponent);
+        });
+      };
+
+      console.log(`component`);
+      console.log(component);
+      const clone = { ...component.toJSON() } as any;
+      console.log(`clone`);
+      console.log(clone);
+      delete clone._id;
+      clone.x = (component.x || 0) + 10;
+      clone.y = (component.y || 0) + 10;
+      const newComponent = await ComponentModel.create({
+        ...clone,
+      });
+      if (!component.parent) {
+        const project = await ProjectModel.findByIdAndUpdate(
+          projectId,
+          {
+            $push: {
+              components: {
+                _id: newComponent._id,
+              },
+            },
+          },
+          { new: true, useFindAndModify: false }
+        );
+        console.log(project);
+      }
+      duplicateNested(component._id, newComponent);
+    }
+    return true;
+  }
+
+  @Mutation((returns) => Component)
+  async updateComponentProps(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("props", (type) => Object) props: Object
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to add parameters`
+    );
+    console.log(componentId);
+    console.log(JSON.stringify(props));
+    return ComponentModel.findByIdAndUpdate(
+      componentId,
+      { props },
+      { returnDocument: "after" }
+    );
   }
 
   @FieldResolver()

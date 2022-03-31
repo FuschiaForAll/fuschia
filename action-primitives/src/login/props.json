@@ -1,0 +1,21 @@
+{
+  "component": "action",
+  "type": "function",
+  "name": "CONDITIONAL",
+  "label": "Do something conditionally...",
+  "properties": {
+    "screens": {
+      "type": "array",
+      "format": "rootElements"
+    },
+    "navigator": {
+      "type": "function",
+      "arguments": [
+        {
+          "type": "string",
+          "label": "Navigate To..."
+        }
+      ]
+    }
+  }
+}

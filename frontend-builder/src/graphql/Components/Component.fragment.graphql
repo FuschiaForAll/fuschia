@@ -17,6 +17,7 @@ fragment ComponentFragment on Component {
     variables
   }
   props
+  data
   parent {
     _id
   }

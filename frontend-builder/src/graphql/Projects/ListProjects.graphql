@@ -3,5 +3,8 @@ query ListProjects {
     _id
     projectName
     appId
+    organization {
+      _id
+    }
   }
 }

@@ -1,9 +1,15 @@
 import React, { useEffect, useCallback, useState } from 'react'
+import { useParams } from 'react-router-dom'
+import {
+  GetComponentsDocument,
+  useDuplicateComponentMutation,
+} from '../../../generated/graphql'
 import {
   useDeleteComponents,
   useSelection,
   useUpdateComponent,
 } from '../../../utils/hooks'
+import { useDesignerHistory } from '../../../utils/hooks/useDesignerHistory'
 
 const DELETE = 'Delete'
 const RIGHT_ARROW = 'ArrowRight'
@@ -13,16 +19,22 @@ const DOWN_ARROW = 'ArrowDown'
 const ESCAPE = 'Escape'
 
 const KeyboardEvents: React.FC = function KeyboardEvents() {
+  const { projectId } = useParams<{ projectId: string }>()
   const { selection, setSelection } = useSelection()
   const deleteLayers = useDeleteComponents()
-  const updateLayers = useUpdateComponent()
+  const { updateComponent: updateLayers } = useUpdateComponent()
+  const [cloneComponent] = useDuplicateComponentMutation({
+    refetchQueries: [
+      { query: GetComponentsDocument, variables: { projectId } },
+    ],
+  })
   const [copyReferences, setCopyReferences] = useState<string[] | undefined>()
   const handleDelete = useCallback(() => {
     if (!selection) return
     deleteLayers(...selection)
     setSelection([])
   }, [selection, deleteLayers, setSelection])
-
+  const { undo, redo } = useDesignerHistory()
   const handleMove = useCallback(
     ({ x, y }: { x: number; y: number }) => {
       if (!selection) return
@@ -30,10 +42,17 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
       selection.forEach(id => {
         const element = document.getElementById(id)
         if (element) {
-          updateLayers(id, {
-            x: parseInt(element.style.left) + x,
-            y: parseInt(element.style.top) + y,
-          })
+          updateLayers(
+            id,
+            {
+              x: parseInt(element.style.left) + x,
+              y: parseInt(element.style.top) + y,
+            },
+            {
+              x: parseInt(element.style.left),
+              y: parseInt(element.style.top),
+            }
+          )
         }
       })
     },
@@ -45,11 +64,24 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
     setCopyReferences(selection)
   }, [selection])
 
+  const handleUndo = useCallback(() => {
+    undo()
+  }, [undo])
+
+  const handleRedo = useCallback(() => {
+    redo()
+  }, [redo])
+
   const handlePaste = useCallback(() => {
-    if (!copyReferences) return
-    alert(copyReferences)
+    if (!copyReferences || copyReferences.length === 0) return
+    cloneComponent({
+      variables: {
+        componentId: copyReferences[0],
+        projectId,
+      },
+    })
     setCopyReferences(undefined)
-  }, [copyReferences])
+  }, [cloneComponent, copyReferences, projectId])
 
   const handleClearSelection = useCallback(() => {
     setSelection()
@@ -72,6 +104,16 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
             handlePaste()
           }
           break
+        case 'z':
+          if (e.ctrlKey) {
+            handleUndo()
+          }
+          break
+        case 'y':
+          if (e.ctrlKey) {
+            handleRedo()
+          }
+          break
 
         case RIGHT_ARROW:
           handleMove({ x: e.shiftKey ? 10 : 1, y: 0 })
@@ -92,7 +134,15 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
           console.log(key)
       }
     },
-    [handleClearSelection, handleCopy, handleDelete, handleMove, handlePaste]
+    [
+      handleClearSelection,
+      handleCopy,
+      handleDelete,
+      handleMove,
+      handlePaste,
+      handleRedo,
+      handleUndo,
+    ]
   )
 
   useEffect(() => {

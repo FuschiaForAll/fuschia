@@ -1,4 +1,11 @@
 {
+  "ignore": ["core-js"],
+  "overrides": [
+    {
+      "test": "./node_modules",
+      "sourceType": "unambiguous"
+    }
+  ],
   "presets": [
     [
       "@babel/env",

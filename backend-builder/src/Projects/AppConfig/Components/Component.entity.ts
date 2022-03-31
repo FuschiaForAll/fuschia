@@ -40,9 +40,9 @@ export class DataSource {
   @Property()
   type!: string;
 
-  @Field((type) => [String])
+  @Field((type) => [Object])
   @Property({ default: [] })
-  variables!: string[];
+  variables!: Object[];
 }
 
 @index({ parent: 1 })
@@ -90,6 +90,10 @@ export class Component {
   @Field((type) => Object, { nullable: true })
   @Property()
   props?: Object;
+
+  @Field((type) => Object, { nullable: true })
+  @Property()
+  data?: Object;
 
   @Field((type) => Component, { nullable: true })
   @Property({ ref: () => Component })

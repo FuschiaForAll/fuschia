@@ -4,12 +4,8 @@ import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import { Color, SketchPicker } from 'react-color'
 import Box from '@mui/material/Box'
 import Popper from '@mui/material/Popper'
-import MuiSelect from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
 import TextInputBinding from '../../../Shared/TextInputBinding'
-
+import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
 export type StringEditorProps = Props<StringSchema, string>
 
 const ColorPicker = ({
@@ -64,26 +60,15 @@ const ColorPicker = ({
 const StringEditor = function StringEditor(props: StringEditorProps) {
   if (props.schema.enum) {
     return (
-      <FormControl
-        fullWidth={true}
-        sx={{ marginTop: '0.5em', marginBottom: '0.5em' }}
-      >
-        <InputLabel id={`select-${props.schema.title || 'undefined'}-label`}>
-          {props.schema.title}
-        </InputLabel>
-        <MuiSelect
-          labelId={`select-${props.schema.title || 'undefined'}-label`}
-          label={props.schema.title}
-          defaultValue={props.initialValue as string}
-          onChange={e => props.updateValue(e.target.value, true)}
-        >
-          {props.schema.enum.map(item => (
-            <MenuItem key={item} value={item}>
-              {item}
-            </MenuItem>
-          ))}
-        </MuiSelect>
-      </FormControl>
+      <LabeledSelect
+        label={props.schema.title || ''}
+        selectedValue={props.initialValue as string}
+        onChange={e => props.updateValue(e.target.value, true)}
+        options={props.schema.enum.map(item => ({
+          label: item,
+          value: item,
+        }))}
+      />
     )
   }
   switch (props.schema.format) {
@@ -113,7 +98,7 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
           <div style={{ fontSize: '0.75rem' }}>{props.schema.title}</div>
           <TextInputBinding
             componentId={props.componentId}
-            initialValue={props.initialValue}
+            initialValue={props.initialValue as any}
             onChange={value => {
               props.updateValue(value, true)
             }}

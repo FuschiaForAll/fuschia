@@ -28,6 +28,11 @@
           "type": "string",
           "default": "#303030",
           "format": "color"
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "number",
+          "default": 5
         }
       }
     }

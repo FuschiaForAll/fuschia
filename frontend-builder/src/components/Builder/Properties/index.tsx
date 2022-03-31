@@ -3,15 +3,19 @@ import React, { useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Editor from './Editors/Editor'
 import {
+  GetProjectDocument,
   useGetComponentQuery,
   useGetProjectQuery,
-  useUpdateComponentMutation,
+  useUpdateAppConfigMutation,
 } from '../../../generated/graphql'
 import { Schema } from '@fuchsia/types'
 import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
+import { useUpdateComponent } from '../../../utils/hooks'
+import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
+import { gql } from '@apollo/client'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -38,12 +42,14 @@ const cardStyles = {
   display: 'flex',
   flexDirection: 'column',
   pointerEvents: 'all',
+  overflowY: 'auto',
+  overflowX: 'hidden',
 }
 
 function Properties(props: { schema: Schema; elementId: string }) {
   let { projectId } = useParams<{ projectId: string }>()
   const [value, setValue] = useState(0)
-  const [updateComponent] = useUpdateComponentMutation()
+  const { updateComponent, updateComponentProps } = useUpdateComponent()
   const { data: projectData } = useGetProjectQuery({
     variables: {
       projectId,
@@ -53,6 +59,18 @@ function Properties(props: { schema: Schema; elementId: string }) {
     variables: {
       componentId: props.elementId,
     },
+  })
+  const [updateAppConfig] = useUpdateAppConfigMutation({
+    refetchQueries: [
+      {
+        query: gql`
+          ${GetProjectDocument}
+        `,
+        variables: {
+          projectId,
+        },
+      },
+    ],
   })
   function getReference(name: string) {
     if (props.schema.definitions) {
@@ -73,17 +91,40 @@ function Properties(props: { schema: Schema; elementId: string }) {
         value={componentData.getComponent.name}
         onChange={e => {
           const newName = e.target.value
-          updateComponent({
-            variables: {
-              componentId: props.elementId,
-              componentInput: {
-                name: newName,
-              },
+          updateComponent(
+            props.elementId,
+            {
+              name: newName,
             },
-          })
+            {
+              name: componentData?.getComponent?.name,
+            }
+          )
         }}
       />
-      <div style={{ marginTop: '10px' }}>
+      {componentData.getComponent.isRootElement && (
+        <LabeledCheckbox
+          label="Welcome Screen?"
+          checked={
+            projectData?.getProject.appConfig.appEntryComponentId ===
+            props.elementId
+          }
+          onChange={e => {
+            const value = e.target.checked
+            if (value === true) {
+              updateAppConfig({
+                variables: {
+                  projectId,
+                  appConfig: {
+                    appEntryComponentId: props.elementId,
+                  },
+                },
+              })
+            }
+          }}
+        />
+      )}
+      <div style={{ marginTop: '10px', marginBottom: '10px' }}>
         <span
           onClick={() => setValue(0)}
           style={{
@@ -124,14 +165,13 @@ function Properties(props: { schema: Schema; elementId: string }) {
             JSON.stringify(componentData.getComponent.props)
           )}
           updateValue={(value, isValid) => {
-            updateComponent({
-              variables: {
-                componentId: props.elementId,
-                componentInput: {
-                  props: value,
-                },
-              },
-            })
+            if (value) {
+              updateComponentProps(
+                props.elementId,
+                value,
+                componentData?.getComponent?.props
+              )
+            }
           }}
           getReference={getReference}
           required={true}
@@ -159,7 +199,11 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
   props
 ) {
   return (
-    <Wrapper onClick={e => e.stopPropagation()}>
+    <Wrapper
+      onClick={e => e.stopPropagation()}
+      onWheel={e => e.stopPropagation()}
+      onKeyDown={e => e.stopPropagation()}
+    >
       <Inner>
         <Paper elevation={12} sx={cardStyles}>
           <span>{props.schema.title}</span>

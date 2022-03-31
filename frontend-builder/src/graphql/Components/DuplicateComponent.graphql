@@ -1,0 +1,3 @@
+mutation DuplicateComponent($componentId: ObjectId!, $projectId: ObjectId!) {
+  duplicateComponent(componentId: $componentId, projectId: $projectId)
+}

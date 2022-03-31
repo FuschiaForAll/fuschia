@@ -1,0 +1,37 @@
+{
+  "component": "action",
+  "type": "function",
+  "title": "CONDITIONAL",
+  "label": "Do something conditionally...",
+  "properties": {
+    "componentId": {
+      "type": "string"
+    },
+    "initialValue": {
+      "designer": true,
+      "type": "object"
+    },
+    "onUpdate": {
+      "type": "function",
+      "arguments": [
+        {
+          "type": "object"
+        }
+      ],
+      "designer": true
+    },
+    "screens": {
+      "type": "array",
+      "format": "rootElements"
+    },
+    "navigator": {
+      "type": "function",
+      "arguments": [
+        {
+          "type": "string",
+          "label": "Navigate To..."
+        }
+      ]
+    }
+  }
+}
