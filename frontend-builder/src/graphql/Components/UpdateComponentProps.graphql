@@ -1,0 +1,6 @@
+#import "./Component.fragment.graphql"
+mutation UpdateComponentProps($componentId: ObjectId!, $props: JSONObject!) {
+  updateComponentProps(componentId: $componentId, props: $props) {
+    ...ComponentFragment
+  }
+}

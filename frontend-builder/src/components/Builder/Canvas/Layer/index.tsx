@@ -177,11 +177,10 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
-function convertDraftJSBindings(value: string) {
+function convertDraftJSBindings(value: any) {
   try {
-    const jsonValue = JSON.parse(value)
-    if (jsonValue.blocks) {
-      return jsonValue.blocks.map((block: any) => block.text).join('\n')
+    if (value.blocks) {
+      return value.blocks.map((block: any) => block.text).join('\n')
     }
   } catch {}
   return value
@@ -252,24 +251,47 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
       )}
       <WrapperType layer={layer} selected={selected} onClick={onSelect}>
         {layer.isContainer ? (
-          <InlineComponent
-            id={`component=${layer._id}`}
-            {...props}
-            style={{
-              ...props.style,
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-            }}
-          >
-            {layer.children?.map(child => (
-              <LayerSub
-                layer={child}
-                selection={selection}
-                onSelect={onSelect}
-              />
-            ))}
-          </InlineComponent>
+          schema.type === 'array' ? (
+            [0, 1, 2].map(item => (
+              <InlineComponent
+                id={`component=${layer._id}-${item}`}
+                {...props}
+                style={{
+                  ...props.style,
+                  width: '100%',
+                  height: '100%',
+                  opacity: item ? 0.2 : 1,
+                }}
+              >
+                {layer.children?.map(child => (
+                  <LayerSub
+                    layer={child}
+                    selection={selection}
+                    onSelect={onSelect}
+                  />
+                ))}
+              </InlineComponent>
+            ))
+          ) : (
+            <InlineComponent
+              id={`component=${layer._id}`}
+              {...props}
+              style={{
+                ...props.style,
+                width: '100%',
+                height: '100%',
+                position: 'absolute',
+              }}
+            >
+              {layer.children?.map(child => (
+                <LayerSub
+                  layer={child}
+                  selection={selection}
+                  onSelect={onSelect}
+                />
+              ))}
+            </InlineComponent>
+          )
         ) : (
           <div>
             <div

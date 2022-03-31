@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import {
+  GetComponentDocument,
   GetComponentQuery,
   useAddParameterMutation,
   useGetEntityModelQuery,
@@ -7,29 +8,41 @@ import {
   useUpdateComponentMutation,
   // useUpdateParameterMutation,
 } from '../../../generated/graphql'
+import styled from '@emotion/styled'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { useParams } from 'react-router-dom'
+import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
+import { OutlinedButton } from '../../Shared/primitives/Button'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { IconButton } from '@mui/material'
+import TextInputBinding from '../../Shared/TextInputBinding'
+import { gql } from '@apollo/client'
 
-interface PrimitiveFilter {
-  key: string
-  value: string | boolean | number
+export interface Expression {
+  operator: string
+  operand?: string
 }
-interface NotFilter {
+
+export interface PrimitiveFilter {
+  key: string
+  value: string | boolean | number | Expression
+}
+export interface NotFilter {
   key: '$not'
   value: Filter
 }
 
-interface AndFilter {
+export interface AndFilter {
   key: '$and'
   value: Filter[]
 }
 
-interface OrFilter {
+export interface OrFilter {
   key: '$or'
   value: Filter[]
 }
 
-type Filter = AndFilter | OrFilter | NotFilter | PrimitiveFilter
+export type Filter = AndFilter | OrFilter | NotFilter | PrimitiveFilter
 
 interface Fields {
   _id: any
@@ -41,7 +54,7 @@ interface Fields {
   nullable: boolean
   dataType: string
 }
-function FilterSelect({
+export function FilterSelect({
   fields,
   value,
   onChange,
@@ -51,39 +64,57 @@ function FilterSelect({
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void
 }) {
   return (
-    <select onChange={onChange}>
-      {fields
-        .filter(f => !f.connection && !f.isHashed)
-        .map(field => (
-          <option
-            key={field._id}
-            value={field._id}
-            selected={field.fieldName === value}
-          >
-            {field.fieldName}
-          </option>
-        ))}
-      <option value="$and" selected={value === '$and'}>
-        AND
-      </option>
-      <option value="$or" selected={value === '$or'}>
-        OR
-      </option>
-      <option value="$not" selected={value === '$not'}>
-        NOT
-      </option>
-    </select>
+    <LabeledSelect
+      label="Filter"
+      onChange={onChange}
+      selectedValue={value}
+      options={[
+        {
+          label: 'ID',
+          value: '_id',
+        },
+        ...fields
+          .filter(f => !f.isHashed)
+          .map(field => ({
+            label: field.fieldName,
+            value: field._id,
+          })),
+        {
+          label: '$and',
+          value: '$and',
+        },
+        {
+          label: '$or',
+          value: '$or',
+        },
+        {
+          label: '$not',
+          value: '$not',
+        },
+      ]}
+    />
   )
 }
 
-function ModelInputFilter({
+const FilterWrapper = styled.div`
+  background: var(--canvasBg);
+  border: 1px dotted var(--text);
+  border-radius: 0.5em;
+  padding: 0.5em;
+`
+
+export function ModelInputFilter({
+  componentId,
   filter,
   fields,
   onChange,
+  onDelete,
 }: {
   filter: Filter
   fields: Fields[]
+  onDelete: () => void
   onChange: (newValue: any) => void
+  componentId: string
 }) {
   function localChange(newValue: any) {
     onChange({
@@ -101,24 +132,21 @@ function ModelInputFilter({
                 <ModelInputFilter
                   filter={f}
                   fields={fields}
+                  componentId={componentId}
                   onChange={value => {
                     const newFilter = { ...filter } as AndFilter
                     newFilter.value[index] = value
                     localChange(newFilter)
                   }}
-                />
-                <button
-                  onClick={() => {
+                  onDelete={() => {
                     const newFilter = { ...filter } as AndFilter
                     newFilter.value.splice(index, 1)
                     localChange(newFilter)
                   }}
-                >
-                  Delete
-                </button>
+                />
               </>
             ))}
-            <button
+            <OutlinedButton
               onClick={() => {
                 const newFilter = (filter as AndFilter).value.concat({
                   key: '$and',
@@ -131,7 +159,7 @@ function ModelInputFilter({
               }}
             >
               Add New
-            </button>
+            </OutlinedButton>
           </>
         )
       case '$or':
@@ -140,6 +168,7 @@ function ModelInputFilter({
             {(filter as OrFilter).value.map((f, index) => (
               <>
                 <ModelInputFilter
+                  componentId={componentId}
                   filter={f}
                   fields={fields}
                   onChange={value => {
@@ -147,20 +176,15 @@ function ModelInputFilter({
                     newFilter.value[index] = value
                     localChange(newFilter)
                   }}
-                />
-
-                <button
-                  onClick={() => {
+                  onDelete={() => {
                     const newFilter = { ...filter } as OrFilter
                     newFilter.value.splice(index, 1)
                     localChange(newFilter)
                   }}
-                >
-                  Delete
-                </button>
+                />
               </>
             ))}
-            <button
+            <OutlinedButton
               onClick={() => {
                 const newFilter = (filter as OrFilter).value.concat({
                   key: '$or',
@@ -173,12 +197,13 @@ function ModelInputFilter({
               }}
             >
               Add New
-            </button>
+            </OutlinedButton>
           </>
         )
       case '$not':
         return (
           <ModelInputFilter
+            componentId={componentId}
             filter={(filter as NotFilter).value}
             fields={fields}
             onChange={value => {
@@ -187,17 +212,18 @@ function ModelInputFilter({
                 value: value,
               })
             }}
+            onDelete={onDelete}
           />
         )
       default:
         return (
-          <input
-            type="text"
-            value={`${filter.value}`}
-            onChange={e => {
+          <TextInputBinding
+            componentId={componentId}
+            initialValue={filter.value as any}
+            onChange={value => {
               localChange({
                 key: filter.key,
-                value: e.target.value,
+                value,
               })
             }}
           />
@@ -205,7 +231,7 @@ function ModelInputFilter({
     }
   }
   return (
-    <div style={{ border: 'solid 1px black', margin: 5 }}>
+    <FilterWrapper>
       <div>
         <FilterSelect
           fields={fields}
@@ -222,22 +248,27 @@ function ModelInputFilter({
             onChange({ key: e.target.value, value })
           }}
         />
+        <IconButton onClick={onDelete}>
+          <DeleteIcon />
+        </IconButton>
         {getFilterValue(filter)}
       </div>
-    </div>
+    </FilterWrapper>
   )
 }
 
-function FilterBuilder({
+export function FilterBuilder({
+  componentId,
   entityModelId,
   models,
   filter,
   onDelete,
   onFilterUpdate,
 }: {
+  componentId: string
   entityModelId: string
   models: Array<{ _id: string; name: string }>
-  filter: { type: string; variables: string[] }
+  filter: { type: string; variables: Filter[] }
   onDelete: () => {}
   onFilterUpdate: (newFilter: any) => void
 }) {
@@ -261,38 +292,40 @@ function FilterBuilder({
   return (
     <div>
       <span>{extractModelName(filter.type)}</span>
-      <button
-        onClick={() => {
-          onDelete()
-        }}
-      >
-        X
-      </button>
+      <IconButton onClick={onDelete}>
+        <DeleteIcon />
+      </IconButton>
       {filter.variables.map((variable, index) => (
         <ModelInputFilter
-          filter={JSON.parse(variable) as Filter}
+          componentId={componentId}
+          filter={variable}
           fields={entityModelData.getEntityModel!.fields}
           onChange={newValue => {
             const update = { ...filter }
             update.variables = [...update.variables]
-            update.variables[index] = JSON.stringify(newValue)
+            update.variables[index] = newValue
             onFilterUpdate(update)
+          }}
+          onDelete={() => {
+            const newFilter = { ...filter }
+            newFilter.variables.splice(index, 1)
+            onFilterUpdate(newFilter)
           }}
         />
       ))}
-      <button
+      <OutlinedButton
         onClick={() => {
           onFilterUpdate({
             ...filter,
             variables: [
               ...filter.variables,
-              JSON.stringify({ key: '$and', value: [] }),
+              { key: '$and', value: [] as any[] },
             ],
           })
         }}
       >
         Add filter
-      </button>
+      </OutlinedButton>
     </div>
   )
 }
@@ -305,7 +338,7 @@ function ContainerParameterEditor({
 }: {
   componentId: string
   parameters: Array<{ _id: string; entityId: string; name: string }>
-  fetched: Array<{ type: string; variables: string[] }>
+  fetched: Array<{ type: string; variables: Filter[] }>
   models: Array<{ _id: string; name: string }>
 }) {
   const [newParameter, setNewParameter] = useState('')
@@ -318,6 +351,7 @@ function ContainerParameterEditor({
       )}
       {fetched.map((f, index) => (
         <FilterBuilder
+          componentId={componentId}
           entityModelId={f.type}
           filter={{ ...f }}
           models={models}
@@ -356,20 +390,20 @@ function ContainerParameterEditor({
           }}
         />
       ))}
-      <select
-        value={newParameter}
+      <LabeledSelect
+        label="Entity"
+        selectedValue={newParameter}
+        options={models.map(modelType => ({
+          label: modelType.name,
+          value: modelType._id,
+        }))}
         onChange={e => {
           const type = e.target.value
           setNewParameter(type)
         }}
-      >
-        {models.map(modelType => (
-          <option key={modelType._id} value={modelType._id}>
-            {modelType.name}
-          </option>
-        ))}
-      </select>
-      <button
+      />
+
+      <OutlinedButton
         onClick={async () => {
           await updateComponent({
             variables: {
@@ -392,7 +426,7 @@ function ContainerParameterEditor({
         }}
       >
         Add Data
-      </button>
+      </OutlinedButton>
     </div>
   )
 }
@@ -409,8 +443,30 @@ function RootParameterEditor({
   models: Array<{ _id: string; name: string }>
 }) {
   const [newParameter, setNewParameter] = useState('')
-  const [addParameter] = useAddParameterMutation()
-  const [removeParameter] = useRemoveParameterMutation()
+  const [addParameter] = useAddParameterMutation({
+    refetchQueries: [
+      {
+        query: gql`
+          ${GetComponentDocument}
+        `,
+        variables: {
+          componentId,
+        },
+      },
+    ],
+  })
+  const [removeParameter] = useRemoveParameterMutation({
+    refetchQueries: [
+      {
+        query: gql`
+          ${GetComponentDocument}
+        `,
+        variables: {
+          componentId,
+        },
+      },
+    ],
+  })
   // const [updatedParameter] = useUpdateParameterMutation()
 
   function extractModelName(parameter: string) {
@@ -435,7 +491,7 @@ function RootParameterEditor({
       {parameters.map(param => (
         <div>
           <span>{extractModelName(param.entityId)}</span>
-          <button
+          <IconButton
             onClick={() => {
               removeParameter({
                 variables: {
@@ -445,24 +501,23 @@ function RootParameterEditor({
               })
             }}
           >
-            X
-          </button>
+            <DeleteIcon />
+          </IconButton>
         </div>
       ))}
-      <select
-        value={newParameter}
+      <LabeledSelect
+        label="Data type"
+        selectedValue={newParameter}
         onChange={e => {
           const type = e.target.value
           setNewParameter(type)
         }}
-      >
-        {models.map(modelType => (
-          <option key={modelType._id} value={modelType._id}>
-            {modelType.name}
-          </option>
-        ))}
-      </select>
-      <button
+        options={models.map(modelType => ({
+          label: modelType.name,
+          value: modelType._id,
+        }))}
+      />
+      <OutlinedButton
         onClick={async () => {
           await addParameter({
             variables: {
@@ -477,7 +532,7 @@ function RootParameterEditor({
         }}
       >
         Add Data
-      </button>
+      </OutlinedButton>
     </div>
   )
 }
@@ -510,7 +565,9 @@ const DataSources = function DataSources({
             models={models}
             componentId={componentId}
             parameters={componentQuery.getComponent.parameters || []}
-            fetched={componentQuery.getComponent.fetched || []}
+            fetched={JSON.parse(
+              JSON.stringify(componentQuery.getComponent.fetched || [])
+            )}
           />
         )}
     </div>

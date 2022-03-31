@@ -18,6 +18,10 @@ type AppConfig {
   authConfig: Auth!
 }
 
+input AppConfigInput {
+  appEntryComponentId: ObjectId
+}
+
 type Auth {
   _id: ObjectId!
   allowUnauthenticatedUsers: Boolean!
@@ -63,6 +67,11 @@ input AuthInput {
   tableId: String
   usernameCaseSensitive: Boolean
   usernameFieldId: String
+}
+
+type BindingContext {
+  menu: [MenuStructure!]!
+  structure: [DataStructure!]!
 }
 
 type Component {
@@ -139,12 +148,25 @@ input DataFieldInput {
 
 type DataSource {
   type: String!
-  variables: [String!]!
+  variables: [JSONObject!]!
 }
 
 input DataSourceInput {
   type: String!
-  variables: [String!]!
+  variables: [JSONObject!]!
+}
+
+type DataStructure {
+  _id: String!
+  fields: [DataStructureField!]!
+  name: String!
+}
+
+type DataStructureField {
+  dataType: String!
+  hasSubMenu: Boolean!
+  key: String!
+  name: String!
 }
 
 """
@@ -198,6 +220,13 @@ type LanguageTranslation {
   translations: [Translation!]!
 }
 
+type MenuStructure {
+  entity: String!
+  hasSubMenu: Boolean!
+  label: String!
+  source: String!
+}
+
 type Mutation {
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
@@ -208,6 +237,7 @@ type Mutation {
   createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
   createOrganization(organization: OrganizationInput!): Organization!
+  createPackage(packageInput: PackageInput!): Package!
   createProject(project: ProjectInput!): Project!
   createQuery: Boolean
   createRelationship: Boolean
@@ -227,10 +257,13 @@ type Mutation {
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
+  publishPackageComponents(componentInput: [PackageComponentInput!]!): [PackageComponent!]!
   register(email: String!, password: String!): UserResponse!
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
+  updateAppConfig(appConfig: AppConfigInput!, projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
+  updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component!
   updateEntityModel: Boolean
   updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
@@ -257,6 +290,55 @@ input OrganizationInput {
   name: String!
 }
 
+type Package {
+  _id: ObjectId!
+  authorId: ObjectId!
+  bundle: String!
+  components: [PackageComponent!]!
+  packageName: String!
+  repositoryUrl: String!
+  scope: PackageScope!
+  version: String!
+}
+
+type PackageComponent {
+  _id: ObjectId!
+  defaultValue: JSONObject!
+  icon: String!
+  isContainer: Boolean!
+  isRootElement: Boolean!
+  name: String!
+  schema: JSONObject!
+}
+
+input PackageComponentInput {
+  defaultValue: JSONObject!
+  icon: String!
+  isContainer: Boolean!
+  isRootElement: Boolean!
+  name: String!
+  schema: JSONObject!
+}
+
+input PackageInput {
+  authorId: ObjectId!
+  bundle: String!
+  components: [PackageComponentInput!]!
+  packageName: String!
+  repositoryUrl: String!
+  scope: PackageScope!
+  version: String!
+}
+
+"""
+The scope of the package. Globals are default available to everyone, Public are usable by everyone, Private is usable by permissions
+"""
+enum PackageScope {
+  Global
+  Private
+  Public
+}
+
 type Project {
   _id: ObjectId!
   appConfig: AppConfig!
@@ -276,11 +358,14 @@ input ProjectInput {
 
 type Query {
   getAuth(projectId: ObjectId!): Auth
+  getBindingTree(componentId: ObjectId!, projectId: ObjectId!): BindingContext!
   getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
   getDataContext(componentId: ObjectId!): [DataContext!]!
   getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
+  getPackageComponents: [PackageComponent!]!
+  getPackages: [Package!]!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean

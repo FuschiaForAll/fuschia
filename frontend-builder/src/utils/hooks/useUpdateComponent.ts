@@ -4,6 +4,7 @@ import {
   ComponentInput,
   GetComponentsDocument,
   useUpdateComponentMutation,
+  useUpdateComponentPropsMutation,
 } from '../../generated/graphql'
 import { useDesignerHistory } from './useDesignerHistory'
 
@@ -13,14 +14,50 @@ type UpdateFunc = (
   oldvalue: ComponentInput
 ) => void
 
-export const useUpdateComponent = (): UpdateFunc => {
+type UpdatePropsFunc = (id: string, newvalue: Object, oldvalue: Object) => void
+
+interface useUpdateComponentProps {
+  updateComponent: UpdateFunc
+  updateComponentProps: UpdatePropsFunc
+}
+
+export const useUpdateComponent = (): useUpdateComponentProps => {
   const { projectId } = useParams()
   const { performAction } = useDesignerHistory()
+  const [updateComponentProps] = useUpdateComponentPropsMutation()
   const [updateComponent] = useUpdateComponentMutation({
     refetchQueries: [
       { query: GetComponentsDocument, variables: { projectId } },
     ],
   })
+
+  const updatePropFunc = useCallback<UpdateFunc>(
+    (id, newvalue, oldvalue) => {
+      performAction({
+        up: () =>
+          updateComponentProps({
+            variables: {
+              componentId: id,
+              props: newvalue,
+            },
+          }),
+        down: () =>
+          updateComponentProps({
+            variables: {
+              componentId: id,
+              props: oldvalue,
+            },
+          }),
+      })
+      updateComponentProps({
+        variables: {
+          componentId: id,
+          props: newvalue,
+        },
+      })
+    },
+    [performAction, updateComponentProps]
+  )
 
   const updateFunc = useCallback<UpdateFunc>(
     (id, newvalue, oldvalue) => {
@@ -50,5 +87,5 @@ export const useUpdateComponent = (): UpdateFunc => {
     [performAction, updateComponent]
   )
 
-  return updateFunc
+  return { updateComponent: updateFunc, updateComponentProps: updatePropFunc }
 }

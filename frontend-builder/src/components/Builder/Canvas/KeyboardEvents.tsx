@@ -22,7 +22,7 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
   const { projectId } = useParams<{ projectId: string }>()
   const { selection, setSelection } = useSelection()
   const deleteLayers = useDeleteComponents()
-  const updateLayers = useUpdateComponent()
+  const { updateComponent: updateLayers } = useUpdateComponent()
   const [cloneComponent] = useDuplicateComponentMutation({
     refetchQueries: [
       { query: GetComponentsDocument, variables: { projectId } },

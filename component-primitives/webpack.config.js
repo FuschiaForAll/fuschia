@@ -1,37 +1,39 @@
-const path = require('path');
-const webpack = require('webpack');
+const path = require("path");
+const webpack = require("webpack");
 module.exports = {
-  entry: path.resolve(__dirname, './src/lib/index.js'),
-  mode: 'production',
+  entry: path.resolve(__dirname, "./src/lib/index.js"),
+  mode: "production",
   module: {
     rules: [
       {
         test: /\.js$/,
-        exclude: /node_modules/,
         use: {
-          loader: 'babel-loader',
+          loader: "babel-loader",
           options: {
-            presets: ["module:metro-react-native-babel-preset"],
-            plugins: ["react-native-web"],
+            presets: ["@babel/preset-react", "@babel/preset-env"],
+            plugins: [
+              "@babel/plugin-proposal-class-properties",
+              "react-native-web",
+            ],
           },
-        }
+        },
       },
-    ]
+    ],
   },
   externals: {
-    react: 'React',
-    'react-native': 'ReactNative',
+    react: "React",
+    "react-native": "ReactNative",
   },
   resolve: {
-    modules: ['node_modules'],
+    modules: ["node_modules"],
     extensions: [
-      '.web.js',
-      '.js',
-      '.json',
-      '.web.jsx',
-      '.jsx',
-      '.web.react.js',
-      '.react.js',
+      ".web.js",
+      ".js",
+      ".json",
+      ".web.jsx",
+      ".jsx",
+      ".web.react.js",
+      ".react.js",
     ],
   },
   plugins: [
@@ -40,9 +42,9 @@ module.exports = {
     }),
   ],
   output: {
-    path: path.resolve(__dirname, './public'),
-    filename: 'bundle.js',
-    library: '@fuchsia-for-all/primitives',
-    libraryTarget: 'window',
-  }
-}
+    path: path.resolve(__dirname, "./public"),
+    filename: "bundle.js",
+    library: "@fuchsia-for-all/primitives",
+    libraryTarget: "window",
+  },
+};

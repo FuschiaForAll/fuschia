@@ -103,7 +103,9 @@ function Viewer(props: {
         currentActions.forEach(action => {
           switch (action.type) {
             case 'NAVIGATE':
-              props.navigate(action.destination)
+              if (action.destination) {
+                props.navigate(action.destination)
+              }
           }
         })
       }

@@ -58,7 +58,7 @@ export const useDragDrop = (
   const { projectId } = useParams()
   const createComponent = useInsertComponent()
   const deleteComponents = useDeleteComponents()
-  const updateComponent = useUpdateComponent()
+  const { updateComponent } = useUpdateComponent()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     let interaction: Interactable
@@ -76,13 +76,18 @@ export const useDragDrop = (
               inertia: false,
               autoScroll: true,
               listeners: {
-                start: event => {
+                start: (event: InteractEvent) => {
                   /**
                    * we are going to move the element to the root of the drag holder
                    * so that it will be rendered on top of the other objects to maintain
                    * visibility
                    */
+                  const boundingClient = event.target.getBoundingClientRect()
+
                   const target = event.target
+                  if (!target) {
+                    return
+                  }
                   event.target.dataset['originaltop'] = event.target.style.top
                   event.target.dataset['originalleft'] = event.target.style.left
                   updateAttribues(target, 0, 0)
@@ -92,23 +97,25 @@ export const useDragDrop = (
                   ) {
                     return
                   }
-                  target.parentElement.id = 'drag-and-drop-origin'
-                  document.getElementById('drag-holder')?.appendChild(target)
-                  const z = parseFloat(
-                    document
-                      .getElementById('objectCollection')
-                      ?.getAttribute('data-z') || '1'
-                  )
-                  const [canvasX, canvasY] = getDataAttributes(
-                    document.getElementById('objectCollection')!
-                  )
-                  updateAttribues(
-                    target,
-                    (event.x0 - canvasX) / z,
-                    (event.y0 - canvasY) / z
-                  )
-                  target.style.left = 0
-                  target.style.top = 0
+                  if (target.parentElement) {
+                    target.parentElement.id = 'drag-and-drop-origin'
+                    document.getElementById('drag-holder')?.appendChild(target)
+                    const z = parseFloat(
+                      document
+                        .getElementById('objectCollection')
+                        ?.getAttribute('data-z') || '1'
+                    )
+                    const [canvasX, canvasY] = getDataAttributes(
+                      document.getElementById('objectCollection')!
+                    )
+                    updateAttribues(
+                      target,
+                      (boundingClient.x - canvasX) / z,
+                      (boundingClient.y - canvasY) / z
+                    )
+                    target.style.left = `0px`
+                    target.style.top = `0px`
+                  }
                 },
                 move: event => {
                   const [x, y] = getDataAttributes(event.target)

@@ -40,9 +40,9 @@ export class DataSource {
   @Property()
   type!: string;
 
-  @Field((type) => [String])
+  @Field((type) => [Object])
   @Property({ default: [] })
-  variables!: string[];
+  variables!: Object[];
 }
 
 @index({ parent: 1 })

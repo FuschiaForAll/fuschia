@@ -1,0 +1,14 @@
+{
+  "component": "action",
+  "type": "function",
+  "title": "CONDITIONAL",
+  "label": "Do something conditionally...",
+  "properties": {
+    "type": {},
+    "if": {
+      "type": "boolean"
+    },
+    "then": {},
+    "else": {}
+  }
+}

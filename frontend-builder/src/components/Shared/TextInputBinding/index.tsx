@@ -7,6 +7,7 @@ import {
   Entity,
   Modifier,
   CompositeDecorator,
+  RawDraftContentState,
 } from 'draft-js'
 import styled from '@emotion/styled'
 import DataBinder, {
@@ -108,12 +109,12 @@ function findPlaceholders(contentBlock: any, callback: any) {
 }
 
 interface TextInputBindingProps {
-  initialValue: string
-  onChange: (value: string) => void
+  initialValue?: EditorState
+  onChange: (value: any) => void
   componentId: string
 }
 
-interface Component {
+export interface Component {
   _id: any
   package: string
   type: string
@@ -146,10 +147,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       )
     }
     const [editorState, setEditorState] = React.useState(
-      EditorState.createWithContent(
-        convertFromRaw(convertInitialContent(initialValue)),
-        decorator
-      )
+      EditorState.createEmpty()
     )
     let { projectId } = useParams<{ projectId: string }>()
     const [modelStructures, setModelStructures] = useState<{
@@ -198,8 +196,17 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
               }))
             )
         )
+
         // find all components with accessible data
         const structure = [] as MenuStructure[]
+        if (projectData?.getProject.appConfig.authConfig.tableId) {
+          structure.push({
+            label: 'Current User',
+            hasSubMenu: true,
+            entity: projectData?.getProject.appConfig.authConfig.tableId,
+            source: 'CurrentUser',
+          })
+        }
         structure.push({
           label: 'Inputs',
           hasSubMenu: true,
@@ -259,14 +266,22 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           modelStructure[item._id] = {
             _id: item._id,
             name: item.name,
-            fields: item.fields
-              .filter(field => !field.isList) // don't add lists for now
-              .map(field => ({
-                dataType: field.dataType,
-                hasSubMenu: !!field.connection,
-                key: field._id,
-                name: field.fieldName,
-              })),
+            fields: [
+              {
+                dataType: 'string',
+                hasSubMenu: false,
+                key: '_id',
+                name: 'ID',
+              },
+              ...item.fields
+                .filter(field => !field.isList) // don't add lists for now
+                .map(field => ({
+                  dataType: field.dataType,
+                  hasSubMenu: !!field.connection,
+                  key: field._id,
+                  name: field.fieldName,
+                })),
+            ],
           }
         })
         setModelStructures(modelStructure || {})
@@ -308,9 +323,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           }}
           editorState={editorState}
           onChange={e => {
-            onChange(
-              JSON.stringify(convertToRaw(editorState.getCurrentContent()))
-            )
+            onChange(convertToRaw(editorState.getCurrentContent()))
             setEditorState(e)
           }}
           ref={ref}

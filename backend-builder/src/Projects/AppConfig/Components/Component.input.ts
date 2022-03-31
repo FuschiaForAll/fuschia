@@ -17,8 +17,8 @@ export class DataSourceInput {
   @Field()
   type!: string;
 
-  @Field((type) => [String])
-  variables!: string[];
+  @Field((type) => [Object])
+  variables!: Object[];
 }
 
 @InputType()

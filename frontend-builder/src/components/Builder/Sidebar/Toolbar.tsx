@@ -5,6 +5,7 @@ import { useGetPackagesQuery } from '../../../generated/graphql-packages'
 import { Component } from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
 import { useDragDrop } from '../../../utils/hooks'
+import { ContentState, EditorState } from 'draft-js'
 interface ToolProps {
   defaultLayer: Component & { isRootElement: boolean }
 }
@@ -56,6 +57,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   styles.top = `${
     drag.position[1] - parseFloat(layer.props.style?.height || '0') / 2
   }px`
+
   const props = { ...layer.props }
   // @ts-ignore
   const InlineComponent = window[layer.package].components[layer.type]
@@ -143,6 +145,11 @@ const Toolbar: React.FC = function Toolbar() {
       {packageData &&
         packageData.getPackages.flatMap(_package => {
           return _package.components.map(component => {
+            const { properties } = component.schema
+            // search and update all strings to draftjs
+            function updateProps(property: any) {
+              // EditorState.createWithContent(ContentState.createFromText('Hello'))
+            }
             return (
               <Tool
                 key={component._id}

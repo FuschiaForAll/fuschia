@@ -1,0 +1,56 @@
+{
+  "type": "ui-component",
+  "title": "Checkbox",
+  "icon": "CheckBox",
+  "isRootElement": false,
+  "isContainer": false,
+  "description": "A plain old checkbox",
+  "width": 15,
+  "height": 15,
+  "properties": {
+    "disabled": {
+      "title": "Disabled",
+      "type": "boolean",
+      "default": false
+    },
+    "value": {
+      "title": "Value",
+      "type": "boolean",
+      "default": true
+    },
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 15
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 15
+        },
+        "color": {
+          "title": "Text Color",
+          "type": "string",
+          "format": "color",
+          "default": "#000000"
+        }
+      }
+    },
+    "onValueChange": {
+      "title": "onPress",
+      "type": "function",
+      "arguments": [
+        {
+          "title": "New Value",
+          "type": "boolean"
+        }
+      ],
+      "returnType": "null"
+    }
+  }
+}
