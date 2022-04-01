@@ -156,4 +156,17 @@ export class UserResolver {
       })
     );
   }
+
+  @Mutation(() => Boolean)
+  async resetPassword(
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string
+  ) {
+    throw new Error("Not Implemented");
+  }
+
+  @Mutation(() => Boolean)
+  async forgotPassword(@Arg("email") email: string) {
+    throw new Error("Not Implemented");
+  }
 }

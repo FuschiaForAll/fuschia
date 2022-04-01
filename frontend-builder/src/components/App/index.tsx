@@ -8,6 +8,7 @@ import Projects from '../Projects'
 import NewProject from '../Projects/NewProject'
 import Organizations from '../Settings/Organizations'
 import './App.css'
+import { PrivateRoute } from './PrivateRoute'
 const App: React.FC = function App() {
   const [loaded, setLoaded] = useState(false)
   const { data: packageData } = useGetPackagesQuery({
@@ -28,14 +29,16 @@ const App: React.FC = function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Navigate replace to="/dashboard" />} />
-        <Route path="/project/new" element={<NewProject />} />
-        <Route path="/projects/:projectId/builder/*" element={<Builder />} />
-        <Route path="/projects" element={<Projects />} />
-        <Route path="/organizations" element={<Organizations />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/" element={<Navigate replace to="/dashboard" />} />
+        <Route path="/" element={<PrivateRoute />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/project/new" element={<NewProject />} />
+          <Route path="/projects/:projectId/builder/*" element={<Builder />} />
+          <Route path="/projects" element={<Projects />} />
+          <Route path="/organizations" element={<Organizations />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

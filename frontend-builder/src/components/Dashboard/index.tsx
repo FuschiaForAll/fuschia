@@ -17,6 +17,8 @@ import { LabeledTextInput } from '../Shared/primitives/LabeledTextInput'
 import { useNavigate } from 'react-router-dom'
 import { gql } from '@apollo/client'
 import { Button } from '../Shared/primitives/Button'
+import { useAuth } from '../../utils/hooks/useAuth'
+import { Logout } from '@mui/icons-material'
 
 const DashboardWrapper = styled.div`
   padding: 2em;
@@ -26,6 +28,7 @@ const TabWrapper = styled.div`
   grid-auto-flow: column;
   justify-content: start;
   gap: 2em;
+  align-items: center;
 `
 
 const TabHeader = styled.div<{ selected: boolean }>`
@@ -312,6 +315,7 @@ function Projects({
         <div>All Teams</div>
         {organizationsData?.listOrganizations.map((org, index) => (
           <TabHeader
+            key={index}
             selected={selectedTab === index}
             onClick={() => setSelectedTab(index)}
           >
@@ -391,28 +395,40 @@ function Projects({
 
 const Dashboard: React.FC = function Dashboard() {
   const [selectedTabIndex, setSelectedTabIndex] = useState(0)
+  const { logout } = useAuth()
   return (
     <DashboardWrapper>
-      <TabWrapper>
-        <MainTabHeader
-          selected={selectedTabIndex === 0}
-          onClick={() => setSelectedTabIndex(0)}
-        >
-          Projects
-        </MainTabHeader>
-        <MainTabHeader
-          selected={selectedTabIndex === 1}
-          onClick={() => setSelectedTabIndex(1)}
-        >
-          Account
-        </MainTabHeader>
-        <MainTabHeader
-          selected={selectedTabIndex === 2}
-          onClick={() => setSelectedTabIndex(2)}
-        >
-          Hub
-        </MainTabHeader>
-      </TabWrapper>
+      <div
+        style={{
+          display: 'grid',
+          justifyContent: 'space-between',
+          gridAutoFlow: 'column',
+        }}
+      >
+        <TabWrapper>
+          <MainTabHeader
+            selected={selectedTabIndex === 0}
+            onClick={() => setSelectedTabIndex(0)}
+          >
+            Projects
+          </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 1}
+            onClick={() => setSelectedTabIndex(1)}
+          >
+            Account
+          </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 2}
+            onClick={() => setSelectedTabIndex(2)}
+          >
+            Hub
+          </MainTabHeader>
+        </TabWrapper>
+        <IconButton onClick={logout}>
+          <Logout />
+        </IconButton>
+      </div>
       <SearchBar>
         <SearchIcon />
       </SearchBar>

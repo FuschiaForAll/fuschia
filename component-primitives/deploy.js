@@ -69,17 +69,20 @@ function getPackage() {
 
 (async () => {
   try {
-    const response = await axios.post("http://localhost:4006/graphql", {
-      operationName: "CreatePackage",
-      query: `mutation CreatePackage($packageInput: PackageInput!) {
+    const response = await axios.post(
+      "https://fuchsia.pragmaflowservers.com/graphql",
+      {
+        operationName: "CreatePackage",
+        query: `mutation CreatePackage($packageInput: PackageInput!) {
         createPackage(packageInput: $packageInput) {
           _id
         }
       }`,
-      variables: {
-        packageInput: getPackage(),
-      },
-    });
+        variables: {
+          packageInput: getPackage(),
+        },
+      }
+    );
   } catch (e) {
     throw e;
   }

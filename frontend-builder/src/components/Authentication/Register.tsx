@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { useRegisterMutation } from '../../generated/graphql'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
+import { Button } from '../Shared/primitives/Button'
 import {
   InputAdornment,
   IconButton,
-  Button,
   CircularProgress,
   Link,
 } from '@mui/material'
@@ -53,7 +53,7 @@ const Register: React.FC = function Register() {
             password,
           },
         })
-        navigate('/builder')
+        navigate('/dashboard')
       } catch (err) {
         console.log('Login Error', err)
         setError(true)
@@ -120,12 +120,7 @@ const Register: React.FC = function Register() {
               textAlign: 'center',
             }}
           >
-            <Button
-              disabled={showLoading}
-              type="submit"
-              variant="contained"
-              color="primary"
-            >
+            <Button disabled={showLoading} type="submit" color="primary">
               {showLoading && (
                 <CircularProgress
                   size={12}
@@ -133,7 +128,7 @@ const Register: React.FC = function Register() {
                   style={{ marginRight: '10px' }}
                 />
               )}
-              <span>Log In</span>
+              <span>Register</span>
             </Button>
           </div>
           <LoginBoxFooter>

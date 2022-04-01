@@ -1,14 +1,13 @@
-import React, { FormEvent, useState } from 'react'
-import { useLoginMutation } from '../../generated/graphql'
+import React, { FormEvent, useEffect, useState } from 'react'
 import { Link as RouterLink, useNavigate } from 'react-router-dom'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import {
   InputAdornment,
   IconButton,
-  Button,
   CircularProgress,
   Link,
 } from '@mui/material'
+import { Button } from '../Shared/primitives/Button'
 import {
   LoginTextField,
   WelcomeText,
@@ -17,9 +16,10 @@ import {
 } from './LoginStyles'
 import { isEmail } from '../../utils/validation'
 import styles from './Authentication.module.css'
+import { useAuth } from '../../utils/hooks/useAuth'
 
 const Login: React.FC = function Login() {
-  const [login] = useLoginMutation()
+  const { login, isLoggedIn } = useAuth()
   let navigate = useNavigate()
   const [error, setError] = useState(false)
   const [email, setEmail] = useState<string>('')
@@ -28,7 +28,11 @@ const Login: React.FC = function Login() {
   const [showLoading, setShowLoading] = useState<boolean>(false)
   const [emailError, setEmailError] = useState<boolean>(false)
   const [passwordError, setPasswordError] = useState<boolean>(false)
-
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate('/dashboard')
+    }
+  }, [isLoggedIn, navigate])
   const handleClick = async (e: FormEvent) => {
     e.preventDefault()
     setShowLoading(true)
@@ -47,13 +51,7 @@ const Login: React.FC = function Login() {
 
     if (email && password && !hasErrors) {
       try {
-        await login({
-          variables: {
-            email,
-            password,
-          },
-        })
-        navigate('/dashboard')
+        login(email, password)
       } catch (err) {
         console.log('Login Error', err)
         setError(true)
@@ -121,12 +119,7 @@ const Login: React.FC = function Login() {
               textAlign: 'center',
             }}
           >
-            <Button
-              disabled={showLoading}
-              type="submit"
-              variant="contained"
-              color="primary"
-            >
+            <Button disabled={showLoading} type="submit" color="primary">
               {showLoading && (
                 <CircularProgress
                   size={12}

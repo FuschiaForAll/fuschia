@@ -254,12 +254,14 @@ type Mutation {
   deleteRelationship: Boolean
   deleteSubscription: Boolean
   duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
+  forgotPassword(email: String!): Boolean!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   publishPackageComponents(componentInput: [PackageComponentInput!]!): [PackageComponent!]!
   register(email: String!, password: String!): UserResponse!
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
+  resetPassword(newPassword: String!, token: String!): Boolean!
   updateAppConfig(appConfig: AppConfigInput!, projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
