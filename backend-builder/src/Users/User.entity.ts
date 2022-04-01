@@ -16,10 +16,6 @@ export class User {
   email!: string;
 
   @Field({ nullable: true })
-  @Property({ unique: true })
-  username!: string;
-
-  @Field({ nullable: true })
   @Property()
   fullName!: string;
 

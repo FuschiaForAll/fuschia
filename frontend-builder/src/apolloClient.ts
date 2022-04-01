@@ -14,7 +14,7 @@ export const previewerStateVar = makeVar(localStorage.getItem('previewerData'))
 export const selectionVar = makeVar<string[]>([])
 
 const httpLink = createHttpLink({
-  uri: 'https://localhost:4003/graphql',
+  uri: `${process.env.REACT_APP_GQL_ENDPOINT}/graphql`,
   credentials: 'include',
 })
 const appLink = createHttpLink({

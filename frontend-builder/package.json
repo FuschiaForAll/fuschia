@@ -38,8 +38,8 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "react-app-rewired start",
-    "build": "react-app-rewired build",
+    "start": "REACT_APP_GQL_ENDPOINT=https://localhost:4003 react-app-rewired start",
+    "build": "REACT_APP_GQL_ENDPOINT=https://fuchsia.pragmaflowservers.com react-app-rewired build",
     "test": "react-app-rewired test --passWithNoTests",
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
     "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",

@@ -11,6 +11,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
+import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -181,60 +182,68 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 setFieldName(name)
               }}
             />
-            <select
-              value={dataType}
+            <LabeledSelect
+              label="Data Type"
+              selectedValue={dataType}
               onChange={e => {
                 const type = e.target.value
                 setDataType(type)
               }}
-            >
-              {PRIMITIVE_DATA_TYPES.map(type => (
-                <option key={type} value={type}>
-                  {type}
-                </option>
-              ))}
-              {models.map(modelType => (
-                <option key={modelType._id} value={modelType._id}>
-                  {modelType.name}
-                </option>
-              ))}
-            </select>
-            <label>Is Unique</label>
-            <input
-              type="checkbox"
-              checked={isUnique}
-              onChange={e => {
-                const value = e.target.checked
-                setIsUnique(value)
-              }}
+              options={[
+                ...PRIMITIVE_DATA_TYPES.map(type => ({
+                  label: type,
+                  value: type,
+                })),
+                ...models.map(modelType => ({
+                  label: modelType.name,
+                  value: modelType._id,
+                })),
+              ]}
             />
-            <label>Is Hashed</label>
-            <input
-              type="checkbox"
-              checked={isHashed}
-              onChange={e => {
-                const value = e.target.checked
-                setIsHashed(value)
-              }}
-            />
-            <label>Is Nullable</label>
-            <input
-              type="checkbox"
-              checked={nullable}
-              onChange={e => {
-                const value = e.target.checked
-                setNullable(value)
-              }}
-            />{' '}
-            <label>Is List</label>
-            <input
-              type="checkbox"
-              checked={isList}
-              onChange={e => {
-                const value = e.target.checked
-                setIsList(value)
-              }}
-            />
+            <div>
+              <label>Is Unique</label>
+              <input
+                type="checkbox"
+                checked={isUnique}
+                onChange={e => {
+                  const value = e.target.checked
+                  setIsUnique(value)
+                }}
+              />
+            </div>
+            <div>
+              <label>Is Hashed</label>
+              <input
+                type="checkbox"
+                checked={isHashed}
+                onChange={e => {
+                  const value = e.target.checked
+                  setIsHashed(value)
+                }}
+              />
+            </div>
+            <div>
+              <label>Is Nullable</label>
+              <input
+                type="checkbox"
+                checked={nullable}
+                onChange={e => {
+                  const value = e.target.checked
+                  setNullable(value)
+                }}
+              />
+            </div>
+            <div>
+              <label>Is List</label>
+              <input
+                type="checkbox"
+                checked={isList}
+                onChange={e => {
+                  const value = e.target.checked
+                  setIsList(value)
+                }}
+              />
+            </div>
             <button
               className="outlined-accent-button"
               onClick={async () => {

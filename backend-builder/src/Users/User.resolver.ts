@@ -81,6 +81,7 @@ export class UserResolver {
       userRole: UserRole.USER,
       status: UserStatus.ACTIVE,
     }).catch((error) => {
+      console.error(error);
       throw new ApolloError("Failed to register your account");
     });
     const newOrganization = await OrganizationModel.create({
