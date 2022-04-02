@@ -1,0 +1,9 @@
+query GetPreviewerData($projectId: ObjectId!) {
+  getPreviewerData(projectId: $projectId) {
+    _id
+    project {
+      _id
+    }
+    data
+  }
+}

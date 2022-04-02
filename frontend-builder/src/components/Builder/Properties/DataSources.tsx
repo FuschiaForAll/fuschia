@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import {
   GetComponentDocument,
-  GetComponentQuery,
   useAddParameterMutation,
   useGetEntityModelQuery,
   useRemoveParameterMutation,
@@ -539,37 +538,34 @@ function RootParameterEditor({
 
 const DataSources = function DataSources({
   componentId,
-  componentQuery,
+  component,
   models,
 }: {
   componentId: string
-  componentQuery: GetComponentQuery
+  component: any
   models: Array<{ _id: string; name: string }>
 }) {
-  if (!componentQuery.getComponent) {
+  if (!component) {
     return <div>loading...</div>
   }
   return (
     <div>
-      {componentQuery.getComponent.isRootElement && (
+      {component.isRootElement && (
         <RootParameterEditor
           models={models}
           componentId={componentId}
-          parameters={componentQuery.getComponent.parameters || []}
-          fetched={componentQuery.getComponent.fetched || []}
+          parameters={component.parameters || []}
+          fetched={component.fetched || []}
         />
       )}
-      {!componentQuery.getComponent.isRootElement &&
-        componentQuery.getComponent.isContainer && (
-          <ContainerParameterEditor
-            models={models}
-            componentId={componentId}
-            parameters={componentQuery.getComponent.parameters || []}
-            fetched={JSON.parse(
-              JSON.stringify(componentQuery.getComponent.fetched || [])
-            )}
-          />
-        )}
+      {!component.isRootElement && component.isContainer && (
+        <ContainerParameterEditor
+          models={models}
+          componentId={componentId}
+          parameters={component.parameters || []}
+          fetched={JSON.parse(JSON.stringify(component.fetched || []))}
+        />
+      )}
     </div>
   )
 }

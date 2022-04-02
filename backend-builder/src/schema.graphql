@@ -158,14 +158,7 @@ input DataSourceInput {
 
 type DataStructure {
   _id: String!
-  fields: [DataStructureField!]!
-  name: String!
-}
-
-type DataStructureField {
-  dataType: String!
-  hasSubMenu: Boolean!
-  key: String!
+  fields: [MenuStructure!]!
   name: String!
 }
 
@@ -225,6 +218,7 @@ type MenuStructure {
   hasSubMenu: Boolean!
   label: String!
   source: String!
+  type: String!
 }
 
 type Mutation {
@@ -270,6 +264,7 @@ type Mutation {
   updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
   updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
+  updatePreviewerData(data: JSONObject, projectId: ObjectId!): Previewer!
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
@@ -341,6 +336,12 @@ enum PackageScope {
   Public
 }
 
+type Previewer {
+  _id: ObjectId!
+  data: JSONObject
+  project: Project!
+}
+
 type Project {
   _id: ObjectId!
   appConfig: AppConfig!
@@ -368,6 +369,7 @@ type Query {
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getPackageComponents: [PackageComponent!]!
   getPackages: [Package!]!
+  getPreviewerData(projectId: ObjectId!): Previewer!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
@@ -413,7 +415,6 @@ type User {
   organizations: [Organization!]!
   status: String!
   userRole: String!
-  username: String
 }
 
 input UserInput {

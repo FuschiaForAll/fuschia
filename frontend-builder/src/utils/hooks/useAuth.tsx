@@ -131,7 +131,6 @@ export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
   }, [loginData])
 
   useEffect(() => {
-    debugger
     if (data) {
       setIsLoggedIn(!!data.me)
     }

@@ -1,0 +1,9 @@
+mutation UpdatePreviewerData($projectId: ObjectId!, $data: JSONObject) {
+  updatePreviewerData(projectId: $projectId, data: $data) {
+    _id
+    project {
+      _id
+    }
+    data
+  }
+}

@@ -40,6 +40,7 @@ import { GraphQLJSONObject } from "graphql-type-json";
 import { AppConfigResolver } from "./Projects/AppConfig/AppConfig.resolver";
 import { PackageResolver } from "./Packages/Package.resolver";
 import { PackageComponentResolver } from "./Packages/PackageComponents/PackageComponent.resolver";
+import { PreviewerResolver } from "./Previewer/Previewer.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -74,6 +75,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       AppConfigResolver,
       PackageResolver,
       PackageComponentResolver,
+      PreviewerResolver,
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],
