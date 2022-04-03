@@ -4,8 +4,11 @@ import { Paper } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Component,
+  DataSource,
+  GetPackagesQuery,
   GetPreviewerDataDocument,
   useGetComponentsQuery,
+  useGetPackagesQuery,
   useGetPreviewerDataQuery,
   useGetProjectQuery,
   useUpdatePreviewerDataMutation,
@@ -14,6 +17,7 @@ import styled from '@emotion/styled'
 import { ActionProps } from '../Builder/Properties/Editors/FunctionEditor'
 import { executeAction } from './executeAction'
 import { convertToObject } from 'typescript'
+import { Schema } from '../../../../types/src/properties'
 
 const FrameWrapper = styled.div`
   pointer-events: all;
@@ -25,7 +29,31 @@ const FrameWrapper = styled.div`
   justify-self: center;
 `
 
-function convertDraftJSBindings(value: any, inputState: any, entityState: any) {
+function getComponentSchema(
+  packageData: GetPackagesQuery,
+  layer: Component
+): Schema {
+  const componentPackage = packageData.getPackages.find(
+    p => p.packageName === layer.package
+  )
+  if (componentPackage) {
+    const component = componentPackage.components.find(
+      component => component.name === layer.type
+    )
+    if (component) {
+      return component.schema
+    }
+  }
+  throw new Error('Schema not found')
+}
+
+function convertDraftJSBindings(
+  value: any,
+  inputState: any,
+  entityState: any,
+  localState: any,
+  dataContext: any
+) {
   try {
     if (value.blocks) {
       let textParts = [] as string[]
@@ -44,6 +72,29 @@ function convertDraftJSBindings(value: any, inputState: any, entityState: any) {
                       ?.split('.')
                       .pop()
                   ]
+                break
+              case 'LOCAL_DATA':
+                {
+                  const path = value.entityMap[range.key].data?.entityPath
+                    ?.split('.')
+                    .pop()
+                  if (path) {
+                    replacementText = localState[path]
+                  }
+                }
+                break
+              case 'SERVER_DATA':
+                {
+                  const path = value.entityMap[range.key].data?.entityPath
+                    ?.split('.')
+                    .pop()
+                  if (path) {
+                    if (dataContext[path]) {
+                      replacementText = dataContext[path]
+                    }
+                  }
+                }
+                break
             }
           }
           currentText = `${currentText.slice(
@@ -56,23 +107,38 @@ function convertDraftJSBindings(value: any, inputState: any, entityState: any) {
       return textParts.join('\n')
     }
   } catch (e) {
+    console.error(`BINDING ERROR`)
     console.error(e)
+  }
+  // it might be a property primitive
+  if (value.split && dataContext && dataContext[value.split('.').pop()]) {
+    return dataContext[value.split('.').pop()]
   }
   return value
 }
 
 function Viewer(props: {
+  packageData: GetPackagesQuery
   project: Project
   layer?: Component
-  navigate: (screenId: string) => void
+  navigate: (screenId: string, dataParams?: any) => void
   onInputChange: (key: string, value: any) => void
   onEntityChange: (value: any) => void
+  onLocalStateChange: (value: any) => void
   inputState: any
   entityState: any
-}) {
+  localState: any
+  dataContext: any
+}): JSX.Element | null {
+  function buildDataContext(component: Component) {
+    if (component.fetched) {
+    }
+    return props.dataContext
+  }
   if (!props.layer) {
     return <div>No entry point created</div>
   }
+  const schema = getComponentSchema(props.packageData, props.layer)
   // convert bindings
   const componentProperties = { ...props.layer.props }
   Object.keys(componentProperties).forEach(
@@ -80,12 +146,19 @@ function Viewer(props: {
       (componentProperties[key] = convertDraftJSBindings(
         componentProperties[key],
         props.inputState,
-        props.entityState
+        props.entityState,
+        props.localState,
+        props.dataContext
       ))
   )
   const InlineComponent =
     // @ts-ignore
     window[props.layer.package].components[props.layer.type]
+  if (props.layer.type === 'Checkbox') {
+    if (componentProperties.value) {
+      componentProperties.value = componentProperties.value === 'true'
+    }
+  }
   const styles: React.CSSProperties = {
     width: componentProperties.style?.width || 50,
     height: componentProperties.style?.height || 50,
@@ -101,10 +174,14 @@ function Viewer(props: {
         <InlineComponent {...componentProperties}>
           {props.layer.children?.map(child => (
             <Viewer
+              dataContext={buildDataContext(child)}
+              packageData={props.packageData}
               project={props.project}
               layer={child}
               navigate={props.navigate}
               inputState={props.inputState}
+              localState={props.localState}
+              onLocalStateChange={props.onLocalStateChange}
               onInputChange={props.onInputChange}
               entityState={props.entityState}
               onEntityChange={props.onEntityChange}
@@ -115,11 +192,74 @@ function Viewer(props: {
     )
   }
   if (props.layer.isContainer) {
+    if (schema.type === 'array') {
+      // get array data
+      if (props.layer.fetched && props.layer.fetched.length === 1) {
+        const fetched = props.layer.fetched[0]
+        if (props.entityState[fetched.entityType]) {
+          let compData = []
+          if (fetched.variables) {
+            compData = props.entityState[fetched.entityType].filter(
+              (record: any) =>
+                fetched.variables.every(
+                  variable =>
+                    record[variable.key] !==
+                    convertDraftJSBindings(
+                      variable.value,
+                      props.inputState,
+                      props.entityState,
+                      props.localState,
+                      props.dataContext
+                    )
+                )
+            )
+          } else {
+            compData = props.entityState[fetched.entityType]
+          }
+          return (
+            <div style={styles}>
+              {compData.map((d: any) => (
+                <InlineComponent
+                  {...componentProperties}
+                  style={{
+                    ...componentProperties.style,
+                    width: '100%',
+                    height: '100%',
+                  }}
+                >
+                  {props.layer?.children?.map(child => (
+                    <Viewer
+                      dataContext={{
+                        ...props.dataContext,
+                        ...d,
+                      }}
+                      packageData={props.packageData}
+                      project={props.project}
+                      layer={child}
+                      navigate={props.navigate}
+                      inputState={props.inputState}
+                      onInputChange={props.onInputChange}
+                      entityState={props.entityState}
+                      onEntityChange={props.onEntityChange}
+                      localState={props.localState}
+                      onLocalStateChange={props.onLocalStateChange}
+                    />
+                  ))}
+                </InlineComponent>
+              ))}
+            </div>
+          )
+        }
+        return null
+      }
+    }
     return (
       <div style={styles}>
         <InlineComponent {...componentProperties}>
           {props.layer.children?.map(child => (
             <Viewer
+              dataContext={props.dataContext}
+              packageData={props.packageData}
               project={props.project}
               layer={child}
               navigate={props.navigate}
@@ -127,6 +267,8 @@ function Viewer(props: {
               onInputChange={props.onInputChange}
               entityState={props.entityState}
               onEntityChange={props.onEntityChange}
+              localState={props.localState}
+              onLocalStateChange={props.onLocalStateChange}
             />
           ))}
         </InlineComponent>
@@ -144,6 +286,7 @@ function Viewer(props: {
         }
       })
     }
+    // TODO: this must be dynamic based on schema
     if (componentProperties.onPress) {
       componentProperties.onPressActions = componentProperties.onPress
       componentProperties.onPress = () => {
@@ -154,10 +297,35 @@ function Viewer(props: {
             convertDraftJSBindings,
             props.inputState,
             props.entityState,
+            props.localState,
             props.project,
-            props.onEntityChange
+            props.onEntityChange,
+            props.onLocalStateChange,
+            props.dataContext
           )
         })
+      }
+    }
+    if (componentProperties.onValueChange) {
+      componentProperties.onValueChangeActions =
+        componentProperties.onValueChange
+      componentProperties.onValueChange = () => {
+        componentProperties.onValueChangeActions.forEach(
+          (action: ActionProps) => {
+            executeAction(
+              action,
+              props.navigate,
+              convertDraftJSBindings,
+              props.inputState,
+              props.entityState,
+              props.localState,
+              props.project,
+              props.onEntityChange,
+              props.onLocalStateChange,
+              props.dataContext
+            )
+          }
+        )
       }
     }
     return (
@@ -171,6 +339,8 @@ function Viewer(props: {
 const Previewer: React.FC = function Previewer() {
   const navigate = useNavigate()
   const [inputState, setInputState] = useState({})
+  const [localState, setLocalState] = useState({})
+  const [dataContext, setDataContext] = useState({})
   const [screen, setScreen] = useState<string>()
   const { projectId } = useParams<{ projectId: string }>()
   const { data: projectData } = useGetProjectQuery({
@@ -193,17 +363,15 @@ const Previewer: React.FC = function Previewer() {
       { query: GetPreviewerDataDocument, variables: { projectId } },
     ],
   })
-  // useEffect(() => {
-  //   localStorage.setItem('previewerState', JSON.stringify(inputState))
-  // }, [inputState])
+  const { data: packageData } = useGetPackagesQuery()
   useEffect(() => {
-    // const state = localStorage.getItem('previewerState')
-    // if (state) {
-    //load the last state
-    // setInputState(JSON.parse(state))
-    // } else {
-    // create the state
-    // }
+    localStorage.setItem('previewerLocalState', JSON.stringify(localState))
+  }, [localState])
+  useEffect(() => {
+    const state = localStorage.getItem('previewerLocalState')
+    if (state) {
+      setLocalState(JSON.parse(state))
+    }
   }, [])
 
   useEffect(() => {
@@ -211,7 +379,7 @@ const Previewer: React.FC = function Previewer() {
       setScreen(projectData.getProject.appConfig.appEntryComponentId)
     }
   }, [projectData])
-  if (!projectData || !componentsData || !PreviewerData) {
+  if (!projectData || !componentsData || !PreviewerData || !packageData) {
     return <div>Loading</div>
   }
   const entryPoint = componentsData?.getComponents.find(c => c._id === screen)
@@ -243,10 +411,15 @@ const Previewer: React.FC = function Previewer() {
         </span>
         <FrameWrapper>
           <Viewer
+            dataContext={dataContext}
+            packageData={packageData}
             project={projectData.getProject}
             // @ts-ignore
             layer={entryPoint}
-            navigate={componentId => setScreen(componentId)}
+            navigate={(componentId, paramData) => {
+              setScreen(componentId)
+              setDataContext(paramData)
+            }}
             onInputChange={(key, value) => {
               if (key) {
                 setInputState(s => ({
@@ -256,6 +429,7 @@ const Previewer: React.FC = function Previewer() {
               }
             }}
             inputState={inputState}
+            localState={localState}
             entityState={JSON.parse(
               JSON.stringify(PreviewerData?.getPreviewerData.data)
             )}
@@ -267,6 +441,7 @@ const Previewer: React.FC = function Previewer() {
                 },
               })
             }}
+            onLocalStateChange={newState => setLocalState(newState)}
           />
         </FrameWrapper>
       </Paper>

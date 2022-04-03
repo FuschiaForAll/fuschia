@@ -1,0 +1,9 @@
+fragment PackageComponentFragment on PackageComponent {
+  _id
+  name
+  schema
+  defaultValue
+  icon
+  isRootElement
+  isContainer
+}

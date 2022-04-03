@@ -104,7 +104,7 @@ interface NavigateProps {
 interface CreateProps {
   type: 'CREATE'
   dataType?: EntityId
-  fields?: { [key: string]: string | number | boolean }
+  fields?: { [key: string]: string }
   onSucess?: () => void
   onFail?: () => void
 }
@@ -119,7 +119,7 @@ interface DeleteProps {
 interface UpdateProps {
   type: 'UPDATE'
   updateElement?: { entity: EntityId; path: string; label: string }
-  fields?: { [key: string]: string | number | boolean }
+  fields?: { [key: string]: string }
   onSucess?: () => void
   onFail?: () => void
 }
@@ -616,7 +616,7 @@ const CreateEditor = (props: {
                 return acc
               },
               {} as {
-                [key: string]: string | number | boolean
+                [key: string]: string
               }
             )
             props.onUpdate(newParams)
@@ -721,7 +721,7 @@ const UpdateEditor = (props: {
                 return acc
               },
               {} as {
-                [key: string]: string | number | boolean
+                [key: string]: string
               }
             )
             props.onUpdate(newParams)
@@ -929,7 +929,12 @@ const NavigateEditor = ({
     Array<{
       name: string
       _id: string
-      parameters?: Array<{ _id: string; entityId: string; name: string }> | null
+      parameters?: Array<{
+        _id: string
+        entityType: string
+        label: string
+        path: string
+      }> | null
     }>
   >([])
   const buildParameters = () => {
@@ -938,7 +943,7 @@ const NavigateEditor = ({
       if (target.parameters && target.parameters.length > 0) {
         return target.parameters.map(p => (
           <EntitySelector
-            entityId={p.entityId}
+            entityId={p.entityType}
             componentId={componentId}
             selectedLabel={params.parameters && params.parameters[p._id]?.label}
             onSelect={(entityId, label) => {

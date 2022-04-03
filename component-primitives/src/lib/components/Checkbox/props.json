@@ -42,7 +42,7 @@
       }
     },
     "onValueChange": {
-      "title": "onPress",
+      "title": "onValueChange",
       "type": "function",
       "arguments": [
         {

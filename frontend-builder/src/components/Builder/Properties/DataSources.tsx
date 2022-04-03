@@ -16,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { IconButton } from '@mui/material'
 import TextInputBinding from '../../Shared/TextInputBinding'
 import { gql } from '@apollo/client'
+import { EntitySelector } from '../../Shared/EntitySelector'
 
 export interface Expression {
   operator: string
@@ -267,7 +268,12 @@ export function FilterBuilder({
   componentId: string
   entityModelId: string
   models: Array<{ _id: string; name: string }>
-  filter: { type: string; variables: Filter[] }
+  filter: {
+    entityType: string
+    label: string
+    path: string
+    variables: Filter[]
+  }
   onDelete: () => {}
   onFilterUpdate: (newFilter: any) => void
 }) {
@@ -278,19 +284,14 @@ export function FilterBuilder({
       entityModelId,
     },
   })
-  function extractModelName(parameter: string) {
-    const model = models.find(model => model._id === parameter)
-    if (model) {
-      return model.name
-    }
-    return parameter
-  }
   if (!entityModelData || !entityModelData.getEntityModel) {
     return <div>loading...</div>
   }
   return (
     <div>
-      <span>{extractModelName(filter.type)}</span>
+      <span title={filter.label.split('.').join(' > ')}>
+        {filter.label.split('.').pop()}
+      </span>
       <IconButton onClick={onDelete}>
         <DeleteIcon />
       </IconButton>
@@ -337,10 +338,16 @@ function ContainerParameterEditor({
 }: {
   componentId: string
   parameters: Array<{ _id: string; entityId: string; name: string }>
-  fetched: Array<{ type: string; variables: Filter[] }>
+  fetched: Array<{
+    entityType: string
+    label: string
+    path: string
+    variables: Filter[]
+  }>
   models: Array<{ _id: string; name: string }>
 }) {
-  const [newParameter, setNewParameter] = useState('')
+  const [newDataSource, setNewDataSource] =
+    useState<{ label: string; path: string; entity: string }>()
   const [updateComponent] = useUpdateComponentMutation()
   return (
     <div>
@@ -351,7 +358,7 @@ function ContainerParameterEditor({
       {fetched.map((f, index) => (
         <FilterBuilder
           componentId={componentId}
-          entityModelId={f.type}
+          entityModelId={f.entityType}
           filter={{ ...f }}
           models={models}
           key={index}
@@ -364,7 +371,9 @@ function ContainerParameterEditor({
                 componentId,
                 componentInput: {
                   fetched: newFetched.map(f => ({
-                    type: f.type,
+                    entityType: f.entityType,
+                    path: f.path,
+                    label: f.label,
                     variables: f.variables,
                   })),
                 },
@@ -380,7 +389,9 @@ function ContainerParameterEditor({
                 componentId,
                 componentInput: {
                   fetched: newFetched.map(f => ({
-                    type: f.type,
+                    entityType: f.entityType,
+                    path: f.path,
+                    label: f.label,
                     variables: f.variables,
                   })),
                 },
@@ -389,39 +400,54 @@ function ContainerParameterEditor({
           }}
         />
       ))}
-      <LabeledSelect
-        label="Entity"
-        selectedValue={newParameter}
-        options={models.map(modelType => ({
-          label: modelType.name,
-          value: modelType._id,
-        }))}
-        onChange={e => {
-          const type = e.target.value
-          setNewParameter(type)
+      <EntitySelector
+        componentId={componentId}
+        isList={true}
+        onSelect={(entity, path, label) => {
+          alert(`entity: ${entity}\npath: ${path}\nlabel: ${label}`)
+          const source = {
+            label,
+            entity,
+            path,
+          }
+          setNewDataSource(source)
         }}
+        additionalEntities={models.map(modelType => ({
+          entity: modelType._id,
+          hasSubMenu: true,
+          label: modelType.name,
+          source: modelType._id,
+          type: 'SERVER_DATA',
+        }))}
+        selectedLabel={newDataSource?.label}
       />
 
       <OutlinedButton
         onClick={async () => {
-          await updateComponent({
-            variables: {
-              componentId,
-              componentInput: {
-                fetched: [
-                  ...fetched.map(f => ({
-                    type: f.type,
-                    variables: f.variables,
-                  })),
-                  {
-                    type: newParameter,
-                    variables: [],
-                  },
-                ],
+          if (newDataSource) {
+            await updateComponent({
+              variables: {
+                componentId,
+                componentInput: {
+                  fetched: [
+                    ...fetched.map(f => ({
+                      entityType: f.entityType,
+                      path: f.path,
+                      label: f.label,
+                      variables: f.variables,
+                    })),
+                    {
+                      entityType: newDataSource.entity,
+                      path: newDataSource.path,
+                      label: newDataSource.label,
+                      variables: [],
+                    },
+                  ],
+                },
               },
-            },
-          })
-          setNewParameter('')
+            })
+          }
+          setNewDataSource(undefined)
         }}
       >
         Add Data
@@ -437,11 +463,17 @@ function RootParameterEditor({
   models,
 }: {
   componentId: string
-  parameters: Array<{ _id: string; entityId: string; name: string }>
+  parameters: Array<{
+    _id: string
+    entityType: string
+    label: string
+    path: string
+  }>
   fetched: Array<{ type: string; variables: string[] }>
   models: Array<{ _id: string; name: string }>
 }) {
-  const [newParameter, setNewParameter] = useState('')
+  const [newDataSource, setNewDataSource] =
+    useState<{ label: string; path: string; entity: string }>()
   const [addParameter] = useAddParameterMutation({
     refetchQueries: [
       {
@@ -466,15 +498,7 @@ function RootParameterEditor({
       },
     ],
   })
-  // const [updatedParameter] = useUpdateParameterMutation()
 
-  function extractModelName(parameter: string) {
-    const model = models.find(model => model._id === parameter)
-    if (model) {
-      return model.name
-    }
-    return parameter
-  }
   return (
     <div>
       <LabeledCheckbox
@@ -489,7 +513,9 @@ function RootParameterEditor({
       )}
       {parameters.map(param => (
         <div>
-          <span>{extractModelName(param.entityId)}</span>
+          <span title={param.label.split('.').join(' > ')}>
+            {param.label.split('.').pop()}
+          </span>
           <IconButton
             onClick={() => {
               removeParameter({
@@ -504,30 +530,42 @@ function RootParameterEditor({
           </IconButton>
         </div>
       ))}
-      <LabeledSelect
-        label="Data type"
-        selectedValue={newParameter}
-        onChange={e => {
-          const type = e.target.value
-          setNewParameter(type)
+      <EntitySelector
+        componentId={componentId}
+        isList={false}
+        onSelect={(entity, path, label) => {
+          alert(`entity: ${entity}\npath: ${path}\nlabel: ${label}`)
+          const source = {
+            label,
+            entity,
+            path,
+          }
+          setNewDataSource(source)
         }}
-        options={models.map(modelType => ({
+        additionalEntities={models.map(modelType => ({
+          entity: modelType._id,
+          hasSubMenu: true,
           label: modelType.name,
-          value: modelType._id,
+          source: modelType._id,
+          type: 'SERVER_DATA',
         }))}
+        selectedLabel={newDataSource?.label}
       />
       <OutlinedButton
         onClick={async () => {
-          await addParameter({
-            variables: {
-              componentId,
-              parameterInput: {
-                entityId: newParameter,
-                name: extractModelName(newParameter),
+          if (newDataSource) {
+            await addParameter({
+              variables: {
+                componentId,
+                parameterInput: {
+                  entityType: newDataSource.entity,
+                  path: newDataSource.path,
+                  label: newDataSource.label,
+                },
               },
-            },
-          })
-          setNewParameter('')
+            })
+            setNewDataSource(undefined)
+          }
         }}
       >
         Add Data

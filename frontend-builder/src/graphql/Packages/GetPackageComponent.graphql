@@ -1,0 +1,6 @@
+#import "./PackageComponent.fragment.graphql"
+query GetPackageComponent($packageComponentId: ObjectId!) {
+  getPackageComponent(packageComponentId: $packageComponentId) {
+    ...PackageComponentFragment
+  }
+}

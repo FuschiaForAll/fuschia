@@ -9,11 +9,14 @@ fragment ComponentFragment on Component {
   isRootElement
   parameters {
     _id
-    entityId
-    name
+    entityType
+    path
+    label
   }
   fetched {
-    type
+    entityType
+    path
+    label
     variables
   }
   props

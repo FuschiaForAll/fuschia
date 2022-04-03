@@ -174,12 +174,16 @@ export type DataFieldInput = {
 
 export type DataSource = {
   __typename?: 'DataSource';
-  type: Scalars['String'];
+  entityType: Scalars['String'];
+  label: Scalars['String'];
+  path: Scalars['String'];
   variables: Array<Scalars['JSONObject']>;
 };
 
 export type DataSourceInput = {
-  type: Scalars['String'];
+  entityType: Scalars['String'];
+  label: Scalars['String'];
+  path: Scalars['String'];
   variables: Array<Scalars['JSONObject']>;
 };
 
@@ -599,6 +603,7 @@ export type Query = {
   getDataContext: Array<DataContext>;
   getEntityModel?: Maybe<EntityModel>;
   getLabelLibrary?: Maybe<LabelLibrary>;
+  getPackageComponent?: Maybe<PackageComponent>;
   getPackageComponents: Array<PackageComponent>;
   getPackages: Array<Package>;
   getPreviewerData: Previewer;
@@ -656,6 +661,11 @@ export type QueryGetLabelLibraryArgs = {
 };
 
 
+export type QueryGetPackageComponentArgs = {
+  packageComponentId: Scalars['ObjectId'];
+};
+
+
 export type QueryGetPreviewerDataArgs = {
   projectId: Scalars['ObjectId'];
 };
@@ -674,13 +684,15 @@ export type QueryGetServerStatusArgs = {
 export type RequiredParameter = {
   __typename?: 'RequiredParameter';
   _id: Scalars['ObjectId'];
-  entityId: Scalars['ObjectId'];
-  name: Scalars['String'];
+  entityType: Scalars['ObjectId'];
+  label: Scalars['String'];
+  path: Scalars['String'];
 };
 
 export type RequiredParameterInput = {
-  entityId: Scalars['ObjectId'];
-  name: Scalars['String'];
+  entityType: Scalars['ObjectId'];
+  label: Scalars['String'];
+  path: Scalars['String'];
 };
 
 export type Translation = {
@@ -915,7 +927,7 @@ export type AddParameterMutationVariables = Exact<{
 
 export type AddParameterMutation = { __typename?: 'Mutation', addParameter: boolean };
 
-export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null };
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null };
 
 export type CreateComponentMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -923,7 +935,7 @@ export type CreateComponentMutationVariables = Exact<{
 }>;
 
 
-export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type DeleteComponentsMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -954,7 +966,7 @@ export type GetComponentQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } | null };
+export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } | null };
 
 export type GetDataContextQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -968,7 +980,7 @@ export type GetComponentsQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, children?: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null }> };
 
 export type GetEntityModelQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -992,7 +1004,7 @@ export type UpdateComponentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type UpdateComponentPropsMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1000,7 +1012,7 @@ export type UpdateComponentPropsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityId: any, name: string }> | null, fetched?: Array<{ __typename?: 'DataSource', type: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
+export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, isContainer: boolean, isRootElement: boolean, props?: any | null, data?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null, parent?: { __typename?: 'Component', _id: any } | null } };
 
 export type UpdateParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1120,10 +1132,19 @@ export type ListOrganizationsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ListOrganizationsQuery = { __typename?: 'Query', listOrganizations: Array<{ __typename?: 'Organization', _id: any, name: string, owner: { __typename?: 'User', _id: any }, members: Array<{ __typename?: 'User', _id: any, email: string }> }> };
 
+export type GetPackageComponentQueryVariables = Exact<{
+  packageComponentId: Scalars['ObjectId'];
+}>;
+
+
+export type GetPackageComponentQuery = { __typename?: 'Query', getPackageComponent?: { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue: any, icon: string, isRootElement: boolean, isContainer: boolean } | null };
+
 export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue: any, icon: string, isRootElement: boolean, isContainer: boolean }> }> };
+
+export type PackageComponentFragmentFragment = { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue: any, icon: string, isRootElement: boolean, isContainer: boolean };
 
 export type GetPreviewerDataQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1275,11 +1296,14 @@ export const ComponentFragmentFragmentDoc = gql`
   isRootElement
   parameters {
     _id
-    entityId
-    name
+    entityType
+    path
+    label
   }
   fetched {
-    type
+    entityType
+    path
+    label
     variables
   }
   props
@@ -1364,6 +1388,17 @@ export const FullTypeFragmentDoc = gql`
 }
     ${InputValueFragmentDoc}
 ${TypeRefFragmentDoc}`;
+export const PackageComponentFragmentFragmentDoc = gql`
+    fragment PackageComponentFragment on PackageComponent {
+  _id
+  name
+  schema
+  defaultValue
+  icon
+  isRootElement
+  isContainer
+}
+    `;
 export const AuthFragmentFragmentDoc = gql`
     fragment AuthFragment on Auth {
   _id
@@ -2456,6 +2491,41 @@ export function useListOrganizationsLazyQuery(baseOptions?: Apollo.LazyQueryHook
 export type ListOrganizationsQueryHookResult = ReturnType<typeof useListOrganizationsQuery>;
 export type ListOrganizationsLazyQueryHookResult = ReturnType<typeof useListOrganizationsLazyQuery>;
 export type ListOrganizationsQueryResult = Apollo.QueryResult<ListOrganizationsQuery, ListOrganizationsQueryVariables>;
+export const GetPackageComponentDocument = gql`
+    query GetPackageComponent($packageComponentId: ObjectId!) {
+  getPackageComponent(packageComponentId: $packageComponentId) {
+    ...PackageComponentFragment
+  }
+}
+    ${PackageComponentFragmentFragmentDoc}`;
+
+/**
+ * __useGetPackageComponentQuery__
+ *
+ * To run a query within a React component, call `useGetPackageComponentQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetPackageComponentQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetPackageComponentQuery({
+ *   variables: {
+ *      packageComponentId: // value for 'packageComponentId'
+ *   },
+ * });
+ */
+export function useGetPackageComponentQuery(baseOptions: Apollo.QueryHookOptions<GetPackageComponentQuery, GetPackageComponentQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetPackageComponentQuery, GetPackageComponentQueryVariables>(GetPackageComponentDocument, options);
+      }
+export function useGetPackageComponentLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetPackageComponentQuery, GetPackageComponentQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetPackageComponentQuery, GetPackageComponentQueryVariables>(GetPackageComponentDocument, options);
+        }
+export type GetPackageComponentQueryHookResult = ReturnType<typeof useGetPackageComponentQuery>;
+export type GetPackageComponentLazyQueryHookResult = ReturnType<typeof useGetPackageComponentLazyQuery>;
+export type GetPackageComponentQueryResult = Apollo.QueryResult<GetPackageComponentQuery, GetPackageComponentQueryVariables>;
 export const GetPackagesDocument = gql`
     query GetPackages {
   getPackages {
@@ -2465,19 +2535,13 @@ export const GetPackagesDocument = gql`
     version
     bundle
     components {
-      _id
-      name
-      schema
-      defaultValue
-      icon
-      isRootElement
-      isContainer
+      ...PackageComponentFragment
     }
     authorId
     scope
   }
 }
-    `;
+    ${PackageComponentFragmentFragmentDoc}`;
 
 /**
  * __useGetPackagesQuery__

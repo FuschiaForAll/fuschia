@@ -27,18 +27,30 @@ export class RequiredParameter {
 
   @Field((type) => ObjectIdScalar)
   @Property()
-  entityId!: ObjectId;
+  entityType!: ObjectId;
 
   @Field()
   @Property()
-  name!: string;
+  path!: string;
+
+  @Field()
+  @Property()
+  label!: string;
 }
 
 @ObjectType()
 export class DataSource {
   @Field()
   @Property()
-  type!: string;
+  entityType!: string;
+
+  @Field()
+  @Property()
+  path!: string;
+
+  @Field()
+  @Property()
+  label!: string;
 
   @Field((type) => [Object])
   @Property({ default: [] })

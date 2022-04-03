@@ -14,12 +14,14 @@ export function EntitySelector({
   componentId,
   selectedLabel,
   onSelect,
+  isList = false,
 }: {
   additionalEntities?: MenuStructure[]
   entityId?: string
   componentId: string
   selectedLabel?: string
   onSelect: (entity: string, path: string, label: string) => void
+  isList?: boolean
 }) {
   const { projectId } = useParams<{ projectId: string }>()
   const { data: projectData } = useGetProjectQuery({
@@ -59,7 +61,7 @@ export function EntitySelector({
               _id: item._id,
               name: item.name,
               fields: item.fields
-                .filter(field => !field.isList) // don't add lists for now
+                .filter(field => field.isList === isList) // don't add lists for now
                 .map(field => ({
                   type: 'SERVER_DATA',
                   entity: field.dataType,

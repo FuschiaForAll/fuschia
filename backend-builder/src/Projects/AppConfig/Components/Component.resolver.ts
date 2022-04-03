@@ -97,7 +97,7 @@ async function getParentRecursive(
         componentId: component._id.toString(),
         name: component.name,
         dataSources:
-          component.parameters?.map((p) => p.entityId.toString()) || [],
+          component.parameters?.map((p) => p.entityType.toString()) || [],
       },
     ];
   }
@@ -108,7 +108,7 @@ async function getParentRecursive(
       {
         componentId: component._id.toString(),
         name: component.name,
-        dataSources: component.fetched?.map((f) => f.type) || [],
+        dataSources: component.fetched?.map((f) => f.entityType) || [],
       },
     ];
   }

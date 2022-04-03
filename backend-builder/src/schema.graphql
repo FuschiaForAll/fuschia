@@ -147,12 +147,16 @@ input DataFieldInput {
 }
 
 type DataSource {
-  type: String!
+  entityType: String!
+  label: String!
+  path: String!
   variables: [JSONObject!]!
 }
 
 input DataSourceInput {
-  type: String!
+  entityType: String!
+  label: String!
+  path: String!
   variables: [JSONObject!]!
 }
 
@@ -367,6 +371,7 @@ type Query {
   getDataContext(componentId: ObjectId!): [DataContext!]!
   getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
+  getPackageComponent(packageComponentId: ObjectId!): PackageComponent
   getPackageComponents: [PackageComponent!]!
   getPackages: [Package!]!
   getPreviewerData(projectId: ObjectId!): Previewer!
@@ -388,13 +393,15 @@ type Query {
 
 type RequiredParameter {
   _id: ObjectId!
-  entityId: ObjectId!
-  name: String!
+  entityType: ObjectId!
+  label: String!
+  path: String!
 }
 
 input RequiredParameterInput {
-  entityId: ObjectId!
-  name: String!
+  entityType: ObjectId!
+  label: String!
+  path: String!
 }
 
 type Translation {
