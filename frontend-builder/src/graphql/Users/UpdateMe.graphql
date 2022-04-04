@@ -4,6 +4,5 @@ mutation UpdateMe($userInput: UserInput!) {
     email
     userRole
     fullName
-    username
   }
 }

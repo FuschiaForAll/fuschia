@@ -42,29 +42,19 @@ class DataComponent {
 }
 
 @ObjectType()
-class DataStructureField {
-  @Field()
-  key!: string;
-  @Field()
-  dataType!: string;
-  @Field()
-  name!: string;
-  @Field()
-  hasSubMenu!: boolean;
-}
-
-@ObjectType()
 class DataStructure {
   @Field()
   _id!: string;
   @Field()
   name!: string;
-  @Field((type) => [DataStructureField])
-  fields!: DataStructureField[];
+  @Field((type) => [MenuStructure])
+  fields!: MenuStructure[];
 }
 
 @ObjectType()
 class MenuStructure {
+  @Field()
+  type!: string;
   @Field()
   source!: string;
   @Field()
@@ -107,7 +97,7 @@ async function getParentRecursive(
         componentId: component._id.toString(),
         name: component.name,
         dataSources:
-          component.parameters?.map((p) => p.entityId.toString()) || [],
+          component.parameters?.map((p) => p.entityType.toString()) || [],
       },
     ];
   }
@@ -118,7 +108,7 @@ async function getParentRecursive(
       {
         componentId: component._id.toString(),
         name: component.name,
-        dataSources: component.fetched?.map((f) => f.type) || [],
+        dataSources: component.fetched?.map((f) => f.entityType) || [],
       },
     ];
   }
@@ -195,6 +185,7 @@ export class ComponentResolver {
       );
       if (authTable) {
         menuStructure.push({
+          type: "SERVER_DATA",
           label: "Current User",
           hasSubMenu: true,
           entity: project.appConfig.authConfig.tableId,
@@ -203,6 +194,7 @@ export class ComponentResolver {
       }
 
       menuStructure.push({
+        type: "INPUTS",
         label: "Inputs",
         hasSubMenu: true,
         entity: "InputObject",
@@ -212,10 +204,11 @@ export class ComponentResolver {
         _id: "InputObject",
         name: "Inputs",
         fields: (project.components as Component[]).map((c) => ({
-          dataType: c._id.toString(),
+          type: "INPUTS",
+          entity: c._id.toString(),
           hasSubMenu: !!(c.children && c.children.length > 0),
-          key: c._id.toString(),
-          name: c.name,
+          source: c._id.toString(),
+          label: c.name,
         })),
       };
       dataStructure.push(inputObjects);
@@ -233,9 +226,10 @@ export class ComponentResolver {
         children.forEach((ch) => {
           if (ch.children && ch.children.length > 0) {
             newStructure.fields.push({
-              key: ch._id.toString(),
-              dataType: ch._id.toString(),
-              name: ch.name,
+              type: "INPUTS",
+              source: ch._id.toString(),
+              entity: ch._id.toString(),
+              label: ch.name,
               hasSubMenu: !!(ch.children && ch.children.length > 0),
             });
           }
@@ -257,10 +251,11 @@ export class ComponentResolver {
             .forEach((dc) => {
               Object.keys(dc.data).forEach((dataKey) =>
                 newStructure.fields.push({
-                  key: ch._id.toString(),
+                  type: "INPUTS",
+                  source: ch._id.toString(),
                   hasSubMenu: false,
-                  dataType: dc.data[dataKey],
-                  name: `${ch.name}'s ${dataKey}`,
+                  entity: dc.data[dataKey],
+                  label: `${ch.name}'s ${dataKey}`,
                 })
               );
             });
@@ -280,18 +275,20 @@ export class ComponentResolver {
           name: model.name,
           fields: [
             {
-              dataType: "string",
+              type: "REMOTE_DATA",
+              entity: "string",
               hasSubMenu: false,
-              key: "_id",
-              name: "ID",
+              source: "_id",
+              label: "ID",
             },
             ...model.fields
               .filter((field) => !field.isList) // don't add lists for now
               .map((field) => ({
-                dataType: field.dataType,
+                type: "REMOTE_DATA",
+                entity: field.dataType,
                 hasSubMenu: !!field.connection,
-                key: field._id.toString(),
-                name: field.fieldName,
+                source: field._id.toString(),
+                label: field.fieldName,
               })),
           ],
         })
@@ -302,9 +299,9 @@ export class ComponentResolver {
         if (entity) {
           return [entity.name, true];
         }
-        const input = inputObjects.fields.find((i) => i.key === name);
+        const input = inputObjects.fields.find((i) => i.source === name);
         if (input) {
-          return [input.name, true];
+          return [input.label, true];
         }
         return [name, false];
       };
@@ -314,6 +311,7 @@ export class ComponentResolver {
         item.dataSources.forEach((source) => {
           const [name, hasSubMenu] = extractModelName(source);
           menuStructure.push({
+            type: "REMOTE_DATA",
             source: item.componentId,
             entity: source,
             label: `${item.name}'s ${name}`,

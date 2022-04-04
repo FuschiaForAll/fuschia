@@ -4,11 +4,9 @@ import { useParams } from 'react-router-dom'
 import {
   useGetBindingTreeQuery,
   useGetComponentsQuery,
-  useGetDataContextQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
-import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import TextInputBinding from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
@@ -25,6 +23,7 @@ import {
 } from '../DataSources'
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
+import { EntitySelector } from '../../../Shared/EntitySelector'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -46,7 +45,6 @@ const FUNCTION_TYPES = [
 
 type ComponentId = string
 type EntityId = string
-type RecordId = string
 
 interface SwitchProps {
   type: 'SWITCH'
@@ -67,20 +65,20 @@ interface LoginProps {
   type: 'LOGIN'
   username?: string
   password?: string
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface RegistrationProps {
   type: 'REGISTER'
   fields: { [key: string]: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 interface ChangeInputProps {
   type: 'CHANGE_INPUT'
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface PasswordRecoveryProps {
@@ -102,24 +100,22 @@ interface NavigateProps {
 interface CreateProps {
   type: 'CREATE'
   dataType?: EntityId
-  fields?: { [key: string]: string | number | boolean }
+  fields?: { [key: string]: string }
   onSucess?: () => void
   onFail?: () => void
 }
 
 interface DeleteProps {
   type: 'DELETE'
-  dataType?: EntityId
-  deleteId?: RecordId
+  deleteElement?: { path: string; label: string }
   onSucess?: () => void
   onFail?: () => void
 }
 
 interface UpdateProps {
   type: 'UPDATE'
-  dataType?: EntityId
-  updateId?: RecordId
-  fields?: { [key: string]: string | number | boolean }
+  updateElement?: { entity: EntityId; path: string; label: string }
+  fields?: { [key: string]: string }
   onSucess?: () => void
   onFail?: () => void
 }
@@ -408,18 +404,21 @@ const ConditionalBuiler = ({
           }}
           entry={[
             {
+              type: 'PRIMITIVE',
               entity: '$and',
               source: '$and',
               hasSubMenu: false,
               label: '$and',
             },
             {
+              type: 'PRIMITIVE',
               entity: '$or',
               source: '$or',
               hasSubMenu: false,
               label: '$or',
             },
             {
+              type: 'PRIMITIVE',
               entity: '$not',
               source: '$not',
               hasSubMenu: false,
@@ -460,10 +459,10 @@ const ConditionalEditor = (props: {
         return [entityStructure[parameter].name, true]
       } else if (entityStructure['InputObject']) {
         const input = entityStructure['InputObject'].fields.find(
-          field => field.key === parameter
+          field => field.source === parameter
         )
         if (input) {
-          return [input.name, true]
+          return [input.label, true]
         }
       }
       return [parameter, false]
@@ -474,11 +473,13 @@ const ConditionalEditor = (props: {
     if (bindingTreeData) {
       const dataStructure = bindingTreeData.getBindingTree.structure.reduce(
         (acc, structure) => {
+          // @ts-ignore
           acc[structure._id] = structure
           return acc
         },
         {} as { [key: string]: DataStructure }
       )
+      // @ts-ignore
       setStructure(bindingTreeData.getBindingTree.menu)
       setEntityStructure(dataStructure)
     }
@@ -611,7 +612,7 @@ const CreateEditor = (props: {
                 return acc
               },
               {} as {
-                [key: string]: string | number | boolean
+                [key: string]: string
               }
             )
             props.onUpdate(newParams)
@@ -698,12 +699,17 @@ const UpdateEditor = (props: {
   const models = data.getProject.appConfig.apiConfig.models
   return (
     <div>
-      <LabeledSelect
-        label="Record to update"
-        onChange={e => {
+      <EntitySelector
+        componentId={props.componentId}
+        selectedLabel={props.params.updateElement?.label}
+        onSelect={(entity, path, label) => {
           const newParams = { ...props.params }
-          newParams.dataType = e.target.value
-          const model = models.find(model => model._id === newParams.dataType)
+          newParams.updateElement = {
+            entity: entity,
+            label: label,
+            path: path,
+          }
+          const model = models.find(model => model._id === entity)
           if (model) {
             newParams.fields = model.fields.reduce(
               (acc, f) => {
@@ -711,45 +717,40 @@ const UpdateEditor = (props: {
                 return acc
               },
               {} as {
-                [key: string]: string | number | boolean
+                [key: string]: string
               }
             )
             props.onUpdate(newParams)
           }
         }}
-        selectedValue={props.params.dataType}
-        options={models.map(model => ({
-          label: model.name,
-          value: model._id,
-        }))}
       />
       {props.params &&
         props.params.fields &&
         Object.keys(props.params.fields).map(f => {
           const model = models.find(
-            model => model._id === props.params.dataType
+            model => model._id === props.params.updateElement?.entity
           )
           if (model) {
             const field = model.fields.find(field => field._id === f)
             if (field) {
               return (
-                <LabeledTextInput
-                  key={field._id}
-                  style={{
-                    borderColor:
-                      field.nullable || !!field.connection ? 'black' : 'red',
-                  }}
-                  label={field.fieldName}
-                  value={`${props.params.fields ? props.params.fields[f] : ''}`}
-                  onChange={e => {
-                    const newProps = { ...props.params }
-                    if (!newProps.fields) {
-                      newProps.fields = {}
+                <React.Fragment key={field._id}>
+                  <div>{field.fieldName}</div>
+                  <TextInputBinding
+                    componentId={props.componentId}
+                    initialValue={
+                      props.params.fields && (props.params.fields[f] as any)
                     }
-                    newProps.fields[f] = e.target.value
-                    props.onUpdate(newProps)
-                  }}
-                />
+                    onChange={value => {
+                      const newProps = { ...props.params }
+                      if (!newProps.fields) {
+                        newProps.fields = {}
+                      }
+                      newProps.fields[f] = value
+                      props.onUpdate(newProps)
+                    }}
+                  />
+                </React.Fragment>
               )
             }
           }
@@ -829,6 +830,28 @@ const RegisterEditor = (props: {
             />
           </React.Fragment>
         ))}
+      <ConfigureFunction
+        title="On Success"
+        componentId={props.componentId}
+        value={props.params.onSucess}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onSucess: value,
+          })
+        }}
+      />
+      <ConfigureFunction
+        title="On Failure"
+        componentId={props.componentId}
+        value={props.params.onFail}
+        updateValue={value => {
+          props.onUpdate({
+            ...props.params,
+            onFail: value,
+          })
+        }}
+      />
     </div>
   )
 }
@@ -864,35 +887,25 @@ const DeleteEditor = (props: {
   if (!data || !data.getProject.appConfig) {
     return <div>loading...</div>
   }
-  const models = data.getProject.appConfig.apiConfig.models
   return (
     <div>
-      <LabeledSelect
-        label="Record Id"
-        selectedValue={props.params.dataType}
-        options={models.map(model => ({
-          label: model.name,
-          value: model._id,
-        }))}
-        onChange={e => {
-          const newParams = { ...props.params }
-          newParams.dataType = e.target.value
-          props.onUpdate(newParams)
-        }}
-      />
-
-      <LabeledTextInput
-        label={'Record Id'}
-        value={props.params.deleteId}
-        onChange={e => {
-          const newProps = { ...props.params }
-          newProps.deleteId = e.target.value
-          props.onUpdate(newProps)
+      <EntitySelector
+        componentId={props.componentId}
+        selectedLabel={props.params.deleteElement?.label}
+        onSelect={(path, label) => {
+          props.onUpdate({
+            ...props.params,
+            deleteElement: {
+              label,
+              path,
+            },
+          })
         }}
       />
     </div>
   )
 }
+
 const NavigateEditor = ({
   componentId,
   params,
@@ -903,112 +916,45 @@ const NavigateEditor = ({
   onUpdate: (newValue: NavigateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data: projectData } = useGetProjectQuery({
-    variables: { projectId },
-  })
-  const { data: dataContextData } = useGetDataContextQuery({
-    variables: {
-      componentId,
-    },
-  })
   const { data: componentData } = useGetComponentsQuery({
     variables: {
       projectId,
     },
   })
-  const [modelStructures, setModelStructures] = useState<{
-    [key: string]: DataStructure
-  }>({})
-  const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
   const [navTargets, setNagTargets] = useState<
     Array<{
       name: string
       _id: string
-      parameters?: Array<{ _id: string; entityId: string; name: string }> | null
+      parameters?: Array<{
+        _id: string
+        entityType: string
+        label: string
+        path: string
+      }> | null
     }>
   >([])
-  const extractModelName = useCallback(
-    (parameter: string): [string, boolean] => {
-      const models = projectData?.getProject.appConfig.apiConfig.models || []
-      const model = models.find(model => model._id === parameter)
-      if (model) {
-        return [model.name, true]
-      }
-      return [parameter, false]
-    },
-    [projectData]
-  )
-  useEffect(() => {
-    if (dataContextData) {
-      const modelStruct =
-        projectData?.getProject.appConfig.apiConfig.models.reduce(
-          (acc, item) => {
-            acc[item._id] = {
-              _id: item._id,
-              name: item.name,
-              fields: item.fields
-                .filter(field => !field.isList) // don't add lists for now
-                .map(field => ({
-                  dataType: field.dataType,
-                  hasSubMenu: !!field.connection,
-                  key: field._id,
-                  name: field.fieldName,
-                })),
-            }
-            return acc
-          },
-          {} as {
-            [key: string]: DataStructure
-          }
-        )
-      setModelStructures(modelStruct || {})
-
-      const structure = dataContextData.getDataContext.reduce((acc, item) => {
-        item.dataSources.forEach(source => {
-          const [name, hasSubMenu] = extractModelName(source)
-          acc.push({
-            source: item.componentId,
-            entity: source,
-            label: `${item.name}'s ${name}`,
-            hasSubMenu,
-          })
-        })
-        return acc
-      }, [] as MenuStructure[])
-      setDataStructure(structure)
-    }
-  }, [dataContextData, extractModelName, projectData])
   const buildParameters = () => {
     const target = navTargets.find(t => t._id === params.destination)
     if (target) {
       if (target.parameters && target.parameters.length > 0) {
         return target.parameters.map(p => (
-          <>
-            <div>{extractModelName(p.entityId)}</div>
-            <div style={{ border: 'solid 1px var(--accent)', borderRadius: 5 }}>
-              <DataBinder
-                targetType={p.entityId}
-                onSelect={(entityId, label) => {
-                  onUpdate({
-                    ...params,
-                    parameters: {
-                      ...params.parameters,
-                      [p._id]: {
-                        path: entityId,
-                        label,
-                      },
-                    },
-                  })
-                }}
-                entry={dataStructure}
-                dataStructure={modelStructures}
-              />
-              <span>
-                {params.parameters &&
-                  params.parameters[p._id]?.label.split('.').pop()}
-              </span>
-            </div>
-          </>
+          <EntitySelector
+            entityId={p.entityType}
+            componentId={componentId}
+            selectedLabel={params.parameters && params.parameters[p._id]?.label}
+            onSelect={(entityId, label) => {
+              onUpdate({
+                ...params,
+                parameters: {
+                  ...params.parameters,
+                  [p._id]: {
+                    path: entityId,
+                    label,
+                  },
+                },
+              })
+            }}
+          />
         ))
       } else {
         return <div>No parameters</div>

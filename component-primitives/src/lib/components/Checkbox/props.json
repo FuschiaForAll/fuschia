@@ -42,7 +42,7 @@
       }
     },
     "onValueChange": {
-      "title": "onPress",
+      "title": "onValueChange",
       "type": "function",
       "arguments": [
         {
@@ -52,5 +52,8 @@
       ],
       "returnType": "null"
     }
+  },
+  "data": {
+    "checked": "boolean"
   }
 }

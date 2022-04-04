@@ -5,14 +5,16 @@ query GetBindingTree($componentId: ObjectId!, $projectId: ObjectId!) {
       hasSubMenu
       label
       source
+      type
     }
     structure {
       _id
       fields {
-        dataType
+        entity
         hasSubMenu
-        key
-        name
+        source
+        label
+        type
       }
       name
     }

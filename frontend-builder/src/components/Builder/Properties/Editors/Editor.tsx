@@ -32,7 +32,7 @@ const Editor = function Editor(props: EditorProps) {
   }
   switch (props.schema.type) {
     case 'boolean':
-      return <BooleanEditor {...(props as Props<BooleanSchema, boolean>)} />
+      return <BooleanEditor {...(props as Props<BooleanSchema, string>)} />
     case 'string':
       return <StringEditor {...(props as Props<StringSchema, string>)} />
     case 'array':

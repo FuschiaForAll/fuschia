@@ -6,16 +6,21 @@ import { DataSource } from "./Component.entity";
 @InputType()
 export class RequiredParameterInput {
   @Field((type) => ObjectIdScalar)
-  entityId!: ObjectId;
-
+  entityType!: ObjectId;
   @Field()
-  name!: string;
+  path!: string;
+  @Field()
+  label!: string;
 }
 
 @InputType()
 export class DataSourceInput {
   @Field()
-  type!: string;
+  entityType!: string;
+  @Field()
+  path!: string;
+  @Field()
+  label!: string;
 
   @Field((type) => [Object])
   variables!: Object[];

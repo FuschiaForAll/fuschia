@@ -1,182 +1,89 @@
-import { IconButton, ListItemIcon, ListItemText } from '@mui/material'
-import React, { useState } from 'react'
+import { IconButton } from '@mui/material'
+import React, { useEffect, useRef, useState } from 'react'
 import LanIcon from '@mui/icons-material/Lan'
-import Menu from '@mui/material/Menu'
-import MenuItem from '@mui/material/MenuItem'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
+import { CascadingMenu } from '../../../Shared/CascadingMenu'
 
 export type ComponentId = string
 export type EntityId = string
 
-interface Field {
-  key: string
-  dataType: string
-  name: string
-  hasSubMenu: boolean
-}
 export interface DataStructure {
   _id: string
   name: string
-  fields: Field[]
+  fields: MenuStructure[]
 }
 
 export interface MenuStructure {
+  type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
   source: ComponentId
   entity: EntityId
   label: string
   hasSubMenu: boolean
 }
 
-function SubMenu(props: {
-  targetType?: string
-  label: string
-  entityId: string
-  dataStructure: { [key: string]: DataStructure }
-  onSelect: (entityPath: string, labelPath: string) => void
-}) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
-
-  function handleSubMenuClose() {
-    setAnchorEl(null)
-  }
-  function handleSubMenuSelect(entityPath: string, labelPath: string) {
-    props.onSelect(entityPath, labelPath)
-    handleSubMenuClose()
-  }
-  return (
-    <>
-      <MenuItem
-        key={props.label}
-        style={{
-          color:
-            props.targetType === props.entityId
-              ? 'var(--accent)'
-              : 'var(--black)',
-        }}
-        onClick={() => {
-          if (props.targetType === props.entityId || !props.targetType) {
-            handleSubMenuSelect(props.entityId, props.label)
-          }
-        }}
-      >
-        <ListItemText>{props.label}</ListItemText>
-        <ListItemIcon onMouseOver={e => setAnchorEl(e.currentTarget)}>
-          <ArrowForwardIosIcon fontSize="small" />
-        </ListItemIcon>
-      </MenuItem>
-      <Menu
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left',
-        }}
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleSubMenuClose}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
-        }}
-      >
-        {props.dataStructure[props.entityId].fields.map(element =>
-          element.hasSubMenu ? (
-            <SubMenu
-              targetType={props.targetType}
-              label={element.name}
-              dataStructure={props.dataStructure}
-              entityId={element.dataType}
-              key={element.key}
-              onSelect={(entityPath, labelPath) =>
-                handleSubMenuSelect(
-                  `${element.key}.${entityPath}`,
-                  `${element.name}.${labelPath}`
-                )
-              }
-            />
-          ) : (
-            <MenuItem
-              key={element.key}
-              onClick={() => {
-                if (props.targetType === props.entityId || !props.targetType) {
-                  handleSubMenuSelect(element.key, element.name)
-                }
-              }}
-            >
-              {element.name}
-            </MenuItem>
-          )
-        )}
-      </Menu>
-    </>
-  )
-}
-
 interface DataBinderProps {
   targetType?: string
   entry: MenuStructure[]
   dataStructure: { [key: string]: DataStructure }
-  onSelect: (entityPath: string, labelPath: string) => void
+  onSelect: (
+    entityType: string,
+    entityPath: string,
+    labelPath: string,
+    type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+  ) => void
 }
 
 const DataBinder: React.FC<DataBinderProps> = function DataBinder(
   props: DataBinderProps
 ) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const open = Boolean(anchorEl)
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  const handleClickOutside = (event: MouseEvent) => {
+    // @ts-ignore
+    if (ref.current && event.target && !ref.current.contains(event.target)) {
+      setOpen(false)
+    }
+  }
+  useEffect(() => {
+    document.addEventListener('click', handleClickOutside, true)
+    return () => {
+      document.removeEventListener('click', handleClickOutside, true)
+    }
+  }, [])
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget)
+    setOpen(o => !o)
   }
+
   const handleClose = () => {
-    setAnchorEl(null)
+    setOpen(false)
   }
-  const handleSelect = (entityPath: string, labelPath: string) => {
-    props.onSelect(`${entityPath}`, `${labelPath}`)
+
+  const handleSelect = (
+    entityType: string,
+    entityPath: string,
+    labelPath: string,
+    type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+  ) => {
+    props.onSelect(entityType, `${entityPath}`, `${labelPath}`, type)
     handleClose()
   }
   return (
-    <>
+    <div ref={ref}>
       <IconButton onClick={handleClick}>
         <LanIcon fontSize="small" />
       </IconButton>
-      <Menu
-        id="basic-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'basic-button',
-        }}
-      >
-        {props.entry.map(element =>
-          element.hasSubMenu ? (
-            <SubMenu
-              targetType={props.targetType}
-              label={element.label}
-              entityId={element.entity}
-              dataStructure={props.dataStructure}
-              key={element.entity}
-              onSelect={(entityPath, labelPath) =>
-                handleSelect(
-                  `${element.entity}.${entityPath}`,
-                  `${element.label}.${labelPath}`
-                )
-              }
-            />
-          ) : (
-            <MenuItem
-              key={element.entity}
-              onClick={() => handleSelect(element.entity, element.label)}
-            >
-              {element.label}
-            </MenuItem>
-          )
-        )}
-      </Menu>
-    </>
+      {open && (
+        <div style={{ position: 'absolute' }}>
+          <CascadingMenu
+            menu={props.entry}
+            dataStructure={props.dataStructure}
+            onSelect={(entityType, value, label, type) =>
+              handleSelect(entityType, value, label, type)
+            }
+          />
+        </div>
+      )}
+    </div>
   )
 }
 

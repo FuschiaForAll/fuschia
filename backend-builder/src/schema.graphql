@@ -147,25 +147,22 @@ input DataFieldInput {
 }
 
 type DataSource {
-  type: String!
+  entityType: String!
+  label: String!
+  path: String!
   variables: [JSONObject!]!
 }
 
 input DataSourceInput {
-  type: String!
+  entityType: String!
+  label: String!
+  path: String!
   variables: [JSONObject!]!
 }
 
 type DataStructure {
   _id: String!
-  fields: [DataStructureField!]!
-  name: String!
-}
-
-type DataStructureField {
-  dataType: String!
-  hasSubMenu: Boolean!
-  key: String!
+  fields: [MenuStructure!]!
   name: String!
 }
 
@@ -225,6 +222,7 @@ type MenuStructure {
   hasSubMenu: Boolean!
   label: String!
   source: String!
+  type: String!
 }
 
 type Mutation {
@@ -270,6 +268,7 @@ type Mutation {
   updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
   updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
+  updatePreviewerData(data: JSONObject, projectId: ObjectId!): Previewer!
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
@@ -341,6 +340,12 @@ enum PackageScope {
   Public
 }
 
+type Previewer {
+  _id: ObjectId!
+  data: JSONObject
+  project: Project!
+}
+
 type Project {
   _id: ObjectId!
   appConfig: AppConfig!
@@ -366,8 +371,10 @@ type Query {
   getDataContext(componentId: ObjectId!): [DataContext!]!
   getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
+  getPackageComponent(packageComponentId: ObjectId!): PackageComponent
   getPackageComponents: [PackageComponent!]!
   getPackages: [Package!]!
+  getPreviewerData(projectId: ObjectId!): Previewer!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
@@ -386,13 +393,15 @@ type Query {
 
 type RequiredParameter {
   _id: ObjectId!
-  entityId: ObjectId!
-  name: String!
+  entityType: ObjectId!
+  label: String!
+  path: String!
 }
 
 input RequiredParameterInput {
-  entityId: ObjectId!
-  name: String!
+  entityType: ObjectId!
+  label: String!
+  path: String!
 }
 
 type Translation {
@@ -413,7 +422,6 @@ type User {
   organizations: [Organization!]!
   status: String!
   userRole: String!
-  username: String
 }
 
 input UserInput {

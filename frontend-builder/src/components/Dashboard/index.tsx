@@ -110,14 +110,12 @@ function Profile({
   const [me, setMe] = useState({
     email: '',
     name: '',
-    username: '',
   })
   useEffect(() => {
     if (meData) {
       setMe({
         email: meData.me?.email || '',
         name: meData.me?.fullName || '',
-        username: meData.me?.username || '',
       })
     }
   }, [meData])
@@ -139,17 +137,6 @@ function Profile({
               }}
             />
             <LabeledTextInput
-              label="Username"
-              value={me.username}
-              onChange={e => {
-                const val = e.target.value
-                setMe(m => ({
-                  ...m,
-                  username: val,
-                }))
-              }}
-            />
-            <LabeledTextInput
               label="Email Address"
               value={me.email}
               onChange={e => {
@@ -164,8 +151,7 @@ function Profile({
               style={{ width: '200px' }}
               disabled={
                 me.email === (meData?.me?.email || '') &&
-                me.name === (meData?.me?.fullName || '') &&
-                me.username === (meData?.me?.username || '')
+                me.name === (meData?.me?.fullName || '')
               }
               onClick={() => {
                 updateMe({
@@ -173,7 +159,6 @@ function Profile({
                     userInput: {
                       email: me.email,
                       fullName: me.name,
-                      username: me.username,
                     },
                   },
                 })

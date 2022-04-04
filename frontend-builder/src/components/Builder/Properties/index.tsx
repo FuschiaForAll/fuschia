@@ -46,18 +46,22 @@ const cardStyles = {
   overflowX: 'hidden',
 }
 
-function Properties(props: { schema: Schema; elementId: string }) {
+function Properties({
+  component,
+  schema,
+  elementId,
+}: {
+  schema: Schema
+  elementId: string
+  component: any
+}) {
   let { projectId } = useParams<{ projectId: string }>()
   const [value, setValue] = useState(0)
+  const [name, setName] = useState(component.name)
   const { updateComponent, updateComponentProps } = useUpdateComponent()
   const { data: projectData } = useGetProjectQuery({
     variables: {
       projectId,
-    },
-  })
-  const { data: componentData, loading } = useGetComponentQuery({
-    variables: {
-      componentId: props.elementId,
     },
   })
   const [updateAppConfig] = useUpdateAppConfigMutation({
@@ -73,41 +77,35 @@ function Properties(props: { schema: Schema; elementId: string }) {
     ],
   })
   function getReference(name: string) {
-    if (props.schema.definitions) {
-      return props.schema.definitions[name.substring('#/definitions/'.length)]
+    if (schema.definitions) {
+      return schema.definitions[name.substring('#/definitions/'.length)]
     }
     return undefined
-  }
-  if (!componentData?.getComponent) {
-    return <div>Loading</div>
-  }
-  if (loading) {
-    return null
   }
   return (
     <>
       <LabeledTextInput
         label="Component Name"
-        value={componentData.getComponent.name}
+        value={name}
         onChange={e => {
           const newName = e.target.value
+          setName(newName)
           updateComponent(
-            props.elementId,
+            elementId,
             {
               name: newName,
             },
             {
-              name: componentData?.getComponent?.name,
+              name: component.name,
             }
           )
         }}
       />
-      {componentData.getComponent.isRootElement && (
+      {component.isRootElement && (
         <LabeledCheckbox
           label="Welcome Screen?"
           checked={
-            projectData?.getProject.appConfig.appEntryComponentId ===
-            props.elementId
+            projectData?.getProject.appConfig.appEntryComponentId === elementId
           }
           onChange={e => {
             const value = e.target.checked
@@ -116,7 +114,7 @@ function Properties(props: { schema: Schema; elementId: string }) {
                 variables: {
                   projectId,
                   appConfig: {
-                    appEntryComponentId: props.elementId,
+                    appEntryComponentId: elementId,
                   },
                 },
               })
@@ -140,7 +138,7 @@ function Properties(props: { schema: Schema; elementId: string }) {
         >
           Properties
         </span>
-        {componentData.getComponent.isContainer && (
+        {component.isContainer && (
           <span
             onClick={() => setValue(1)}
             style={{
@@ -160,29 +158,23 @@ function Properties(props: { schema: Schema; elementId: string }) {
       </div>
       <TabPanel value={value} index={0}>
         <Editor
-          componentId={props.elementId}
-          initialValue={JSON.parse(
-            JSON.stringify(componentData.getComponent.props)
-          )}
+          componentId={elementId}
+          initialValue={JSON.parse(JSON.stringify(component.props))}
           updateValue={(value, isValid) => {
             if (value) {
-              updateComponentProps(
-                props.elementId,
-                value,
-                componentData?.getComponent?.props
-              )
+              updateComponentProps(elementId, value, component.props)
             }
           }}
           getReference={getReference}
           required={true}
-          schema={props.schema}
+          schema={schema}
         />
       </TabPanel>
       <TabPanel value={value} index={1}>
         <DataSources
           models={projectData?.getProject.appConfig.apiConfig.models || []}
-          componentId={props.elementId}
-          componentQuery={componentData}
+          componentId={elementId}
+          component={component}
         />
       </TabPanel>
     </>
@@ -198,20 +190,32 @@ interface PropertyWindowProps {
 const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
   props
 ) {
-  return (
-    <Wrapper
-      onClick={e => e.stopPropagation()}
-      onWheel={e => e.stopPropagation()}
-      onKeyDown={e => e.stopPropagation()}
-    >
-      <Inner>
-        <Paper elevation={12} sx={cardStyles}>
-          <span>{props.schema.title}</span>
-          <Properties elementId={props.elementId} schema={props.schema} />
-        </Paper>
-      </Inner>
-    </Wrapper>
-  )
+  const { data: componentData } = useGetComponentQuery({
+    variables: {
+      componentId: props.elementId,
+    },
+  })
+  if (componentData && componentData.getComponent) {
+    return (
+      <Wrapper
+        onClick={e => e.stopPropagation()}
+        onWheel={e => e.stopPropagation()}
+        onKeyDown={e => e.stopPropagation()}
+      >
+        <Inner>
+          <Paper elevation={12} sx={cardStyles}>
+            <span>{props.schema.title}</span>
+            <Properties
+              component={componentData.getComponent}
+              elementId={props.elementId}
+              schema={props.schema}
+            />
+          </Paper>
+        </Inner>
+      </Wrapper>
+    )
+  }
+  return null
 }
 
 export default PropertyWindow

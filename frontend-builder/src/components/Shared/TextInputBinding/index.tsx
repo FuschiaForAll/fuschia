@@ -126,10 +126,13 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         undefined,
         entityKey
       )
-
-      setEditorState(
-        EditorState.push(editorState, textWithEntity, 'insert-characters')
+      const newEditorState = EditorState.push(
+        editorState,
+        textWithEntity,
+        'insert-characters'
       )
+      onChange(convertToRaw(newEditorState.getCurrentContent()))
+      setEditorState(newEditorState)
     }
     const [editorState, setEditorState] = React.useState(
       EditorState.createWithContent(
@@ -189,6 +192,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         const structure = [] as MenuStructure[]
         if (projectData?.getProject.appConfig.authConfig.tableId) {
           structure.push({
+            type: 'LOCAL_DATA',
             label: 'Current User',
             hasSubMenu: true,
             entity: projectData?.getProject.appConfig.authConfig.tableId,
@@ -196,6 +200,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           })
         }
         structure.push({
+          type: 'INPUT',
           label: 'Inputs',
           hasSubMenu: true,
           entity: 'InputObject',
@@ -206,10 +211,11 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
             _id: 'InputObject',
             name: 'Inputs',
             fields: componentsData.getComponents.map(c => ({
-              dataType: c._id,
+              type: 'INPUT',
+              entity: c._id,
               hasSubMenu: !!(c.children && c.children.length > 0),
-              key: c._id,
-              name: c.name,
+              source: c._id,
+              label: c.name,
             })),
           },
         } as { [key: string]: DataStructure }
@@ -222,9 +228,10 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           c.children?.forEach(ch => {
             if (ch.children && ch.children.length > 0) {
               modelStructure[c._id].fields.push({
-                key: ch._id,
-                dataType: ch._id,
-                name: ch.name,
+                type: 'INPUT',
+                source: ch._id,
+                entity: ch._id,
+                label: ch.name,
                 hasSubMenu: !!(ch.children && ch.children.length > 0),
               })
             }
@@ -235,10 +242,11 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
               )
               .forEach(dc =>
                 modelStructure[c._id].fields.push({
-                  key: ch._id,
+                  type: 'INPUT',
+                  source: `${ch._id}+${dc.data}`,
                   hasSubMenu: false,
-                  dataType: ch._id,
-                  name: `${ch.name}'s ${dc.data}`,
+                  entity: ch._id,
+                  label: `${ch.name}'s ${dc.data}`,
                 })
               )
           })
@@ -256,18 +264,20 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
             name: item.name,
             fields: [
               {
-                dataType: 'string',
+                type: 'SERVER_DATA',
+                entity: 'string',
                 hasSubMenu: false,
-                key: '_id',
-                name: 'ID',
+                source: '_id',
+                label: 'ID',
               },
               ...item.fields
                 .filter(field => !field.isList) // don't add lists for now
                 .map(field => ({
-                  dataType: field.dataType,
+                  type: 'SERVER_DATA' as 'SERVER_DATA',
+                  entity: field.dataType,
                   hasSubMenu: !!field.connection,
-                  key: field._id,
-                  name: field.fieldName,
+                  source: field._id,
+                  label: field.fieldName,
                 })),
             ],
           }
@@ -278,6 +288,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           item.dataSources.forEach(source => {
             const [name, hasSubMenu] = extractModelName(source)
             structure.push({
+              type: 'SERVER_DATA',
               source: item.componentId,
               entity: source,
               label: `${item.name}'s ${name}`,
@@ -311,7 +322,6 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           }}
           editorState={editorState}
           onChange={e => {
-            debugger
             onChange(convertToRaw(editorState.getCurrentContent()))
             setEditorState(e)
           }}
@@ -319,12 +329,13 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         />
 
         <DataBinder
-          onSelect={(entityPath, labelPath) => {
+          onSelect={(entity, entityPath, labelPath, type) => {
             const name = labelPath.split('.').pop()
             if (name) {
               insertPlaceholder(name, {
                 entityPath,
                 labelPath,
+                type,
               })
             }
           }}
