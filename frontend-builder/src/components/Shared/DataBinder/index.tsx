@@ -4,59 +4,6 @@ import LanIcon from '@mui/icons-material/Lan'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import styled from '@emotion/styled'
-
-const NavMenu = styled.ul`
-  list-style-type: none;
-  position: absolute;
-  border-radius: 0.5rem;
-  z-index: 500;
-  user-select: none;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  // from paper
-  opacity: 1;
-  transform: none;
-  transition: opacity 207ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,
-    transform 138ms cubic-bezier(0.4, 0, 0.2, 1) 0ms;
-  transform-origin: 0px 0px;
-  background-color: #fff;
-  color: rgba(0, 0, 0, 0.87);
-  border-radius: 4px;
-  box-shadow: 0px 5px 5px -3px rgb(0 0 0 / 20%),
-    0px 8px 10px 1px rgb(0 0 0 / 14%), 0px 3px 14px 2px rgb(0 0 0 / 12%);
-  position: absolute;
-  outline: 0;
-
-  li {
-    position: relative;
-    cursor: pointer;
-  }
-  li:hover > div:hover {
-    background-color: rgba(0, 0, 0, 0.04);
-  }
-  div {
-    text-decoration: none;
-    display: block;
-    width: 125px;
-    line-height: 1.5;
-    padding-top: 6px;
-    padding-bottom: 6px;
-    box-sizing: border-box;
-    white-space: nowrap;
-    padding-left: 16px;
-    padding-right: 16px;
-  }
-  li > ul {
-    display: none;
-    position: absolute;
-    top: 0px;
-    left: 125px;
-  }
-  li:hover > ul {
-    display: block;
-  }
-`
 
 export type ComponentId = string
 export type EntityId = string

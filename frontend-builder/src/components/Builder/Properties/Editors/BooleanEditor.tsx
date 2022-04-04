@@ -1,6 +1,5 @@
 import React from 'react'
 import { Props, BooleanSchema } from '@fuchsia/types'
-import TextInputBinding from '../../../Shared/TextInputBinding'
 import { EntitySelector } from '../../../Shared/EntitySelector'
 
 export type BooleanEditorProps = Props<BooleanSchema, string>

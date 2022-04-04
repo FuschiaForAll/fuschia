@@ -4,11 +4,9 @@ import { useParams } from 'react-router-dom'
 import {
   useGetBindingTreeQuery,
   useGetComponentsQuery,
-  useGetDataContextQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
-import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
 import TextInputBinding from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
@@ -25,7 +23,6 @@ import {
 } from '../DataSources'
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
-import { CascadingMenu } from '../../../Shared/CascadingMenu'
 import { EntitySelector } from '../../../Shared/EntitySelector'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
@@ -48,7 +45,6 @@ const FUNCTION_TYPES = [
 
 type ComponentId = string
 type EntityId = string
-type RecordId = string
 
 interface SwitchProps {
   type: 'SWITCH'

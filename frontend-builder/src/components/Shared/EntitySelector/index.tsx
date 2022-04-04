@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
-  useGetComponentsQuery,
 } from '../../../generated/graphql'
 import DataBinder from '../../Builder/Properties/Editors/DataBinder'
 import { DataStructure, MenuStructure } from '../CascadingMenu'
@@ -30,11 +29,6 @@ export function EntitySelector({
   const { data: dataContextData } = useGetDataContextQuery({
     variables: {
       componentId,
-    },
-  })
-  const { data: componentData } = useGetComponentsQuery({
-    variables: {
-      projectId,
     },
   })
   const [modelStructures, setModelStructures] = useState<{
@@ -102,7 +96,13 @@ export function EntitySelector({
       }
       setDataStructure([...(additionalEntities || []), ...structure])
     }
-  }, [additionalEntities, dataContextData, extractModelName, projectData])
+  }, [
+    additionalEntities,
+    dataContextData,
+    extractModelName,
+    isList,
+    projectData,
+  ])
   return (
     <>
       <div>{entityId && extractModelName(entityId)}</div>

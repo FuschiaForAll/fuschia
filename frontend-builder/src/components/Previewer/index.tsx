@@ -4,7 +4,6 @@ import { Paper } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
   Component,
-  DataSource,
   GetPackagesQuery,
   GetPreviewerDataDocument,
   useGetComponentsQuery,
@@ -16,7 +15,6 @@ import {
 import styled from '@emotion/styled'
 import { ActionProps } from '../Builder/Properties/Editors/FunctionEditor'
 import { executeAction } from './executeAction'
-import { convertToObject } from 'typescript'
 import { Schema } from '../../../../types/src/properties'
 
 const FrameWrapper = styled.div`
