@@ -17,32 +17,7 @@ import { IconButton } from '@mui/material'
 import TextInputBinding from '../../Shared/TextInputBinding'
 import { gql } from '@apollo/client'
 import { EntitySelector } from '../../Shared/EntitySelector'
-
-export interface Expression {
-  operator: string
-  operand?: string
-}
-
-export interface PrimitiveFilter {
-  key: string
-  value: string | boolean | number | Expression
-}
-export interface NotFilter {
-  key: '$not'
-  value: Filter
-}
-
-export interface AndFilter {
-  key: '$and'
-  value: Filter[]
-}
-
-export interface OrFilter {
-  key: '$or'
-  value: Filter[]
-}
-
-export type Filter = AndFilter | OrFilter | NotFilter | PrimitiveFilter
+import { Filter, AndFilter, OrFilter, NotFilter } from '@fuchsia/types'
 
 interface Fields {
   _id: any

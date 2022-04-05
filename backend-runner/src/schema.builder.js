@@ -127,9 +127,14 @@ async function publish(project) {
         project.appConfig.authConfig.usernameCaseSensitive,
         args
       );
-    mutationBuilder.push(
-      `  register(username: String!, password: String!): String`
+    const authTable = project.appConfig.apiConfig.models.find(
+      (model) =>
+        model._id.toString() === project.appConfig.authConfig.tableId.toString()
     );
+    if (authTable) {
+      const name = authTable.name.replaceAll(" ", "");
+      mutationBuilder.push(`  register(userData: ${name}!): String`);
+    }
     resolverBuilder.Mutation.register = (parent, args, context, info) =>
       resolver.registerResolver(
         project.appConfig.authConfig.tableId.toString(),

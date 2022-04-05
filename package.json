@@ -8,6 +8,7 @@
     "frontend-builder",
     "backend-runner",
     "types",
-    "package-manager"
+    "package-manager",
+    "frontend-deployment"
   ]
 }
