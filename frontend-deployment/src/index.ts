@@ -3,10 +3,13 @@ import { MongoClient, ObjectId, Db } from 'mongodb'
 import fs, { CopyOptions } from 'fs-extra'
 import path from 'path'
 import {
+  ArrayHookVariable,
   convertHooks,
   convertImports,
   DestructedHookVariable,
   draftJsStuff,
+  generateAuthGraphqlFiles,
+  generateEntityModelGraphqlFiles,
   generateRootNavigator,
   Hooks,
   Import,
@@ -15,6 +18,8 @@ import {
 import { ActionProps, ObjectSchema, Schema } from '@fuchsia/types'
 import { Component, Package, Project } from './types'
 import { baseApp } from './boilerplate/App'
+import { generateServerSchema } from './schema.builder'
+import { exec } from 'child_process'
 
 const workdir = path.join(__dirname, '../workdir')
 const srcdir = path.join(workdir, 'src')
@@ -112,7 +117,8 @@ function getImports(imports: Import, parent: Component) {
 async function buildScreen(
   rootComponent: Component,
   packages: Package[],
-  rootComponents: Component[]
+  rootComponents: Component[],
+  projectInfo: Project
 ) {
   const hooksBuilder = {} as Hooks
   const importsBuilder = getImports({}, rootComponent)
@@ -124,13 +130,53 @@ async function buildScreen(
 
   function buildChild(component: Component, indentation: number) {
     const propsBuilder = [] as string[]
-    propsBuilder.push(`${''.padStart(indentation, ' ')}<${component.type}`)
     const _package = packages.find(p => p.packageName === component.package)
     if (_package) {
       const packageComponent = _package.components.find(
         c => c.name === component.type
       )
       if (packageComponent) {
+        if (packageComponent.schema.type === 'array') {
+          if (component.fetched) {
+            component.fetched.map(f => {
+              const fetchedModel = projectInfo.appConfig.apiConfig.models.find(
+                m => m._id.toString() === f.entityType
+              )
+              if (fetchedModel) {
+                // need import for fetch
+                if (!importsBuilder['./generated/graphql']) {
+                  importsBuilder['./generated/graphql'] = {}
+                }
+                importsBuilder['./generated/graphql'][
+                  `useList${fetchedModel.name}Query`
+                ] = 'single'
+                if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
+                  hooksBuilder[`useList${fetchedModel.name}Query`] = {
+                    type: 'destructed',
+                    value: {},
+                  }
+                }
+                ;(
+                  hooksBuilder[
+                    `useList${fetchedModel.name}Query`
+                  ] as DestructedHookVariable
+                ).value.data = {
+                  type: 'variable',
+                  value: `data`,
+                  renamed: `${fetchedModel.name}Data`,
+                }
+                // need hook for fetch
+                // need data
+                propsBuilder.push(`${''.padStart(indentation, ' ')}{
+                  ${fetchedModel.name}Data?.list${
+                  fetchedModel.name
+                }?.items?.map(item => (
+                `)
+              }
+            })
+          }
+        }
+        propsBuilder.push(`${''.padStart(indentation, ' ')}<${component.type}`)
         importsBuilder.react.useState = 'single'
         // @ts-ignore
         if (packageComponent.schema && packageComponent.schema.data) {
@@ -217,42 +263,209 @@ async function buildScreen(
                       )
                       break
                     case 'LOGIN':
-                      if (!importsBuilder['./hooks/useAuth']) {
-                        importsBuilder['./hooks/useAuth'] = {}
+                      if (!importsBuilder['./generated/graphql']) {
+                        importsBuilder['./generated/graphql'] = {}
                       }
-                      importsBuilder['./hooks/useAuth'].useAuth = 'single'
-                      if (!hooksBuilder.useAuth) {
-                        hooksBuilder.useAuth = {
-                          type: 'destructed',
-                          value: {},
+                      importsBuilder['./generated/graphql'].useLoginMutation =
+                        'single'
+                      if (!hooksBuilder.useLoginMutation) {
+                        hooksBuilder.useLoginMutation = {
+                          type: 'array',
+                          value: [],
                         }
                       }
                       ;(
-                        hooksBuilder.useAuth as DestructedHookVariable
-                      ).value.login = {
+                        hooksBuilder.useLoginMutation as ArrayHookVariable
+                      ).value.push({
                         type: 'variable',
                         value: 'login',
-                      }
+                      })
                       propsBuilder.push(
-                        `const success = await login(\`${draftJsStuff(
+                        `const success = await login({ variables: { username: \`${draftJsStuff(
                           action.username,
                           rootComponents,
                           packages
-                        )}\`, \`${draftJsStuff(
+                        )}\`, password: \`${draftJsStuff(
                           action.password,
                           rootComponents,
                           packages
-                        )}\`);`
+                        )}\`}});`
                       )
                       if (action.onSucess) {
-                        propsBuilder.push(`if (success) {`)
+                        propsBuilder.push(`if (success.data) {`)
+                        if (
+                          !importsBuilder[
+                            '@react-native-async-storage/async-storage'
+                          ]
+                        ) {
+                          importsBuilder[
+                            '@react-native-async-storage/async-storage'
+                          ] = {}
+                        }
+                        importsBuilder[
+                          '@react-native-async-storage/async-storage'
+                        ].AsyncStorage = 'default'
+                        propsBuilder.push(
+                          `await AsyncStorage.setItem('authToken', success.data.login);`
+                        )
                         action.onSucess.forEach(action => actionBuilder(action))
                         propsBuilder.push(`}`)
                       }
                       if (action.onFail) {
-                        propsBuilder.push(`if (!success) {`)
+                        propsBuilder.push(`if (success.errors) {`)
                         action.onFail.forEach(action => actionBuilder(action))
                         propsBuilder.push(`}`)
+                      }
+                      break
+                    case 'REGISTER':
+                      if (!importsBuilder['./generated/graphql']) {
+                        importsBuilder['./generated/graphql'] = {}
+                      }
+                      importsBuilder[
+                        './generated/graphql'
+                      ].useRegisterMutation = 'single'
+                      if (!hooksBuilder.useRegisterMutation) {
+                        hooksBuilder.useRegisterMutation = {
+                          type: 'array',
+                          value: [],
+                        }
+                      }
+                      ;(
+                        hooksBuilder.useRegisterMutation as ArrayHookVariable
+                      ).value.push({
+                        type: 'variable',
+                        value: 'register',
+                      })
+
+                      const authModel =
+                        projectInfo.appConfig.apiConfig.models.find(
+                          m =>
+                            m._id.toString() ===
+                            projectInfo.appConfig.authConfig.tableId.toString()
+                        )
+                      if (authModel) {
+                        const authPartBuilder = [] as string[]
+                        authPartBuilder.push(`{ variables: { userData: { `)
+                        const authFieldsBuilder = [] as string[]
+                        Object.keys(action.fields).forEach(f => {
+                          const value = draftJsStuff(
+                            action.fields[f],
+                            rootComponents,
+                            packages
+                          )
+                          const field = authModel.fields.find(
+                            field => field._id.toString() === f
+                          )
+                          if (field) {
+                            authFieldsBuilder.push(
+                              ` ${field.fieldName}: \`${value}\``
+                            )
+                          }
+                        })
+                        authPartBuilder.push(authFieldsBuilder.join(','))
+                        authPartBuilder.push(`} } }`)
+                        console.log(authPartBuilder.join(''))
+                        propsBuilder.push(
+                          `const success = await register(${authPartBuilder.join(
+                            ''
+                          )});`
+                        )
+                        if (action.onSucess) {
+                          propsBuilder.push(`if (success.data) {`)
+
+                          if (
+                            !importsBuilder[
+                              '@react-native-async-storage/async-storage'
+                            ]
+                          ) {
+                            importsBuilder[
+                              '@react-native-async-storage/async-storage'
+                            ] = {}
+                          }
+                          importsBuilder[
+                            '@react-native-async-storage/async-storage'
+                          ].AsyncStorage = 'default'
+                          propsBuilder.push(
+                            `await AsyncStorage.setItem('authToken', success.data.register);`
+                          )
+                          action.onSucess.forEach(action =>
+                            actionBuilder(action)
+                          )
+                          propsBuilder.push(`}`)
+                        }
+                        if (action.onFail) {
+                          propsBuilder.push(`if (success.errors) {`)
+                          action.onFail.forEach(action => actionBuilder(action))
+                          propsBuilder.push(`}`)
+                        }
+                      }
+                      break
+                    case 'CREATE':
+                      // generate graphql file if needed
+                      if (action.dataType && action.fields) {
+                        const actionFields = action.fields
+                        const model =
+                          projectInfo.appConfig.apiConfig.models.find(
+                            m => m._id.toString() === action.dataType
+                          )
+                        if (model) {
+                          if (!importsBuilder['./generated/graphql']) {
+                            importsBuilder['./generated/graphql'] = {}
+                          }
+                          importsBuilder['./generated/graphql'][
+                            `useCreate${model.name}Mutation`
+                          ] = 'single'
+                          if (!hooksBuilder[`useCreate${model.name}Mutation`]) {
+                            hooksBuilder[`useCreate${model.name}Mutation`] = {
+                              type: 'array',
+                              value: [],
+                            }
+                          }
+                          ;(
+                            hooksBuilder[
+                              `useCreate${model.name}Mutation`
+                            ] as ArrayHookVariable
+                          ).value.push({
+                            type: 'variable',
+                            value: `create${model.name}`,
+                          })
+                          const createPartBuilder = [] as string[]
+                          createPartBuilder.push(`{ variables: { input: { `)
+                          const createFieldsBuilder = [] as string[]
+                          Object.keys(actionFields).forEach(f => {
+                            const value = draftJsStuff(
+                              actionFields[f],
+                              rootComponents,
+                              packages
+                            )
+                            const field = model.fields.find(
+                              field => field._id.toString() === f
+                            )
+                            if (field) {
+                              // need value cohersion
+                              switch (field.dataType) {
+                                case 'Boolean':
+                                  createFieldsBuilder.push(
+                                    ` ${field.fieldName}: ${value}`
+                                  )
+                                  break
+                                default:
+                                  createFieldsBuilder.push(
+                                    ` ${field.fieldName}: \`${value}\``
+                                  )
+                                  break
+                              }
+                            }
+                          })
+                          createPartBuilder.push(createFieldsBuilder.join(','))
+                          createPartBuilder.push(`} } }`)
+                          console.log(createPartBuilder.join(''))
+                          propsBuilder.push(
+                            `const success = await create${
+                              model.name
+                            }(${createPartBuilder.join('')});`
+                          )
+                        }
                       }
                   }
                 }
@@ -275,6 +488,8 @@ async function buildScreen(
                   `${prop}={${JSON.stringify(component.props[prop])}}`
                 )
                 break
+              case 'array':
+                break
               default:
                 // the rest need to be stripped of DraftJS if applicable
                 propsBuilder.push(`${prop}={${component.props[prop]}}`)
@@ -282,16 +497,24 @@ async function buildScreen(
             }
           }
         })
+        if (component.children && component.children.length > 0) {
+          propsBuilder.push('>')
+          bableBuilder.push(propsBuilder.join(' '))
+          component.children.forEach(child =>
+            buildChild(child, indentation + 3)
+          )
+          bableBuilder.push(
+            `${''.padStart(indentation, ' ')}</${component.name}>`
+          )
+
+          if (packageComponent.schema.type === 'array') {
+            bableBuilder.push(`))}`)
+          }
+        } else {
+          propsBuilder.push('/>')
+          bableBuilder.push(propsBuilder.join(' '))
+        }
       }
-    }
-    if (component.children && component.children.length > 0) {
-      propsBuilder.push('>')
-      bableBuilder.push(propsBuilder.join(' '))
-      component.children.forEach(child => buildChild(child, indentation + 3))
-      bableBuilder.push(`${''.padStart(indentation, ' ')}</${component.name}>`)
-    } else {
-      propsBuilder.push('/>')
-      bableBuilder.push(propsBuilder.join(' '))
     }
   }
 
@@ -358,13 +581,42 @@ async function getComponentsSchema(mongoUrl: string) {
   const schema = await getComponentsSchema(mongoUrl)
   const projectInfo = await getProjectInfo(mongoUrl, projectId)
   const project = await getProjectStructure(mongoUrl, projectInfo)
+  // create server schema
+  await fs.writeFile(
+    path.join(workdir, 'schema.graphql'),
+    generateServerSchema(projectInfo),
+    { flag: 'w' }
+  )
+  await generateAuthGraphqlFiles(srcdir, projectInfo)
+  await generateEntityModelGraphqlFiles(srcdir, projectInfo)
+  // run apollo codegen
+  await new Promise((resolve, reject) =>
+    exec(
+      `cd ${workdir} && graphql-codegen --config codegen.yaml`,
+      (error, stdout, stderr) => {
+        if (error) {
+          console.error(error)
+        }
+        if (stdout) {
+          console.error(stdout)
+        }
+        if (stderr) {
+          console.error(stderr)
+        }
+        resolve(1)
+      }
+    )
+  )
+
   await fs.writeFile(
     path.join(srcdir, 'RootNavigator.tsx'),
     generateRootNavigator(project, projectInfo.appConfig.appEntryComponentId),
     { flag: 'w' }
   )
   await fs.writeFile(path.join(srcdir, 'App.tsx'), baseApp)
-  project.forEach(component => buildScreen(component, schema, project))
+  project.forEach(component =>
+    buildScreen(component, schema, project, projectInfo)
+  )
 })()
   .catch(e => console.error(e))
   .then(() => console.log(`build completed`))

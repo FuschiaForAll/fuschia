@@ -1,7 +1,9 @@
 import { Schema, ActionProps } from '@fuchsia/types'
 import { ObjectId } from 'mongodb'
-import { Component, Package } from './types'
+import { Component, Package, Project } from './types'
 import { RawDraftContentState } from 'draft-js'
+import fs, { CopyOptions } from 'fs-extra'
+import path from 'path'
 export interface Import {
   [packageName: string]: { [componentName: string]: 'default' | 'single' }
 }
@@ -52,21 +54,12 @@ export const draftJsStuff = (
         if (draft.entityMap && draft.entityMap[range.key]) {
           switch (draft.entityMap[range.key].data.type) {
             case 'INPUT':
-              console.log(`GETTING INPUT`)
               const [parts, dataPath] = draft.entityMap[
                 range.key
               ].data.entityPath.split('+') as string[]
-              console.log(`parts`)
-              console.log(parts)
-              console.log(`dataPath`)
-              console.log(dataPath)
               const bits = parts.split('.')
               let currentComponent: Component | null = null
               bits.forEach(bit => {
-                console.log(`bit`)
-                console.log(bit)
-                console.log(`currentComponent`)
-                console.log(currentComponent)
                 if (!currentComponent) {
                   const comp = project.find(p => p._id.toString() === bit)
                   if (comp) {
@@ -77,21 +70,23 @@ export const draftJsStuff = (
                     const comp = currentComponent.children.find(
                       p => p._id.toString() === bit
                     )
-                    console.log(`CHILDREN COMP`)
-                    console.log(comp)
                     if (comp) {
                       currentComponent = comp
                     }
                   }
                 }
               })
-              console.log(`HERE HERE HERE`)
-              console.log(currentComponent)
               if (currentComponent !== null) {
                 replacementText = `\${${(currentComponent as Component).name}${
                   dataPath ? dataPath : ''
                 }}`
-                console.log(replacementText)
+              }
+              break
+            case 'LOCAL_DATA':
+              if (
+                draft.entityMap[range.key].data.entityPath === 'CurrentUser'
+              ) {
+                replacementText = `\${meData?.me?._id}`
               }
               break
           }
@@ -239,4 +234,135 @@ export function generateRootNavigator(
   navigatorBuilder.push(`}`)
 
   return navigatorBuilder.join('\n')
+}
+
+export async function generateAuthGraphqlFiles(
+  srcdir: string,
+  projectInfo: Project
+) {
+  await fs.mkdir(path.join(srcdir, 'graphql'))
+
+  fs.writeFile(
+    path.join(srcdir, 'graphql', 'Login.graphql'),
+    `
+mutation Login($username: String!, $password: String!) {
+  login(username: $username, password: $password)
+}
+  `,
+    { flag: 'w' }
+  )
+  const authTable = projectInfo.appConfig.apiConfig.models.find(
+    m =>
+      m._id.toString() === projectInfo.appConfig.authConfig.tableId.toString()
+  )
+  if (authTable) {
+    fs.writeFile(
+      path.join(srcdir, 'graphql', 'Register.graphql'),
+      `
+mutation Register($userData: Create${authTable.name}Input!) {
+  register(userData: $userData)
+}
+      `,
+      { flag: 'w' }
+    )
+  }
+}
+
+export async function generateEntityModelGraphqlFiles(
+  srcdir: string,
+  projectInfo: Project
+) {
+  // this is done from function before, making this error prone if refactored
+  // await fs.mkdir(path.join(srcdir, 'graphql'))
+  await Promise.all(
+    projectInfo.appConfig.apiConfig.models.map(async m => {
+      // every model gets a Get, List, Create, Delete, Update
+
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `Get${m.name}.graphql`),
+        `
+query Get${m.name}($_id: ID!) {
+  get${m.name}(_id: $_id) {
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+      `,
+        { flag: 'w' }
+      )
+
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `List${m.name}.graphql`),
+        `
+query List${m.name}($filter: Model${
+          m.name
+        }FilterInput, $sortDirection: ModelSortDirection, $limit: Int, $nextToken: String) {
+  list${
+    m.name
+  }(filter: $filter, sortDirection: $sortDirection, limit: $limit, nextToken: $nextToken) {
+    nextToken
+    items {
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+    }
+  }
+}
+      `,
+        { flag: 'w' }
+      )
+
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `Create${m.name}.graphql`),
+        `
+mutation Create${m.name}($input: Create${m.name}Input!, $condition: Model${
+          m.name
+        }ConditionalInput) {
+  create${m.name}(input: $input, condition: $condition) {
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+      `,
+        { flag: 'w' }
+      )
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `Delete${m.name}.graphql`),
+        `
+mutation Delete${m.name}($input: Delete${m.name}Input!, $condition: Model${
+          m.name
+        }ConditionalInput) {
+  delete${m.name}(input: $input, condition: $condition) {
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+      `,
+        { flag: 'w' }
+      )
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `Update${m.name}.graphql`),
+        `
+mutation Update${m.name}($input: Update${m.name}Input!, $condition: Model${
+          m.name
+        }ConditionalInput) {
+  update${m.name}(input: $input, condition: $condition) {
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+      `,
+        { flag: 'w' }
+      )
+    })
+  )
 }

@@ -31,13 +31,20 @@ function generateConnections(typename) {
 function generateCreateInput({ typename, keys, nullable }) {
   const builder = [];
   builder.push(`input Create${typename}Input {`);
-  keys.forEach((key) =>
-    builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
-        key.nullable ? "" : "!"
-      }`
-    )
-  );
+  keys.forEach((key) => {
+    const isPrimitive = checkTypeForPrimitive(key.dataType);
+    if (isPrimitive) {
+      builder.push(
+        `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
+          key.nullable ? "" : "!"
+        }`
+      );
+    } else {
+      builder.push(
+        `  ${key.fieldName.replaceAll(" ", "")}: ID${key.nullable ? "" : "!"}`
+      );
+    }
+  });
   builder.push(`}`);
   return builder.join("\n");
 }
@@ -133,18 +140,19 @@ async function publish(project) {
     );
     if (authTable) {
       const name = authTable.name.replaceAll(" ", "");
-      mutationBuilder.push(`  register(userData: ${name}!): String`);
+      mutationBuilder.push(`  register(userData: Create${name}Input!): String`);
+      resolverBuilder.Mutation.register = (parent, args, context, info) =>
+        resolver.registerResolver(
+          project.appConfig.authConfig.tableId.toString(),
+          name,
+          project.appConfig.authConfig.usernameFieldId.toString(),
+          project.appConfig.authConfig.passwordFieldId.toString(),
+          args,
+          parent,
+          context,
+          info
+        );
     }
-    resolverBuilder.Mutation.register = (parent, args, context, info) =>
-      resolver.registerResolver(
-        project.appConfig.authConfig.tableId.toString(),
-        project.appConfig.authConfig.usernameFieldId.toString(),
-        project.appConfig.authConfig.passwordFieldId.toString(),
-        args,
-        parent,
-        context,
-        info
-      );
   }
   const subscriptionBuilder = ["type Subscription {"];
   const connectionsBuilder = [];
@@ -338,7 +346,7 @@ async function publish(project) {
       generateCreateInput({
         typename: name,
         keys: model.fields
-          .filter((fields) => checkTypeForPrimitive(fields.dataType))
+          .filter((fields) => !fields.isList)
           .map(({ fieldName, dataType, nullable }) => ({
             fieldName: fieldName.replaceAll(" ", ""),
             dataType,
