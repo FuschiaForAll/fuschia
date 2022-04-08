@@ -112,7 +112,7 @@ export class ApiResolver {
         }
       } else {
         if (project.appConfig.apiConfig.liveEndpoint) {
-          const url = new URL(project.appConfig.apiConfig.sandboxEndpoint);
+          const url = new URL(project.appConfig.apiConfig.liveEndpoint);
           spawnInstance(
             "prod",
             MONGO_DB_URL,

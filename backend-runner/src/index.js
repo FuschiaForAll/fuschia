@@ -13,7 +13,9 @@ const jwt = require("jsonwebtoken");
     .find({ _id: new ObjectId(process.env.PROJECT_ID) })
     .toArray();
   if (project.length > 0) {
-    const projectDb = mongoClient.db(process.env.PROJECT_ID);
+    const projectDb = mongoClient.db(
+      `${process.env.PROJECT_ID}+${process.env.NODE_ENV}`
+    );
     await initialize(projectDb, project[0]);
     const { typeDefs, resolvers } = await publish(project[0]);
     global.filterParser = require("./filter.builder")(resolvers);

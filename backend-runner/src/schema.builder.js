@@ -22,7 +22,7 @@ function checkTypeForPrimitive(type) {
 function generateConnections(typename) {
   const builder = [];
   builder.push(`type Model${typename}Connection {`);
-  builder.push(`  items: [${typename}]`);
+  builder.push(`  items: [${typename}!]!`);
   builder.push(`  nextToken: String`);
   builder.push(`}`);
   return builder.join("\n");
@@ -31,13 +31,20 @@ function generateConnections(typename) {
 function generateCreateInput({ typename, keys, nullable }) {
   const builder = [];
   builder.push(`input Create${typename}Input {`);
-  keys.forEach((key) =>
-    builder.push(
-      `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
-        key.nullable ? "" : "!"
-      }`
-    )
-  );
+  keys.forEach((key) => {
+    const isPrimitive = checkTypeForPrimitive(key.dataType);
+    if (isPrimitive) {
+      builder.push(
+        `  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}${
+          key.nullable ? "" : "!"
+        }`
+      );
+    } else {
+      builder.push(
+        `  ${key.fieldName.replaceAll(" ", "")}: ID${key.nullable ? "" : "!"}`
+      );
+    }
+  });
   builder.push(`}`);
   return builder.join("\n");
 }
@@ -45,7 +52,6 @@ function generateCreateInput({ typename, keys, nullable }) {
 function generateUpdateInput({ typename, keys }) {
   const builder = [];
   builder.push(`input Update${typename}Input {`);
-  builder.push(`  _id: ID!`);
   keys.forEach((key) =>
     builder.push(`  ${key.fieldName.replaceAll(" ", "")}: ${key.dataType}`)
   );
@@ -64,6 +70,7 @@ function generateDeleteInput({ typename, keys }) {
 function generateConditionalInput({ typename, keys }) {
   const builder = [];
   builder.push(`input Model${typename}ConditionalInput {`);
+  builder.push(`  _id: ID`);
   keys.forEach((key) =>
     builder.push(
       `  ${key.fieldName.replaceAll(" ", "")}: Model${key.dataType}Input`
@@ -78,7 +85,7 @@ function generateConditionalInput({ typename, keys }) {
 function generateFilterInput({ typename, keys }) {
   const builder = [];
   builder.push(`input Model${typename}FilterInput {`);
-  builder.push(`  _id: ModelIDInput`);
+  builder.push(`  _id: ID`);
   keys.forEach((key) =>
     builder.push(
       `  ${key.fieldName.replaceAll(" ", "")}: Model${key.dataType}Input`
@@ -127,19 +134,35 @@ async function publish(project) {
         project.appConfig.authConfig.usernameCaseSensitive,
         args
       );
-    mutationBuilder.push(
-      `  register(username: String!, password: String!): String`
+    const authTable = project.appConfig.apiConfig.models.find(
+      (model) =>
+        model._id.toString() === project.appConfig.authConfig.tableId.toString()
     );
-    resolverBuilder.Mutation.register = (parent, args, context, info) =>
-      resolver.registerResolver(
-        project.appConfig.authConfig.tableId.toString(),
-        project.appConfig.authConfig.usernameFieldId.toString(),
-        project.appConfig.authConfig.passwordFieldId.toString(),
-        args,
-        parent,
-        context,
-        info
-      );
+    if (authTable) {
+      const name = authTable.name.replaceAll(" ", "");
+      mutationBuilder.push(`  register(userData: Create${name}Input!): String`);
+      resolverBuilder.Mutation.register = (parent, args, context, info) =>
+        resolver.registerResolver(
+          project.appConfig.authConfig.tableId.toString(),
+          name,
+          project.appConfig.authConfig.usernameFieldId.toString(),
+          project.appConfig.authConfig.passwordFieldId.toString(),
+          args,
+          parent,
+          context,
+          info
+        );
+      queryBuilder.push(`   me: ${name}`);
+      resolverBuilder.Query.me = (parent, args, context, info) =>
+        resolver.me(
+          project.appConfig.authConfig.tableId.toString(),
+          name,
+          args,
+          parent,
+          context,
+          info
+        );
+    }
   }
   const subscriptionBuilder = ["type Subscription {"];
   const connectionsBuilder = [];
@@ -333,7 +356,7 @@ async function publish(project) {
       generateCreateInput({
         typename: name,
         keys: model.fields
-          .filter((fields) => checkTypeForPrimitive(fields.dataType))
+          .filter((fields) => !fields.isList)
           .map(({ fieldName, dataType, nullable }) => ({
             fieldName: fieldName.replaceAll(" ", ""),
             dataType,

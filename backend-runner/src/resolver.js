@@ -8,7 +8,9 @@ class Resolvers {
   async connect() {
     const mongoClient = new MongoClient(`${process.env.MONGO_DB_URL}`);
     await mongoClient.connect();
-    this.db = mongoClient.db(process.env.PROJECT_ID);
+    this.db = mongoClient.db(
+      `${process.env.PROJECT_ID}+${process.env.NODE_ENV}`
+    );
   }
 
   namesToIds(collectionName, obj) {
@@ -265,12 +267,28 @@ class Resolvers {
   ) {
     return "true";
   }
-  async registerResolver(collectionId, usernameId, passwordId, args) {
+  async registerResolver(
+    collectionId,
+    collectionName,
+    usernameId,
+    passwordId,
+    args,
+    parent,
+    context,
+    info
+  ) {
+    const remappedEntry = this.namesToIds(collectionName, args.userData);
+    const hashedEntry = await this.hashRequiredFields(
+      collectionId,
+      remappedEntry
+    );
     try {
-      const doc = await this.db.collection(collectionId).insertOne({
-        [usernameId]: args.username,
-        [passwordId]: await argon2.hash(args.password),
-      });
+      const doc = await this.db.collection(collectionId).insertOne(hashedEntry);
+      const token = jwt.sign(
+        { username: hashedEntry[usernameId], id: doc.insertedId.toString() },
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
       context.res.cookie("token", token, {
         httpOnly: true,
         secure: false,
@@ -279,14 +297,32 @@ class Resolvers {
       return jwt.sign(
         {
           websocket: true,
-          username: args.username,
+          username: hashedEntry[usernameId],
           id: doc.insertedId.toString(),
         },
         process.env.JWT_SECRET,
         { expiresIn: "7d" }
       );
-    } catch {}
-    return null;
+    } catch (e) {
+      console.error(e);
+    }
+    throw new ApolloError(`failed to register user`);
+  }
+
+  async me(collectionId, collectionName, args, parent, context, info) {
+    if (context.req.cookies) {
+      console.log(collectionId);
+      const user = jwt.decode(context.req.cookies.token);
+      console.log(user.id);
+      if (user.id) {
+        const docs = await this.db
+          .collection(collectionId)
+          .find({ _id: new ObjectId(user.id) })
+          .toArray();
+        console.log(docs);
+        return this.idsToNamesRemoveHashes(collectionId, docs)[0];
+      }
+    }
   }
 }
 

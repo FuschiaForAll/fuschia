@@ -20,7 +20,7 @@ import {
   NotFilter,
   OrFilter,
   PrimitiveFilter,
-} from '../DataSources'
+} from '@fuchsia/types'
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'

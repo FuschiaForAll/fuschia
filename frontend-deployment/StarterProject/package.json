@@ -1,0 +1,41 @@
+{
+  "scripts": {
+    "start": "react-native start",
+    "android": "react-native run-android",
+    "ios": "react-native run-ios",
+    "web": "expo start --web",
+    "eject": "expo eject",
+    "gen": "graphql-codegen --config codegen.yaml"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.5.10",
+    "@fuchsia-for-all/primitives": "^1.0.5",
+    "@react-native-async-storage/async-storage": "^1.17.3",
+    "@react-navigation/native": "^6.0.10",
+    "@react-navigation/stack": "^6.2.1",
+    "expo": "~44.0.0",
+    "expo-splash-screen": "~0.14.1",
+    "expo-status-bar": "~1.2.0",
+    "graphql": "^16.3.0",
+    "react": "17.0.1",
+    "react-dom": "17.0.1",
+    "react-native": "0.64.3",
+    "react-native-gesture-handler": "^2.3.2",
+    "react-native-safe-area-context": "^4.2.4",
+    "react-native-screens": "^3.13.1",
+    "react-native-web": "0.17.1"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.12.9",
+    "@types/react": "~17.0.21",
+    "@types/react-native": "~0.64.12",
+    "@graphql-codegen/cli": "^2.6.1",
+    "@graphql-codegen/typescript": "^2.4.3",
+    "@graphql-codegen/typescript-operations": "^2.3.0",
+    "@graphql-codegen/typescript-react-apollo": "^3.2.5",
+    "typescript": "~4.3.5"
+  },
+  "private": true,
+  "name": "StarterProject",
+  "version": "1.0.0"
+}
