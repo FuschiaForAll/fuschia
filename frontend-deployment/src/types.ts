@@ -57,7 +57,13 @@ export interface Component {
   y: number
   isContainer: boolean
   isRootElement: boolean
-  parameters: any[]
+  requiresAuth?: boolean
+  parameters?: Array<{
+    entityType: ObjectId
+    path: string
+    label: string
+    _id: ObjectId
+  }>
   props: { [key: string]: any }
   children?: Component[]
   fetched: Array<{

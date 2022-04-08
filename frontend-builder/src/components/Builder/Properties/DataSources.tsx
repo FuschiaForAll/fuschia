@@ -18,6 +18,7 @@ import TextInputBinding from '../../Shared/TextInputBinding'
 import { gql } from '@apollo/client'
 import { EntitySelector } from '../../Shared/EntitySelector'
 import { Filter, AndFilter, OrFilter, NotFilter } from '@fuchsia/types'
+import { useUpdateComponent } from '../../../utils/hooks'
 
 interface Fields {
   _id: any
@@ -436,6 +437,7 @@ function RootParameterEditor({
   parameters,
   fetched,
   models,
+  requiresAuth,
 }: {
   componentId: string
   parameters: Array<{
@@ -446,7 +448,9 @@ function RootParameterEditor({
   }>
   fetched: Array<{ type: string; variables: string[] }>
   models: Array<{ _id: string; name: string }>
+  requiresAuth: boolean
 }) {
+  const { updateComponent } = useUpdateComponent()
   const [newDataSource, setNewDataSource] =
     useState<{ label: string; path: string; entity: string }>()
   const [addParameter] = useAddParameterMutation({
@@ -479,8 +483,18 @@ function RootParameterEditor({
       <LabeledCheckbox
         name="authPage"
         label="Logged in users only?"
-        checked={true}
-        onChange={() => {}}
+        checked={requiresAuth}
+        onChange={() => {
+          updateComponent(
+            componentId,
+            {
+              requiresAuth: !requiresAuth,
+            },
+            {
+              requiresAuth,
+            }
+          )
+        }}
       />
       <div style={{ textDecoration: 'underline' }}>Required Data</div>
       {parameters.length === 0 && (
@@ -569,6 +583,7 @@ const DataSources = function DataSources({
           componentId={componentId}
           parameters={component.parameters || []}
           fetched={component.fetched || []}
+          requiresAuth={component.requiresAuth}
         />
       )}
       {!component.isRootElement && component.isContainer && (

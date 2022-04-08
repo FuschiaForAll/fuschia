@@ -55,6 +55,9 @@ export class ComponentInput {
   @Field({ nullable: true })
   isRootElement!: boolean;
 
+  @Field({ nullable: true })
+  requiresAuth?: boolean;
+
   @Field((type) => [RequiredParameterInput], { nullable: true })
   parameters?: RequiredParameterInput[];
 

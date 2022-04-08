@@ -91,6 +91,10 @@ export class Component {
   @Property()
   isRootElement!: boolean;
 
+  @Field({ nullable: true })
+  @Property()
+  requiresAuth?: boolean;
+
   @Field((type) => [RequiredParameter], { nullable: true })
   @Property({ type: () => RequiredParameter })
   parameters?: RequiredParameter[];

@@ -12,6 +12,7 @@ import {
   generateEntityModelGraphqlFiles,
   generateRootNavigator,
   Hooks,
+  HookVariable,
   Import,
   MultipleHookVariable,
 } from './utils'
@@ -20,6 +21,7 @@ import { Component, Package, Project } from './types'
 import { baseApp } from './boilerplate/App'
 import { generateServerSchema } from './schema.builder'
 import { exec } from 'child_process'
+import { apolloClient } from './boilerplate/apollo-client'
 
 const workdir = path.join(__dirname, '../workdir')
 const srcdir = path.join(workdir, 'src')
@@ -152,14 +154,15 @@ async function buildScreen(
                 ] = 'single'
                 if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
                   hooksBuilder[`useList${fetchedModel.name}Query`] = {
-                    type: 'destructed',
-                    value: {},
+                    hook: {
+                      type: 'destructed',
+                      value: {},
+                    },
                   }
                 }
                 ;(
-                  hooksBuilder[
-                    `useList${fetchedModel.name}Query`
-                  ] as DestructedHookVariable
+                  hooksBuilder[`useList${fetchedModel.name}Query`]
+                    .hook as DestructedHookVariable
                 ).value.data = {
                   type: 'variable',
                   value: `data`,
@@ -172,11 +175,19 @@ async function buildScreen(
                   fetchedModel.name
                 }?.items?.map(item => (
                 `)
+                propsBuilder.push(
+                  `${''.padStart(indentation, ' ')}<${
+                    component.type
+                  } key={item._id}`
+                )
               }
             })
           }
+        } else {
+          propsBuilder.push(
+            `${''.padStart(indentation, ' ')}<${component.type}`
+          )
         }
-        propsBuilder.push(`${''.padStart(indentation, ' ')}<${component.type}`)
         importsBuilder.react.useState = 'single'
         // @ts-ignore
         if (packageComponent.schema && packageComponent.schema.data) {
@@ -188,15 +199,17 @@ async function buildScreen(
             ) {
               // @ts-ignore
               hooksBuilder[`useState<${packageComponent.schema.data[d]}>`] = {
-                type: 'multiple',
-                value: [],
+                hook: {
+                  type: 'multiple',
+                  value: [],
+                },
               }
             }
             ;(
               hooksBuilder[
                 // @ts-ignore
                 `useState<${packageComponent.schema.data[d]}>`
-              ] as MultipleHookVariable
+              ].hook as MultipleHookVariable
             ).value.push({
               type: 'array',
               value: [
@@ -232,19 +245,37 @@ async function buildScreen(
                       }
                       if (!hooksBuilder['useNavigation<any>']) {
                         hooksBuilder['useNavigation<any>'] = {
-                          type: 'variable',
-                          value: 'navigate',
+                          hook: {
+                            type: 'variable',
+                            value: 'navigate',
+                          },
                         }
                       }
                       const targetScreen = rootComponents.find(
                         c => c._id.toString() === action.destination
                       )
                       if (targetScreen) {
-                        propsBuilder.push(`navigate('${targetScreen.name}', {`)
+                        propsBuilder.push(
+                          `navigate.navigate('${targetScreen.name}', {`
+                        )
                         if (action.parameters) {
-                          propsBuilder.push(
-                            `${JSON.stringify(action.parameters)}`
-                          )
+                          if (targetScreen.parameters) {
+                            targetScreen.parameters.forEach(p => {
+                              const actionParam =
+                                action.parameters![p._id.toString()]
+                              const targetEntity =
+                                projectInfo.appConfig.apiConfig.models.find(
+                                  m =>
+                                    m._id.toString() === p.entityType.toString()
+                                )
+                              if (actionParam) {
+                                // this only works for ARRAY param props
+                                propsBuilder.push(
+                                  `${targetEntity?.name}Id: item._id`
+                                )
+                              }
+                            })
+                          }
                         }
                         propsBuilder.push(`});`)
                       }
@@ -258,6 +289,7 @@ async function buildScreen(
                         `Alert.alert("${draftJsStuff(
                           action.message,
                           rootComponents,
+                          projectInfo,
                           packages
                         )}");`
                       )
@@ -270,12 +302,14 @@ async function buildScreen(
                         'single'
                       if (!hooksBuilder.useLoginMutation) {
                         hooksBuilder.useLoginMutation = {
-                          type: 'array',
-                          value: [],
+                          hook: {
+                            type: 'array',
+                            value: [],
+                          },
                         }
                       }
                       ;(
-                        hooksBuilder.useLoginMutation as ArrayHookVariable
+                        hooksBuilder.useLoginMutation.hook as ArrayHookVariable
                       ).value.push({
                         type: 'variable',
                         value: 'login',
@@ -284,10 +318,12 @@ async function buildScreen(
                         `const success = await login({ variables: { username: \`${draftJsStuff(
                           action.username,
                           rootComponents,
+                          projectInfo,
                           packages
                         )}\`, password: \`${draftJsStuff(
                           action.password,
                           rootComponents,
+                          projectInfo,
                           packages
                         )}\`}});`
                       )
@@ -326,12 +362,15 @@ async function buildScreen(
                       ].useRegisterMutation = 'single'
                       if (!hooksBuilder.useRegisterMutation) {
                         hooksBuilder.useRegisterMutation = {
-                          type: 'array',
-                          value: [],
+                          hook: {
+                            type: 'array',
+                            value: [],
+                          },
                         }
                       }
                       ;(
-                        hooksBuilder.useRegisterMutation as ArrayHookVariable
+                        hooksBuilder.useRegisterMutation
+                          .hook as ArrayHookVariable
                       ).value.push({
                         type: 'variable',
                         value: 'register',
@@ -351,6 +390,7 @@ async function buildScreen(
                           const value = draftJsStuff(
                             action.fields[f],
                             rootComponents,
+                            projectInfo,
                             packages
                           )
                           const field = authModel.fields.find(
@@ -417,14 +457,15 @@ async function buildScreen(
                           ] = 'single'
                           if (!hooksBuilder[`useCreate${model.name}Mutation`]) {
                             hooksBuilder[`useCreate${model.name}Mutation`] = {
-                              type: 'array',
-                              value: [],
+                              hook: {
+                                type: 'array',
+                                value: [],
+                              },
                             }
                           }
                           ;(
-                            hooksBuilder[
-                              `useCreate${model.name}Mutation`
-                            ] as ArrayHookVariable
+                            hooksBuilder[`useCreate${model.name}Mutation`]
+                              .hook as ArrayHookVariable
                           ).value.push({
                             type: 'variable',
                             value: `create${model.name}`,
@@ -436,6 +477,7 @@ async function buildScreen(
                             const value = draftJsStuff(
                               actionFields[f],
                               rootComponents,
+                              projectInfo,
                               packages
                             )
                             const field = model.fields.find(
@@ -467,6 +509,164 @@ async function buildScreen(
                           )
                         }
                       }
+                      break
+                    case 'DELETE':
+                      if (action.deleteElement) {
+                        // const actionFields = action.fields
+                        // const model =
+                        //   projectInfo.appConfig.apiConfig.models.find(
+                        //     m =>
+                        //       m._id.toString() === action.updateElement?.entity
+                        //   )
+                        // if (model) {
+                        //   if (!importsBuilder['./generated/graphql']) {
+                        //     importsBuilder['./generated/graphql'] = {}
+                        //   }
+                        //   importsBuilder['./generated/graphql'][
+                        //     `useUpdate${model.name}Mutation`
+                        //   ] = 'single'
+                        //   if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
+                        //     hooksBuilder[`useUpdate${model.name}Mutation`] = {
+                        //       hook: {
+                        //         type: 'array',
+                        //         value: [],
+                        //       },
+                        //     }
+                        //   }
+                        //   ;(
+                        //     hooksBuilder[`useUpdate${model.name}Mutation`]
+                        //       .hook as ArrayHookVariable
+                        //   ).value.push({
+                        //     type: 'variable',
+                        //     value: `update${model.name}`,
+                        //   })
+                        //   const updatePartBuilder = [] as string[]
+                        //   updatePartBuilder.push(`{ variables: { input: { `)
+                        //   const createFieldsBuilder = [] as string[]
+                        //   Object.keys(actionFields).forEach(f => {
+                        //     const value = draftJsStuff(
+                        //       actionFields[f],
+                        //       rootComponents,
+                        //       projectInfo,
+                        //       packages
+                        //     )
+                        //     const field = model.fields.find(
+                        //       field => field._id.toString() === f
+                        //     )
+                        //     if (field) {
+                        //       // need value cohersion
+                        //       switch (field.dataType) {
+                        //         case 'Boolean':
+                        //           if (value) {
+                        //             createFieldsBuilder.push(
+                        //               ` ${field.fieldName}: !!${value}`
+                        //             )
+                        //           }
+                        //           break
+                        //         default:
+                        //           if (value) {
+                        //             createFieldsBuilder.push(
+                        //               ` ${field.fieldName}: \`${value}\``
+                        //             )
+                        //           }
+                        //           break
+                        //       }
+                        //     }
+                        //   })
+                        //   updatePartBuilder.push(createFieldsBuilder.join(','))
+                        //   updatePartBuilder.push(`}, `)
+                        //   updatePartBuilder.push(`condition: {`)
+                        //   // TODO: This is the wrong assumption
+                        //   updatePartBuilder.push(`_id: item._id`)
+                        //   updatePartBuilder.push(`} } }`)
+                        //   console.log(updatePartBuilder.join(''))
+                        //   propsBuilder.push(
+                        //     `const success = await update${
+                        //       model.name
+                        //     }(${updatePartBuilder.join('')});`
+                        //   )
+                        // }
+                      }
+                      break
+
+                    case 'UPDATE':
+                      if (action.updateElement && action.fields) {
+                        const actionFields = action.fields
+                        const model =
+                          projectInfo.appConfig.apiConfig.models.find(
+                            m =>
+                              m._id.toString() === action.updateElement?.entity
+                          )
+                        if (model) {
+                          if (!importsBuilder['./generated/graphql']) {
+                            importsBuilder['./generated/graphql'] = {}
+                          }
+                          importsBuilder['./generated/graphql'][
+                            `useUpdate${model.name}Mutation`
+                          ] = 'single'
+                          if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
+                            hooksBuilder[`useUpdate${model.name}Mutation`] = {
+                              hook: {
+                                type: 'array',
+                                value: [],
+                              },
+                            }
+                          }
+                          ;(
+                            hooksBuilder[`useUpdate${model.name}Mutation`]
+                              .hook as ArrayHookVariable
+                          ).value.push({
+                            type: 'variable',
+                            value: `update${model.name}`,
+                          })
+                          const updatePartBuilder = [] as string[]
+                          updatePartBuilder.push(`{ variables: { input: { `)
+                          const createFieldsBuilder = [] as string[]
+                          Object.keys(actionFields).forEach(f => {
+                            const value = draftJsStuff(
+                              actionFields[f],
+                              rootComponents,
+                              projectInfo,
+                              packages
+                            )
+                            const field = model.fields.find(
+                              field => field._id.toString() === f
+                            )
+                            if (field) {
+                              // need value cohersion
+                              switch (field.dataType) {
+                                case 'Boolean':
+                                  if (value) {
+                                    createFieldsBuilder.push(
+                                      ` ${field.fieldName}: !!${value}`
+                                    )
+                                  }
+                                  break
+                                default:
+                                  if (value) {
+                                    createFieldsBuilder.push(
+                                      ` ${field.fieldName}: \`${value}\``
+                                    )
+                                  }
+                                  break
+                              }
+                            }
+                          })
+                          updatePartBuilder.push(createFieldsBuilder.join(','))
+                          updatePartBuilder.push(`}, `)
+                          updatePartBuilder.push(`condition: {`)
+                          // TODO: This is the wrong assumption
+                          updatePartBuilder.push(`_id: item._id`)
+                          updatePartBuilder.push(`} } }`)
+                          console.log(updatePartBuilder.join(''))
+                          propsBuilder.push(
+                            `const success = await update${
+                              model.name
+                            }(${updatePartBuilder.join('')});`
+                          )
+                        }
+                      }
+                      break
                   }
                 }
                 ;(component.props[prop] as ActionProps[]).forEach(action =>
@@ -476,11 +676,12 @@ async function buildScreen(
                 break
               case 'string':
                 propsBuilder.push(
-                  `${prop}="${draftJsStuff(
+                  `${prop}={\`${draftJsStuff(
                     component.props[prop],
                     rootComponents,
+                    projectInfo,
                     packages
-                  )}"`
+                  )}\`}`
                 )
                 break
               case 'object':
@@ -524,6 +725,71 @@ async function buildScreen(
   const fileBuilder = []
   if (rootComponent.children) {
     rootComponent.children.forEach(child => buildChild(child, 9))
+  }
+  if (rootComponent.requiresAuth) {
+    // need import for fetch
+    if (!importsBuilder['./generated/graphql']) {
+      importsBuilder['./generated/graphql'] = {}
+    }
+    importsBuilder['./generated/graphql'][`useMeQuery`] = 'single'
+    if (!hooksBuilder[`useMeQuery`]) {
+      hooksBuilder[`useMeQuery`] = {
+        hook: {
+          type: 'destructed',
+          value: {},
+        },
+      }
+    }
+    ;(hooksBuilder[`useMeQuery`].hook as DestructedHookVariable).value.data = {
+      type: 'variable',
+      value: `data`,
+      renamed: `meData`,
+    }
+  }
+  if (rootComponent.parameters && rootComponent.parameters.length > 0) {
+    if (!importsBuilder['./generated/graphql']) {
+      importsBuilder['./generated/graphql'] = {}
+    }
+    rootComponent.parameters.forEach(p => {
+      const parameterModel = projectInfo.appConfig.apiConfig.models.find(
+        m => m._id.toString() === p.entityType.toString()
+      )
+      if (parameterModel) {
+        importsBuilder['@react-navigation/native'][`useRoute`] = 'single'
+        if (!hooksBuilder[`useRoute`]) {
+          hooksBuilder[`useRoute`] = {
+            hook: {
+              type: 'variable',
+              value: 'route',
+            },
+          }
+        }
+        importsBuilder['./generated/graphql'][
+          `useGet${parameterModel.name}Query`
+        ] = 'single'
+        if (!hooksBuilder[`useGet${parameterModel.name}Query`]) {
+          hooksBuilder[`useGet${parameterModel.name}Query`] = {
+            hook: {
+              type: 'destructed',
+              value: {},
+            },
+            parameters: {
+              variables: {
+                _id: `route.params.${parameterModel.name}Id`,
+              },
+            },
+          }
+        }
+        ;(
+          hooksBuilder[`useGet${parameterModel.name}Query`]
+            .hook as DestructedHookVariable
+        ).value.data = {
+          type: 'variable',
+          value: `data`,
+          renamed: `${parameterModel.name}Data`,
+        }
+      }
+    })
   }
   fileBuilder.push(`export function ${rootComponent.name} () {`)
   fileBuilder.push(convertHooks(hooksBuilder))
@@ -591,21 +857,18 @@ async function getComponentsSchema(mongoUrl: string) {
   await generateEntityModelGraphqlFiles(srcdir, projectInfo)
   // run apollo codegen
   await new Promise((resolve, reject) =>
-    exec(
-      `cd ${workdir} && graphql-codegen --config codegen.yaml`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(error)
-        }
-        if (stdout) {
-          console.error(stdout)
-        }
-        if (stderr) {
-          console.error(stderr)
-        }
-        resolve(1)
+    exec(`cd ${workdir} && yarn gen`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(error)
       }
-    )
+      if (stdout) {
+        console.error(stdout)
+      }
+      if (stderr) {
+        console.error(stderr)
+      }
+      resolve(1)
+    })
   )
 
   await fs.writeFile(
@@ -614,6 +877,7 @@ async function getComponentsSchema(mongoUrl: string) {
     { flag: 'w' }
   )
   await fs.writeFile(path.join(srcdir, 'App.tsx'), baseApp)
+  await fs.writeFile(path.join(srcdir, 'apollo-client.tsx'), apolloClient)
   project.forEach(component =>
     buildScreen(component, schema, project, projectInfo)
   )

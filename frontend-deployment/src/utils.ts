@@ -36,12 +36,35 @@ export type Hook =
   | MultipleHookVariable
 
 export interface Hooks {
-  [hookName: string]: Hook
+  [hookName: string]: {
+    hook: Hook
+    parameters?: { variables: { [key: string]: any } }
+  }
+}
+
+function findNestedComponent(
+  componentId: string,
+  project: Component[]
+): Component | undefined {
+  for (const p of project) {
+    console.log(`looking at ${p._id.toString()}`)
+    if (p._id.toString() === componentId) {
+      console.log(`found ${p}`)
+      return p
+    } else if (p.children) {
+      console.log(`searching children ${componentId}`)
+      const nested = findNestedComponent(componentId, p.children)
+      if (nested) {
+        return nested
+      }
+    }
+  }
 }
 
 export const draftJsStuff = (
   value: any,
   project: Component[],
+  projectInfo: Project,
   packages: Package[]
 ) => {
   if (value.blocks) {
@@ -87,6 +110,56 @@ export const draftJsStuff = (
                 draft.entityMap[range.key].data.entityPath === 'CurrentUser'
               ) {
                 replacementText = `\${meData?.me?._id}`
+              }
+              break
+            case 'SERVER_DATA':
+              replacementText = draft.entityMap[range.key].data.entityPath
+              const entityParts = draft.entityMap[
+                range.key
+              ].data.entityPath.split('.') as string[]
+              const component = findNestedComponent(entityParts[0], project)
+              console.log(`component`)
+              console.log(component)
+              if (component) {
+                // we are targeting a component, lets find it's type
+                const componentPackage = packages.find(
+                  p => p.packageName === component.package
+                )
+                console.log(`componentPackage`)
+                console.log(componentPackage)
+                if (componentPackage) {
+                  const componentElement = componentPackage.components.find(
+                    c => c.name === component.type
+                  )
+                  console.log(`componentElement`)
+                  console.log(componentElement)
+
+                  if (componentElement) {
+                    if (componentElement.schema.type === 'array') {
+                      // we need to find the field name targeted and prefix with item
+                      console.log(`component.fetched`)
+                      console.log(component.fetched)
+
+                      if (component.fetched) {
+                        component.fetched.forEach(fetched => {
+                          const fetchedModel =
+                            projectInfo.appConfig.apiConfig.models.find(
+                              m => m._id.toString() === fetched.entityType
+                            )
+                          if (fetchedModel) {
+                            // this only works 1 level down
+                            const targetField = fetchedModel.fields.find(
+                              field => field._id.toString() === entityParts[1]
+                            )
+                            if (targetField) {
+                              replacementText = `\${item.${targetField.fieldName}}`
+                            }
+                          }
+                        })
+                      }
+                    }
+                  }
+                }
               }
               break
           }
@@ -139,19 +212,37 @@ export function convertHooks(hooks: Hooks) {
       }
       return builder.join('')
     }
-    if (hooks[key].type === 'multiple') {
-      ;(hooks[key].value as MultipleHookVariable[]).forEach(v => {
+    if (hooks[key].hook.type === 'multiple') {
+      ;(hooks[key].hook.value as MultipleHookVariable[]).forEach(v => {
         const hookBuilder = [] as string[]
         hookBuilder.push(`const `)
         hookBuilder.push(buildUpHook(v))
-        hookBuilder.push(` = ${key}()`)
+        hookBuilder.push(` = ${key}(`)
+        if (hooks[key].parameters) {
+          const params = hooks[key].parameters!
+          hookBuilder.push(`{ variables: {`)
+          Object.keys(params.variables).forEach(variable => {
+            hookBuilder.push(`${variable}: ${params.variables[variable]}`)
+          })
+          hookBuilder.push(`}}`)
+        }
+        hookBuilder.push(`)`)
         hooksBuilder.push(hookBuilder.join(''))
       })
     } else {
       const hookBuilder = [] as string[]
       hookBuilder.push(`const `)
-      hookBuilder.push(buildUpHook(hooks[key]))
-      hookBuilder.push(` = ${key}()`)
+      hookBuilder.push(buildUpHook(hooks[key].hook))
+      hookBuilder.push(` = ${key}(`)
+      if (hooks[key].parameters) {
+        const params = hooks[key].parameters!
+        hookBuilder.push(`{ variables: {`)
+        Object.keys(params.variables).forEach(variable => {
+          hookBuilder.push(`${variable}: ${params.variables[variable]}`)
+        })
+        hookBuilder.push(`}}`)
+      }
+      hookBuilder.push(`)`)
       hooksBuilder.push(hookBuilder.join(''))
     }
   })
@@ -223,6 +314,8 @@ export function generateRootNavigator(
     `      <Stack.Navigator initialRouteName="${entryComponent.name}" screenOptions={{`
   )
   navigatorBuilder.push(`        headerShown: false,`)
+  navigatorBuilder.push(`        gestureEnabled: true,`)
+  navigatorBuilder.push(`        animationEnabled: false,`)
   navigatorBuilder.push(`      }}>`)
   components.forEach(component =>
     navigatorBuilder.push(
@@ -265,6 +358,21 @@ mutation Register($userData: Create${authTable.name}Input!) {
       `,
       { flag: 'w' }
     )
+    fs.writeFile(
+      path.join(srcdir, 'graphql', 'Me.graphql'),
+      `
+query Me {
+  me {
+    _id
+    ${authTable.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+    `,
+      { flag: 'w' }
+    )
   }
 }
 
@@ -283,6 +391,7 @@ export async function generateEntityModelGraphqlFiles(
         `
 query Get${m.name}($_id: ID!) {
   get${m.name}(_id: $_id) {
+    _id
     ${m.fields
       .filter(f => !f.connection && !f.isHashed)
       .map(f => f.fieldName)
@@ -304,6 +413,7 @@ query List${m.name}($filter: Model${
   }(filter: $filter, sortDirection: $sortDirection, limit: $limit, nextToken: $nextToken) {
     nextToken
     items {
+      _id
     ${m.fields
       .filter(f => !f.connection && !f.isHashed)
       .map(f => f.fieldName)
@@ -322,6 +432,7 @@ mutation Create${m.name}($input: Create${m.name}Input!, $condition: Model${
           m.name
         }ConditionalInput) {
   create${m.name}(input: $input, condition: $condition) {
+    _id
     ${m.fields
       .filter(f => !f.connection && !f.isHashed)
       .map(f => f.fieldName)
@@ -338,6 +449,7 @@ mutation Delete${m.name}($input: Delete${m.name}Input!, $condition: Model${
           m.name
         }ConditionalInput) {
   delete${m.name}(input: $input, condition: $condition) {
+    _id
     ${m.fields
       .filter(f => !f.connection && !f.isHashed)
       .map(f => f.fieldName)
@@ -354,6 +466,7 @@ mutation Update${m.name}($input: Update${m.name}Input!, $condition: Model${
           m.name
         }ConditionalInput) {
   update${m.name}(input: $input, condition: $condition) {
+    _id
     ${m.fields
       .filter(f => !f.connection && !f.isHashed)
       .map(f => f.fieldName)

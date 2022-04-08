@@ -8,7 +8,9 @@ class Resolvers {
   async connect() {
     const mongoClient = new MongoClient(`${process.env.MONGO_DB_URL}`);
     await mongoClient.connect();
-    this.db = mongoClient.db(process.env.PROJECT_ID);
+    this.db = mongoClient.db(
+      `${process.env.PROJECT_ID}+${process.env.NODE_ENV}`
+    );
   }
 
   namesToIds(collectionName, obj) {
@@ -305,6 +307,22 @@ class Resolvers {
       console.error(e);
     }
     throw new ApolloError(`failed to register user`);
+  }
+
+  async me(collectionId, collectionName, args, parent, context, info) {
+    if (context.req.cookies) {
+      console.log(collectionId);
+      const user = jwt.decode(context.req.cookies.token);
+      console.log(user.id);
+      if (user.id) {
+        const docs = await this.db
+          .collection(collectionId)
+          .find({ _id: new ObjectId(user.id) })
+          .toArray();
+        console.log(docs);
+        return this.idsToNamesRemoveHashes(collectionId, docs)[0];
+      }
+    }
   }
 }
 

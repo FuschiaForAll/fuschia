@@ -23,7 +23,7 @@ function checkTypeForPrimitive(type: string) {
 function generateConnections(typename: string) {
   const builder = []
   builder.push(`type Model${typename}Connection {`)
-  builder.push(`  items: [${typename}]`)
+  builder.push(`  items: [${typename}!]!`)
   builder.push(`  nextToken: String`)
   builder.push(`}`)
   return builder.join('\n')
@@ -63,7 +63,6 @@ function generateCreateInput({ typename, keys, nullable }: GenerateParameters) {
 function generateUpdateInput({ typename, keys }: GenerateParameters) {
   const builder = []
   builder.push(`input Update${typename}Input {`)
-  builder.push(`  _id: ID!`)
   keys.forEach(key =>
     builder.push(`  ${key.fieldName.replaceAll(' ', '')}: ${key.dataType}`)
   )
@@ -82,6 +81,7 @@ function generateDeleteInput({ typename, keys }: GenerateParameters) {
 function generateConditionalInput({ typename, keys }: GenerateParameters) {
   const builder = []
   builder.push(`input Model${typename}ConditionalInput {`)
+  builder.push(`  _id: ID`)
   keys.forEach(key =>
     builder.push(
       `  ${key.fieldName.replaceAll(' ', '')}: Model${key.dataType}Input`
@@ -148,6 +148,7 @@ export function generateServerSchema(project: Project) {
     if (authTable) {
       const name = authTable.name.replaceAll(' ', '')
       mutationBuilder.push(`  register(userData: Create${name}Input!): String`)
+      queryBuilder.push(`  me: ${name}`)
     }
   }
   const subscriptionBuilder = ['type Subscription {']
