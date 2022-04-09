@@ -2,11 +2,11 @@ import React, { useState, useCallback } from 'react'
 import Paper from '@mui/material/Paper'
 import Item from './Item'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import { Component } from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
 import { useDragDrop } from '../../../utils/hooks'
+import { StructuredComponent } from '../../../utils/hooks/useProjectComponents'
 interface ToolProps {
-  defaultLayer: Component & { isRootElement: boolean }
+  defaultLayer: StructuredComponent & { isRootElement: boolean }
 }
 
 interface DragEvent {
@@ -15,7 +15,7 @@ interface DragEvent {
 
 interface DragItemProps {
   drag: DragEvent
-  layer: Component & { isRootElement: boolean }
+  layer: StructuredComponent & { isRootElement: boolean }
   onDrag: (evt: MouseEvent) => void
   onDragEnd: () => void
 }
@@ -48,13 +48,13 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     position: 'fixed',
     zIndex: 1000,
   }
-  styles.width = layer.props.style?.width || 50
-  styles.height = layer.props.style?.height || 50
+  styles.width = layer.props?.style?.width || 50
+  styles.height = layer.props?.style?.height || 50
   styles.left = `${
-    drag.position[0] - parseFloat(layer.props.style?.width || '0') / 2
+    drag.position[0] - parseFloat(layer.props?.style?.width || '0') / 2
   }px`
   styles.top = `${
-    drag.position[1] - parseFloat(layer.props.style?.height || '0') / 2
+    drag.position[1] - parseFloat(layer.props?.style?.height || '0') / 2
   }px`
 
   const props = { ...layer.props }

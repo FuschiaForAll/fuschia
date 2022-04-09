@@ -2,29 +2,5 @@
 query GetComponents($projectId: ObjectId!) {
   getComponents(projectId: $projectId) {
     ...ComponentFragment
-    children {
-      ...ComponentFragment
-      children {
-        ...ComponentFragment
-        children {
-          ...ComponentFragment
-          children {
-            ...ComponentFragment
-            children {
-              ...ComponentFragment
-              children {
-                ...ComponentFragment
-                children {
-                  ...ComponentFragment
-                  children {
-                    ...ComponentFragment
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
   }
 }

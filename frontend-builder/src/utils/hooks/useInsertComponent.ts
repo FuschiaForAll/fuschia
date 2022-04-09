@@ -4,18 +4,13 @@ import { useParams } from 'react-router-dom'
 import {
   ComponentInput,
   useCreateComponentMutation,
-  GetComponentsDocument,
 } from '../../generated/graphql'
 
 type InsertFunc = (value: ComponentInput) => void
 
 export const useInsertComponent = (): InsertFunc => {
   const { projectId } = useParams()
-  const [createComponent] = useCreateComponentMutation({
-    refetchQueries: [
-      { query: GetComponentsDocument, variables: { projectId } },
-    ],
-  })
+  const [createComponent] = useCreateComponentMutation()
   const { setSelection } = useSelection()
 
   const insertFunc = useCallback<InsertFunc>(

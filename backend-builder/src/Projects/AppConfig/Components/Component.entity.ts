@@ -63,6 +63,9 @@ export class Component {
   @Field((type) => ObjectIdScalar)
   readonly _id!: ObjectId;
 
+  @Property()
+  projectId!: ObjectId;
+
   @Field()
   @Property()
   package!: string;
@@ -111,11 +114,11 @@ export class Component {
   @Property()
   data?: Object;
 
-  @Field((type) => Component, { nullable: true })
-  @Property({ ref: () => Component })
-  parent!: Ref<Component>;
-
-  @Field((type) => [Component], { nullable: true })
-  @Property({ ref: () => Component })
-  children!: Ref<Component>[];
+  @Field((type) => ObjectIdScalar, { nullable: true })
+  @Property()
+  parent?: ObjectId;
+  
+  @Field()
+  @Property()
+  layerSort!: string;
 }

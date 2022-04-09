@@ -17,9 +17,9 @@ import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
-  useGetComponentsQuery,
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql-packages'
+import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
 
 const EditorWrapper = styled.div`
   margin-top: 2px;
@@ -154,11 +154,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         componentId,
       },
     })
-    const { data: componentsData } = useGetComponentsQuery({
-      variables: {
-        projectId,
-      },
-    })
+    const components = useProjectComponents(projectId!)
     const { data: packageData } = useGetPackagesQuery()
     const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
     const extractModelName = useCallback(
@@ -173,7 +169,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       [projectData]
     )
     useEffect(() => {
-      if (dataContextData && packageData && componentsData) {
+      if (dataContextData && packageData && components) {
         // find all packages that emit data
         const dataComponents = packageData.getPackages.flatMap(p =>
           p.components
@@ -210,7 +206,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           InputObject: {
             _id: 'InputObject',
             name: 'Inputs',
-            fields: componentsData.getComponents.map(c => ({
+            fields: components.map(c => ({
               type: 'INPUT',
               entity: c._id,
               hasSubMenu: !!(c.children && c.children.length > 0),
@@ -254,7 +250,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
             c.children.forEach(ch => search(ch))
           }
         }
-        componentsData.getComponents.forEach(c => search(c))
+        components.forEach(c => search(c))
         console.log(`structure`)
         console.log(structure)
 
@@ -303,7 +299,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       extractModelName,
       projectData,
       packageData,
-      componentsData,
+      components,
     ])
     return (
       <EditorWrapper

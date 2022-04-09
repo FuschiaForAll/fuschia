@@ -1,6 +1,11 @@
-mutation CreateEntityModel($projectId: ObjectId!, $name: String!) {
-  createEntityModel(projectId: $projectId, name: $name) {
+mutation CreateEntityModel(
+  $projectId: ObjectId!
+  $name: String!
+  $isLocal: Boolean!
+) {
+  createEntityModel(projectId: $projectId, name: $name, isLocal: $isLocal) {
     _id
     name
+    isLocal
   }
 }

@@ -30,7 +30,6 @@ const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
   const navigate = useNavigate()
   const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
-
   const project = data?.project
 
   if (!data && loading) {
@@ -42,7 +41,6 @@ const Builder: React.FC = function Builder() {
       </div>
     )
   }
-
   return (
     <DesignerHistoryProvider>
       <div>

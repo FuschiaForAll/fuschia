@@ -25,6 +25,7 @@ import Modal from '@mui/material/Modal'
 import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
+import { Checkbox } from '../../Shared/primitives/Checkbox'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -126,6 +127,7 @@ const Database: React.FC = function Database() {
   })
   const [selectedTab, setSelectedTab] = React.useState(0)
   const [newModelName, setNewModelName] = useState('')
+  const [newModelIsLocal, setNewModelIsLocal] = useState(false)
   const { data, loading, error } = useGetProjectQuery({
     variables: { projectId },
   })
@@ -284,12 +286,22 @@ const Database: React.FC = function Database() {
                           setNewModelName(name)
                         }}
                       />
+                      <input
+                        name="isLocalTable"
+                        type="checkbox"
+                        checked={newModelIsLocal}
+                        onChange={e => {
+                          const isChecked = e.target.checked
+                          setNewModelIsLocal(isChecked)
+                        }}
+                      />
                       <button
                         className="outlined-accent-button"
                         onClick={async () => {
                           await createNewEntityModel({
                             variables: {
                               name: newModelName,
+                              isLocal: newModelIsLocal,
                               projectId,
                             },
                           })

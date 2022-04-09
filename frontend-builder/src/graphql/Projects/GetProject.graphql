@@ -11,6 +11,7 @@ query GetProject($projectId: ObjectId!) {
         models {
           _id
           name
+          isLocal
           keys {
             name
             fieldNames

@@ -4,7 +4,10 @@ import {
   createHttpLink,
   InMemoryCache,
   makeVar,
+  split,
 } from '@apollo/client'
+import { WebSocketLink } from '@apollo/client/link/ws'
+import { getMainDefinition } from '@apollo/client/utilities'
 
 export const currentProjectIdVar = makeVar(
   localStorage.getItem('currentProjectId')
@@ -21,6 +24,29 @@ const appLink = createHttpLink({
   uri: 'http://localhost:4005',
   credentials: 'include',
 })
+
+const wsLink = new WebSocketLink({
+  uri: `wss://localhost:4003/subscriptions`,
+  options: {
+    reconnect: true,
+    lazy: true,
+    connectionParams: () => {
+      return window.localStorage.getItem('wsToken')
+    },
+  },
+})
+
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query)
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    )
+  },
+  wsLink,
+  httpLink
+)
 
 const cache = new InMemoryCache({
   typePolicies: {
@@ -55,7 +81,7 @@ export const client = new ApolloClient({
   link: ApolloLink.split(
     operation => operation.getContext().clientName === 'app-server',
     appLink,
-    httpLink
+    splitLink
   ),
   cache,
 })

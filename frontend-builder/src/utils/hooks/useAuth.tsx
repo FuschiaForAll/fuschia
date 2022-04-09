@@ -126,7 +126,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<{}>) => {
 
   useEffect(() => {
     if (loginData) {
-      window.localStorage.setItem('wsToken', `${loginData.login}`)
+      window.localStorage.setItem('wsToken', `${loginData.login.sessionId}`)
     }
   }, [loginData])
 

@@ -13,6 +13,11 @@ import { MONGO_DB_URL } from "../../../utils/config";
 import axios from "axios";
 import kill from "tree-kill";
 
+interface AWSGetRequest {
+  endpoint: string;
+  action: "RunInstance";
+}
+
 function spawnInstance(
   environment: string,
   mongoUrl: string,
@@ -20,31 +25,36 @@ function spawnInstance(
   port: string,
   jwtSecret?: string
 ) {
-  const child = spawn(
-    "node",
-    [`${__dirname}/../../../../../backend-runner/src/index.js`],
-    {
-      env: {
-        ...process.env,
-        NODE_ENV: environment,
-        MONGO_DB_URL: mongoUrl,
-        PROJECT_ID: projectId,
-        PORT: port,
-        JWT_SECRET: jwtSecret,
-      },
-    }
-  );
+  // check if local or remove and either spawn instance or call AWS
+  if (process.env.NODE_ENV === "prod") {
+    throw new Error("Not Implemented");
+  } else {
+    const child = spawn(
+      "node",
+      [`${__dirname}/../../../../../backend-runner/src/index.js`],
+      {
+        env: {
+          ...process.env,
+          NODE_ENV: environment,
+          MONGO_DB_URL: mongoUrl,
+          PROJECT_ID: projectId,
+          PORT: port,
+          JWT_SECRET: jwtSecret,
+        },
+      }
+    );
 
-  child.stdout.setEncoding("utf8");
-  child.stdout.on("data", function (data) {
-    console.log("stdout: " + data);
-  });
+    child.stdout.setEncoding("utf8");
+    child.stdout.on("data", function (data) {
+      console.log("stdout: " + data);
+    });
 
-  child.stderr.setEncoding("utf8");
-  child.stderr.on("data", function (data) {
-    console.log("stderr: " + data);
-  });
-  return child.pid;
+    child.stderr.setEncoding("utf8");
+    child.stderr.on("data", function (data) {
+      console.log("stderr: " + data);
+    });
+    return child.pid;
+  }
 }
 
 type pid = number;

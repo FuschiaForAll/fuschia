@@ -4,6 +4,9 @@ import { EntityModel } from "./EntityModel.entity";
 
 @InputType()
 export class EntityModelInput implements Partial<EntityModel> {
-  @Field()
+  @Field({ nullable: true })
   name!: string;
+
+  @Field({ nullable: true })
+  isLocal!: boolean;
 }

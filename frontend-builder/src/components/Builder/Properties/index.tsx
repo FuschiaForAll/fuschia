@@ -82,21 +82,62 @@ function Properties({
     }
     return undefined
   }
+  const variableName = new RegExp('^[a-zA-Z_$][a-zA-Z_$0-9]*$')
   return (
     <>
       <LabeledTextInput
         label="Component Name"
         value={name}
+        onBlur={e => {
+          if (name !== component.name) {
+            updateComponent(
+              elementId,
+              {
+                name,
+              },
+              {
+                name: component.name,
+              }
+            )
+          }
+        }}
         onChange={e => {
           const newName = e.target.value
-          setName(newName)
+          if (variableName.test(newName)) {
+            setName(newName)
+          }
+        }}
+      />
+      <LabeledTextInput
+        label="x"
+        value={component.x}
+        onChange={e => {
+          const x = parseInt(e.target.value)
+
           updateComponent(
             elementId,
             {
-              name: newName,
+              x,
             },
             {
-              name: component.name,
+              x: component.x,
+            }
+          )
+        }}
+      />
+      <LabeledTextInput
+        label="y"
+        value={component.y}
+        onChange={e => {
+          const y = parseInt(e.target.value)
+
+          updateComponent(
+            elementId,
+            {
+              y,
+            },
+            {
+              y: component.y,
             }
           )
         }}

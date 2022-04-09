@@ -3,10 +3,8 @@ import Modal from '@mui/material/Modal'
 import { Paper } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import {
-  Component,
   GetPackagesQuery,
   GetPreviewerDataDocument,
-  useGetComponentsQuery,
   useGetPackagesQuery,
   useGetPreviewerDataQuery,
   useGetProjectQuery,
@@ -16,6 +14,10 @@ import styled from '@emotion/styled'
 import { ActionProps } from '../Builder/Properties/Editors/FunctionEditor'
 import { executeAction } from './executeAction'
 import { Schema } from '../../../../types/src/properties'
+import {
+  StructuredComponent,
+  useProjectComponents,
+} from '../../utils/hooks/useProjectComponents'
 
 const FrameWrapper = styled.div`
   pointer-events: all;
@@ -29,7 +31,7 @@ const FrameWrapper = styled.div`
 
 function getComponentSchema(
   packageData: GetPackagesQuery,
-  layer: Component
+  layer: StructuredComponent
 ): Schema {
   const componentPackage = packageData.getPackages.find(
     p => p.packageName === layer.package
@@ -118,7 +120,7 @@ function convertDraftJSBindings(
 function Viewer(props: {
   packageData: GetPackagesQuery
   project: Project
-  layer?: Component
+  layer?: StructuredComponent
   navigate: (screenId: string, dataParams?: any) => void
   onInputChange: (key: string, value: any) => void
   onEntityChange: (value: any) => void
@@ -128,7 +130,7 @@ function Viewer(props: {
   localState: any
   dataContext: any
 }): JSX.Element | null {
-  function buildDataContext(component: Component) {
+  function buildDataContext(component: StructuredComponent) {
     if (component.fetched) {
     }
     return props.dataContext
@@ -199,7 +201,7 @@ function Viewer(props: {
           if (fetched.variables) {
             compData = props.entityState[fetched.entityType].filter(
               (record: any) =>
-                fetched.variables.every(
+                fetched?.variables?.every(
                   variable =>
                     record[variable.key] !==
                     convertDraftJSBindings(
@@ -346,11 +348,7 @@ const Previewer: React.FC = function Previewer() {
       projectId,
     },
   })
-  const { data: componentsData } = useGetComponentsQuery({
-    variables: {
-      projectId,
-    },
-  })
+  const components = useProjectComponents(projectId!)
   const { data: PreviewerData } = useGetPreviewerDataQuery({
     variables: {
       projectId,
@@ -377,10 +375,10 @@ const Previewer: React.FC = function Previewer() {
       setScreen(projectData.getProject.appConfig.appEntryComponentId)
     }
   }, [projectData])
-  if (!projectData || !componentsData || !PreviewerData || !packageData) {
+  if (!projectData || !components || !PreviewerData || !packageData) {
     return <div>Loading</div>
   }
-  const entryPoint = componentsData?.getComponents.find(c => c._id === screen)
+  const entryPoint = components.find(c => c._id === screen)
   return (
     <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
       <Paper

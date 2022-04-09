@@ -4,9 +4,9 @@ import { useParams } from 'react-router-dom'
 import { useDragDrop, useSelection } from '../../../utils/hooks'
 import Layer from './Layer'
 import KeyboardEvents from './KeyboardEvents'
-import { useGetComponentsQuery } from '../../../generated/graphql'
 import { scaleFactorVar } from '../../../apolloClient'
 import { useScale } from '../../../utils/hooks/useScale'
+import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -40,11 +40,7 @@ const Canvas: React.FC = function Canvas() {
   const { zoomFactor } = useScale()
   const { projectId } = useParams()
   const objectCollectionRef = useRef<HTMLDivElement>(null)
-  const { data: componentData } = useGetComponentsQuery({
-    variables: {
-      projectId,
-    },
-  })
+  const components = useProjectComponents(projectId!)
   const { setSelection } = useSelection()
   const { ref } = useDragDrop('main-canvas', {
     droppable: {
@@ -113,7 +109,7 @@ const Canvas: React.FC = function Canvas() {
       objectCollectionRef.current.setAttribute('data-y', `${y}`)
     }
   }, [])
-  if (!componentData) {
+  if (!components) {
     return <div>Loading...</div>
   }
   return (
@@ -140,7 +136,7 @@ const Canvas: React.FC = function Canvas() {
         }}
       >
         <div id="drag-holder">
-          {componentData.getComponents.map(obj => (
+          {components.map(obj => (
             // @ts-ignore
             <Layer key={obj._id} layer={obj} />
           ))}

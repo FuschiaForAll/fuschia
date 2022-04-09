@@ -76,15 +76,15 @@ type BindingContext {
 
 type Component {
   _id: ObjectId!
-  children: [Component!]
   data: JSONObject
   fetched: [DataSource!]
   isContainer: Boolean!
   isRootElement: Boolean!
+  layerSort: String!
   name: String!
   package: String!
   parameters: [RequiredParameter!]
-  parent: Component
+  parent: ObjectId
   props: JSONObject
   requiresAuth: Boolean
   type: String!
@@ -93,11 +93,11 @@ type Component {
 }
 
 input ComponentInput {
-  children: [ObjectId!]
   data: JSONObject
   fetched: [DataSourceInput!]
   isContainer: Boolean
   isRootElement: Boolean
+  layerSort: String
   name: String
   package: String
   parameters: [RequiredParameterInput!]
@@ -107,6 +107,12 @@ input ComponentInput {
   type: String
   x: Float
   y: Float
+}
+
+type ComponentSubscriptionPayload {
+  _ids: [ObjectId!]!
+  components: [Component!]!
+  type: String!
 }
 
 type DataAuth {
@@ -177,6 +183,7 @@ type EntityModel {
   _id: ObjectId!
   auth: [DataAuth!]!
   fields: [DataField!]!
+  isLocal: Boolean!
   keys: [Key!]!
   name: String!
 }
@@ -232,7 +239,7 @@ type Mutation {
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
-  createEntityModel(name: String!, projectId: ObjectId!): EntityModel
+  createEntityModel(isLocal: Boolean!, name: String!, projectId: ObjectId!): EntityModel
   createLabelTag(numberOfStates: Int!, projectId: ObjectId!, tagName: String!): Project!
   createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
@@ -353,7 +360,6 @@ type Project {
   appConfig: AppConfig!
   appId: String!
   body: String
-  components: [Component!]!
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
@@ -404,6 +410,10 @@ input RequiredParameterInput {
   entityType: ObjectId!
   label: String!
   path: String!
+}
+
+type Subscription {
+  onComponentChange(projectId: ObjectId!): ComponentSubscriptionPayload!
 }
 
 type Translation {

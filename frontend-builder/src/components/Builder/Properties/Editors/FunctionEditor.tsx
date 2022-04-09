@@ -3,7 +3,6 @@ import { Props, FunctionSchema } from '@fuchsia/types'
 import { useParams } from 'react-router-dom'
 import {
   useGetBindingTreeQuery,
-  useGetComponentsQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
@@ -24,6 +23,7 @@ import {
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
+import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -101,23 +101,23 @@ interface CreateProps {
   type: 'CREATE'
   dataType?: EntityId
   fields?: { [key: string]: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface DeleteProps {
   type: 'DELETE'
   deleteElement?: { path: string; label: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface UpdateProps {
   type: 'UPDATE'
   updateElement?: { entity: EntityId; path: string; label: string }
   fields?: { [key: string]: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface ConditionalProps {
@@ -916,11 +916,7 @@ const NavigateEditor = ({
   onUpdate: (newValue: NavigateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data: componentData } = useGetComponentsQuery({
-    variables: {
-      projectId,
-    },
-  })
+  const components = useProjectComponents(projectId!)
   const [navTargets, setNagTargets] = useState<
     Array<{
       name: string
@@ -963,10 +959,10 @@ const NavigateEditor = ({
     return null
   }
   useEffect(() => {
-    if (componentData) {
-      setNagTargets(componentData.getComponents.filter(c => c.isRootElement))
+    if (components) {
+      setNagTargets(components.filter(c => c.isRootElement))
     }
-  }, [componentData])
+  }, [components])
   return (
     <div>
       <LabeledSelect

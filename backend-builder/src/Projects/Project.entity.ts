@@ -34,10 +34,6 @@ export class Project {
   @Property({ required: false, default: null })
   body?: String;
 
-  @Field((type) => [Component])
-  @Property({ ref: () => Component, default: [] })
-  components!: Ref<Component>[];
-
   @Field((type) => LabelLibrary)
   @Property({ type: () => LabelLibrary })
   labelLibrary?: LabelLibrary;

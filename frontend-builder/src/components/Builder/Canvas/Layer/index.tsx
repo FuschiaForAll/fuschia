@@ -3,10 +3,7 @@ import styled from '@emotion/styled'
 
 import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
-import {
-  Component,
-  useUpdateComponentMutation,
-} from '../../../../generated/graphql'
+import { useUpdateComponentMutation } from '../../../../generated/graphql'
 import PropertyWindow from '../../Properties'
 import {
   GetPackagesQuery,
@@ -14,23 +11,24 @@ import {
 } from '../../../../generated/graphql-packages'
 import { Schema } from '@fuchsia/types'
 import Portal from '../../../Shared/Portal'
+import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
 interface LayerProps {
-  layer: Component
+  layer: StructuredComponent
   selection?: Selection
   onSelect?: ClickHandler
 }
 
 interface InlineProps {
-  layer: Component
+  layer: StructuredComponent
   selected: boolean
   onClick?: ClickHandler
 }
 
 interface FrameProps extends InlineProps {
-  layer: Component
+  layer: StructuredComponent
 }
 
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
@@ -82,8 +80,8 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   })
 
   const styles: React.CSSProperties = {
-    width: props.style?.width || 50,
-    height: props.style?.height || 50,
+    width: props?.style?.width || 50,
+    height: props?.style?.height || 50,
     left: x || 0,
     top: y || 0,
     pointerEvents: 'all',
@@ -112,7 +110,7 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
-      data-parentid={layer.parent?._id}
+      data-parentid={layer.parentId}
     >
       {children}
     </FrameWrapper>
@@ -151,8 +149,8 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   const { x, y, props } = layer
 
   const styles: React.CSSProperties = {
-    width: props.style?.width || 50,
-    height: props.style?.height || 50,
+    width: props?.style?.width || 50,
+    height: props?.style?.height || 50,
     pointerEvents: 'all',
     zIndex: 1000,
     position: 'absolute',
@@ -188,7 +186,7 @@ function convertDraftJSBindings(value: any) {
 
 function getComponentSchema(
   packageData: GetPackagesQuery,
-  layer: Component
+  layer: StructuredComponent
 ): Schema {
   const componentPackage = packageData.getPackages.find(
     p => p.packageName === layer.package

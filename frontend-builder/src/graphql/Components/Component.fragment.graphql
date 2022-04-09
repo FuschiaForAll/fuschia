@@ -22,7 +22,5 @@ fragment ComponentFragment on Component {
   }
   props
   data
-  parent {
-    _id
-  }
+  parent
 }

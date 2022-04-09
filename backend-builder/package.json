@@ -30,6 +30,7 @@
     "is-url-superb": "^6.1.0",
     "jsonwebtoken": "^8.5.1",
     "ky-universal": "^0.10.0",
+    "lexorank": "^1.0.4",
     "lodash": "^4.17.21",
     "mongoose": "^6.2.1",
     "passport": "^0.5.2",
@@ -43,8 +44,7 @@
     "type-graphql": "^1.1.1",
     "typedi": "^0.10.0",
     "typeorm": "^0.2.41",
-    "uuid": "^8.3.2",
-    "winston": "^3.5.1"
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@types/connect-redis": "^0.0.18",

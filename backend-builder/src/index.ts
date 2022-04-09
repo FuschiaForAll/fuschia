@@ -149,10 +149,21 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
         execute,
         subscribe,
         schema,
-        onConnect: (connectionParams: any) => {},
+        onConnect: async (connectionParams: string) => {
+          const userSession = await redis.get(`sess:${connectionParams}`);
+          console.log(userSession);
+          if (userSession) {
+            const payload = JSON.parse(userSession);
+            console.log(payload);
+
+            return { userId: payload.userId };
+          }
+          return null;
+        },
       },
       {
         server,
+        path: "/subscriptions",
       }
     );
   });

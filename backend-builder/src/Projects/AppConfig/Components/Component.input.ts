@@ -1,7 +1,7 @@
 import { ObjectType, Field, InputType } from "type-graphql";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
-import { DataSource } from "./Component.entity";
+import { Component, DataSource } from "./Component.entity";
 
 @InputType()
 export class RequiredParameterInput {
@@ -27,7 +27,7 @@ export class DataSourceInput {
 }
 
 @InputType()
-export class ComponentInput {
+export class ComponentInput implements Partial<Component> {
   @Field({ nullable: true })
   type!: string;
 
@@ -65,8 +65,8 @@ export class ComponentInput {
   fetched?: DataSourceInput[];
 
   @Field((type) => ObjectIdScalar, { nullable: true })
-  parent!: ObjectId;
+  parent!: ObjectId;  
 
-  @Field((type) => [ObjectIdScalar], { nullable: true })
-  children!: ObjectId[];
+  @Field({ nullable: true })
+  layerSort!: string;
 }
