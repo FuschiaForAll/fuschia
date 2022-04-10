@@ -2,6 +2,7 @@ import { ObjectType, Field, InputType } from "type-graphql";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { Component, DataSource } from "./Component.entity";
+import { Matches } from "class-validator";
 
 @InputType()
 export class RequiredParameterInput {
@@ -35,6 +36,7 @@ export class ComponentInput implements Partial<Component> {
   package!: string;
 
   @Field({ nullable: true })
+  @Matches('^[a-zA-Z_$][a-zA-Z_$0-9]*$')
   name?: string;
 
   @Field({ nullable: true })

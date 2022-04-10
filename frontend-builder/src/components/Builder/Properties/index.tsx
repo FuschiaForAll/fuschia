@@ -16,6 +16,7 @@ import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { useUpdateComponent } from '../../../utils/hooks'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { gql } from '@apollo/client'
+import { variableNameRegex } from '../../../utils/regexp'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -82,7 +83,7 @@ function Properties({
     }
     return undefined
   }
-  const variableName = new RegExp('^[a-zA-Z_$][a-zA-Z_$0-9]*$')
+
   return (
     <>
       <LabeledTextInput
@@ -103,7 +104,7 @@ function Properties({
         }}
         onChange={e => {
           const newName = e.target.value
-          if (variableName.test(newName)) {
+          if (name === '' || variableNameRegex.test(newName)) {
             setName(newName)
           }
         }}

@@ -29,6 +29,14 @@ export type Api = {
   queries: Array<Scalars['String']>;
   sandboxEndpoint?: Maybe<Scalars['String']>;
   subscriptions: Array<Scalars['String']>;
+  variables: Array<ApiVariable>;
+};
+
+export type ApiVariable = {
+  __typename?: 'ApiVariable';
+  _id: Scalars['ObjectId'];
+  name: Scalars['String'];
+  type: Scalars['String'];
 };
 
 export type AppConfig = {
@@ -265,6 +273,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   addParameter: Scalars['Boolean'];
   changePassword: Scalars['Boolean'];
+  createApiVariable: ApiVariable;
   createComponent: Component;
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
@@ -323,6 +332,13 @@ export type MutationAddParameterArgs = {
 export type MutationChangePasswordArgs = {
   newPassword: Scalars['String'];
   oldPassword: Scalars['String'];
+};
+
+
+export type MutationCreateApiVariableArgs = {
+  name: Scalars['String'];
+  projectId: Scalars['ObjectId'];
+  type: Scalars['String'];
 };
 
 
@@ -939,6 +955,15 @@ export enum __TypeKind {
   NonNull = 'NON_NULL'
 }
 
+export type CreateApiVariableMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  name: Scalars['String'];
+  type: Scalars['String'];
+}>;
+
+
+export type CreateApiVariableMutation = { __typename?: 'Mutation', createApiVariable: { __typename?: 'ApiVariable', _id: any, name: string, type: string } };
+
 export type AddParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
   parameterInput: RequiredParameterInput;
@@ -1217,7 +1242,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }>, variables: Array<{ __typename?: 'ApiVariable', _id: any, name: string, type: string }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1451,6 +1476,43 @@ export const AuthFragmentFragmentDoc = gql`
   passwordFieldId
 }
     `;
+export const CreateApiVariableDocument = gql`
+    mutation CreateApiVariable($projectId: ObjectId!, $name: String!, $type: String!) {
+  createApiVariable(projectId: $projectId, name: $name, type: $type) {
+    _id
+    name
+    type
+  }
+}
+    `;
+export type CreateApiVariableMutationFn = Apollo.MutationFunction<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
+
+/**
+ * __useCreateApiVariableMutation__
+ *
+ * To run a mutation, you first call `useCreateApiVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateApiVariableMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createApiVariableMutation, { data, loading, error }] = useCreateApiVariableMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      name: // value for 'name'
+ *      type: // value for 'type'
+ *   },
+ * });
+ */
+export function useCreateApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateApiVariableMutation, CreateApiVariableMutationVariables>(CreateApiVariableDocument, options);
+      }
+export type CreateApiVariableMutationHookResult = ReturnType<typeof useCreateApiVariableMutation>;
+export type CreateApiVariableMutationResult = Apollo.MutationResult<CreateApiVariableMutation>;
+export type CreateApiVariableMutationOptions = Apollo.BaseMutationOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
 export const AddParameterDocument = gql`
     mutation AddParameter($componentId: ObjectId!, $parameterInput: RequiredParameterInput!) {
   addParameter(componentId: $componentId, parameterInput: $parameterInput)
@@ -2817,6 +2879,11 @@ export const GetProjectDocument = gql`
         queries
         mutations
         subscriptions
+        variables {
+          _id
+          name
+          type
+        }
       }
       authConfig {
         requiresAuth

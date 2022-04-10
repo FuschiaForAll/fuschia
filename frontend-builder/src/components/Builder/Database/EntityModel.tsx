@@ -12,6 +12,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
 import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
+import { variableNameRegex } from '../../../utils/regexp'
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -179,7 +180,9 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
               value={fieldName}
               onChange={e => {
                 const name = e.target.value
-                setFieldName(name)
+                if (name === '' || variableNameRegex.test(name)) {
+                  setFieldName(name)
+                }
               }}
             />
             <LabeledSelect

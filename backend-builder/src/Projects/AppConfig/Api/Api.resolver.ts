@@ -12,6 +12,7 @@ import portfinder from "portfinder";
 import { MONGO_DB_URL } from "../../../utils/config";
 import axios from "axios";
 import kill from "tree-kill";
+import { ApiVariable } from "./Api.entity";
 
 interface AWSGetRequest {
   endpoint: string;
@@ -292,5 +293,28 @@ export class ApiResolver {
   @Mutation(() => Boolean, { nullable: true })
   async deleteSubscription(@Ctx() ctx: Context) {
     return true;
+  }
+
+  @Mutation(() => ApiVariable)
+  async createApiVariable(
+    @Arg("projectId", type => ObjectIdScalar) projectId: ObjectId,
+    @Arg("name") name: string,
+    @Arg("type") type: string,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    return await ProjectModel.findByIdAndUpdate(projectId, {
+      $push: { 'appConfig.apiConfig.variables': {
+        name,
+        type
+      }}
+    }, {
+      returnDocument: 'after'
+    })
   }
 }

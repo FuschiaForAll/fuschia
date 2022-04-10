@@ -10,6 +10,13 @@ type Api {
   queries: [String!]!
   sandboxEndpoint: String
   subscriptions: [String!]!
+  variables: [ApiVariable!]!
+}
+
+type ApiVariable {
+  _id: ObjectId!
+  name: String!
+  type: String!
 }
 
 type AppConfig {
@@ -237,6 +244,7 @@ type MenuStructure {
 type Mutation {
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
+  createApiVariable(name: String!, projectId: ObjectId!, type: String!): ApiVariable!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(isLocal: Boolean!, name: String!, projectId: ObjectId!): EntityModel

@@ -54,6 +54,11 @@ query GetProject($projectId: ObjectId!) {
         queries
         mutations
         subscriptions
+        variables {
+          _id
+          name
+          type
+        }
       }
       authConfig {
         requiresAuth

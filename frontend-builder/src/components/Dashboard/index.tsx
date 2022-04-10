@@ -19,27 +19,10 @@ import { gql } from '@apollo/client'
 import { Button } from '../Shared/primitives/Button'
 import { useAuth } from '../../utils/hooks/useAuth'
 import { Logout } from '@mui/icons-material'
+import { MainTabHeader, TabHeader, TabWrapper } from '../Shared/Tabs'
 
 const DashboardWrapper = styled.div`
   padding: 2em;
-`
-const TabWrapper = styled.div`
-  display: grid;
-  grid-auto-flow: column;
-  justify-content: start;
-  gap: 2em;
-  align-items: center;
-`
-
-const TabHeader = styled.div<{ selected: boolean }>`
-  font-weight: ${p => (p.selected ? 600 : 300)};
-  cursor: pointer;
-  color: ${p => (p.selected ? 'var(--accent)' : 'var(--black)')};
-  user-select: none;
-`
-
-const MainTabHeader = styled(TabHeader)`
-  font-size: 2em;
 `
 
 const SearchBar = styled.div`

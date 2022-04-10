@@ -26,6 +26,8 @@ import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { Checkbox } from '../../Shared/primitives/Checkbox'
+import { variableNameRegex } from '../../../utils/regexp'
+import { MainTabHeader, TabWrapper } from '../../Shared/Tabs'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -107,9 +109,30 @@ function StatusChip({
   )
 }
 
-const Database: React.FC = function Database() {
+function VariableConfiguration({
+  selectedPage,
+  pageIndex,
+}: {
+  selectedPage: number
+  pageIndex: number
+}) {
+  return (
+    <div
+      style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}
+    ></div>
+  )
+}
+
+function DatabaseConfiguration({
+  isLocal,
+  selectedPage,
+  pageIndex,
+}: {
+  isLocal: boolean
+  selectedPage: number
+  pageIndex: number
+}) {
   let { projectId } = useParams<{ projectId: string }>()
-  const navigate = useNavigate()
   const [expanded, setExpanded] = React.useState<string | false>(false)
   const { data: liveServerStatusData } = useGetServerStatusQuery({
     variables: {
@@ -125,9 +148,7 @@ const Database: React.FC = function Database() {
     },
     pollInterval: 10000,
   })
-  const [selectedTab, setSelectedTab] = React.useState(0)
   const [newModelName, setNewModelName] = useState('')
-  const [newModelIsLocal, setNewModelIsLocal] = useState(false)
   const { data, loading, error } = useGetProjectQuery({
     variables: { projectId },
   })
@@ -140,9 +161,6 @@ const Database: React.FC = function Database() {
       },
     ],
   })
-  const handleChange = (event: React.SyntheticEvent, newValue: number) => {
-    setSelectedTab(newValue)
-  }
   const handleAccordianChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false)
@@ -157,69 +175,58 @@ const Database: React.FC = function Database() {
     return <div>missing project id</div>
   }
   return (
-    <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
-      <Paper
-        sx={{
-          height: '100%',
-          width: '100%',
-          padding: '1rem',
-          display: 'grid',
-          gridTemplateRows: 'auto 1fr',
-        }}
-      >
+    <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
+      {isLocal ? (
+        <div />
+      ) : (
         <div
           style={{
             display: 'grid',
             gridTemplateColumns: 'auto auto',
-            justifyContent: 'space-between',
+            justifyContent: 'end',
+            gap: '0.5rem',
           }}
         >
-          <Typography>Database Collections</Typography>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'auto auto',
-              gap: '0.5rem',
+          <StatusChip
+            label="Sandbox"
+            status={sandboxServerStatusData?.getServerStatus}
+            onClick={() => {
+              publishApi({
+                variables: {
+                  projectId,
+                  sandbox: true,
+                },
+              })
             }}
-          >
-            <StatusChip
-              label="Sandbox"
-              status={sandboxServerStatusData?.getServerStatus}
-              onClick={() => {
-                publishApi({
-                  variables: {
-                    projectId,
-                    sandbox: true,
-                  },
-                })
-              }}
-            />
-            <StatusChip
-              label="Live"
-              status={liveServerStatusData?.getServerStatus}
-              onClick={() => {
-                publishApi({
-                  variables: {
-                    projectId,
-                    sandbox: false,
-                  },
-                })
-              }}
-            />
-          </div>
+          />
+          <StatusChip
+            label="Live"
+            status={liveServerStatusData?.getServerStatus}
+            onClick={() => {
+              publishApi({
+                variables: {
+                  projectId,
+                  sandbox: false,
+                },
+              })
+            }}
+          />
         </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '250px 1fr',
-            gap: '1.5rem',
-            overflow: 'hidden',
-          }}
-        >
-          <div style={{ overflow: 'auto' }}>
-            {data?.getProject && (
-              <div>
-                {data.getProject.appConfig.apiConfig.models.map(model => (
+      )}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '250px 1fr',
+          gap: '1.5rem',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ overflow: 'auto' }}>
+          {data?.getProject && (
+            <div>
+              {data.getProject.appConfig.apiConfig.models
+                .filter(m => m.isLocal === isLocal)
+                .map(model => (
                   <Accordion
                     key={model._id}
                     expanded={expanded === model._id.toString()}
@@ -255,102 +262,125 @@ const Database: React.FC = function Database() {
                     </AccordionDetails>
                   </Accordion>
                 ))}
-                <Accordion
-                  expanded={expanded === 'new'}
-                  onChange={handleAccordianChange('new')}
-                  elevation={0}
-                  sx={{
-                    margin: '0.25rem',
-                    background: '#F7F6F6',
-                    color: '#DD1C74',
-                    border: 'dashed 1px #F24726',
-                    borderRadius: 5,
-                  }}
-                >
-                  <AccordionSummary sx={{}}>
-                    <div className="spaced-and-centered">
-                      <span>Create New Data Collection</span>
-                      <span style={{ color: 'black' }}>
-                        <Add />
-                      </span>
-                    </div>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <div>
-                      <LabeledTextInput
-                        label="Collection Name"
-                        type="text"
-                        value={newModelName}
-                        onChange={e => {
-                          const name = e.currentTarget.value
+              <Accordion
+                expanded={expanded === 'new'}
+                onChange={handleAccordianChange('new')}
+                elevation={0}
+                sx={{
+                  margin: '0.25rem',
+                  background: '#F7F6F6',
+                  color: '#DD1C74',
+                  border: 'dashed 1px #F24726',
+                  borderRadius: 5,
+                }}
+              >
+                <AccordionSummary sx={{}}>
+                  <div className="spaced-and-centered">
+                    <span>Create New Data Collection</span>
+                    <span style={{ color: 'black' }}>
+                      <Add />
+                    </span>
+                  </div>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <div>
+                    <LabeledTextInput
+                      label="Collection Name"
+                      type="text"
+                      value={newModelName}
+                      onChange={e => {
+                        const name = e.currentTarget.value
+                        if (name === '' || variableNameRegex.test(name)) {
                           setNewModelName(name)
-                        }}
-                      />
-                      <input
-                        name="isLocalTable"
-                        type="checkbox"
-                        checked={newModelIsLocal}
-                        onChange={e => {
-                          const isChecked = e.target.checked
-                          setNewModelIsLocal(isChecked)
-                        }}
-                      />
-                      <button
-                        className="outlined-accent-button"
-                        onClick={async () => {
-                          await createNewEntityModel({
-                            variables: {
-                              name: newModelName,
-                              isLocal: newModelIsLocal,
-                              projectId,
-                            },
-                          })
-                          setNewModelName('')
-                        }}
-                      >
-                        Create New Model
-                      </button>
-                    </div>
-                  </AccordionDetails>
-                </Accordion>
-              </div>
-            )}
-          </div>
-          <div style={{ overflow: 'auto' }}>
-            <Tabs value={selectedTab} onChange={handleChange}>
-              <Tab label="Data Editor" />
-              <Tab label="GraphQL Designer" />
-            </Tabs>
-            <TabPanel value={selectedTab} index={0}>
-              {data && (
-                <DataEditor
-                  model={data.getProject.appConfig.apiConfig.models.find(
-                    model => model._id.toString() === expanded
-                  )}
-                  models={data.getProject.appConfig.apiConfig.models}
-                  sandboxEndpoint={
-                    data.getProject.appConfig.apiConfig.sandboxEndpoint
-                  }
-                  liveEndpoint={
-                    data.getProject.appConfig.apiConfig.liveEndpoint
-                  }
-                />
-              )}
-            </TabPanel>
-            <TabPanel value={selectedTab} index={1}>
-              {data && (
-                <GraphQLDesigner
-                  sandboxEndpoint={
-                    data.getProject.appConfig.apiConfig.sandboxEndpoint
-                  }
-                  liveEndpoint={
-                    data.getProject.appConfig.apiConfig.liveEndpoint
-                  }
-                />
-              )}
-            </TabPanel>
-          </div>
+                        }
+                      }}
+                    />
+                    <button
+                      className="outlined-accent-button"
+                      onClick={async () => {
+                        await createNewEntityModel({
+                          variables: {
+                            name: newModelName,
+                            isLocal,
+                            projectId,
+                          },
+                        })
+                        setNewModelName('')
+                      }}
+                    >
+                      Create New Model
+                    </button>
+                  </div>
+                </AccordionDetails>
+              </Accordion>
+            </div>
+          )}
         </div>
+        <div style={{ overflow: 'auto' }}>
+          {data && (
+            <DataEditor
+              model={data.getProject.appConfig.apiConfig.models.find(
+                model => model._id.toString() === expanded
+              )}
+              models={data.getProject.appConfig.apiConfig.models}
+              sandboxEndpoint={
+                data.getProject.appConfig.apiConfig.sandboxEndpoint
+              }
+              liveEndpoint={data.getProject.appConfig.apiConfig.liveEndpoint}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const Database: React.FC = function Database() {
+  const [selectedTabIndex, setSelectedTabIndex] = useState(0)
+  const navigate = useNavigate()
+
+  return (
+    <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
+      <Paper
+        sx={{
+          height: '100%',
+          width: '100%',
+          display: 'grid',
+          gridTemplateRows: 'auto auto 1fr',
+          padding: '2em',
+        }}
+      >
+        <TabWrapper>
+          <MainTabHeader
+            selected={selectedTabIndex === 0}
+            onClick={() => setSelectedTabIndex(0)}
+          >
+            Server Database
+          </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 1}
+            onClick={() => setSelectedTabIndex(1)}
+          >
+            App Variables
+          </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 2}
+            onClick={() => setSelectedTabIndex(2)}
+          >
+            Local Database
+          </MainTabHeader>
+        </TabWrapper>
+        <DatabaseConfiguration
+          isLocal={false}
+          pageIndex={0}
+          selectedPage={selectedTabIndex}
+        />
+        <VariableConfiguration pageIndex={0} selectedPage={selectedTabIndex} />
+        <DatabaseConfiguration
+          isLocal={true}
+          pageIndex={2}
+          selectedPage={selectedTabIndex}
+        />
       </Paper>
     </Modal>
   )

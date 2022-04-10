@@ -6,6 +6,24 @@ import {
   modelOptions,
   Severity,
 } from "@typegoose/typegoose";
+import { ObjectId } from "mongoose";
+import { ObjectIdScalar } from "../../../utils/object-id.scalar";
+import { Matches } from "class-validator";
+
+@ObjectType()
+export class ApiVariable {
+  @Field((type) => ObjectIdScalar)
+  readonly _id!: ObjectId
+
+  @Field()
+  @Property()
+  @Matches('^[a-zA-Z_$][a-zA-Z_$0-9]*$')
+  name!: string
+  
+  @Field()
+  @Property()
+  type!: string
+}
 
 @modelOptions({
   options: { allowMixed: Severity.ALLOW },
@@ -24,6 +42,10 @@ export class Api {
   @Field((type) => [EntityModel])
   @Property({ type: () => EntityModel, default: [] })
   models!: EntityModel[];
+  
+  @Field((type) => [ApiVariable])
+  @Property({ type: () => ApiVariable, default: [] })
+  variables!: ApiVariable[];
 
   @Field((type) => [String])
   @Property({ default: [] })
