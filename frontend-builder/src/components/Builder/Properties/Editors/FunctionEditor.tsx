@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Props, FunctionSchema } from '@fuchsia/types'
 import { useParams } from 'react-router-dom'
 import {
+  PackageComponentType,
   useGetBindingTreeQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
@@ -960,7 +961,9 @@ const NavigateEditor = ({
   }
   useEffect(() => {
     if (components) {
-      setNagTargets(components.filter(c => c.isRootElement))
+      setNagTargets(
+        components.filter(c => c.componentType === PackageComponentType.Screen)
+      )
     }
   }, [components])
   return (

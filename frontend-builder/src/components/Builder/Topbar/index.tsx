@@ -48,8 +48,8 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
   projectName,
 }: TopbarProps) {
   const { undo, redo } = useDesignerHistory()
-
   const navigate = useNavigate()
+
   return (
     <Wrapper>
       <Box sx={{ display: 'grid', gridAutoFlow: 'column', gap: '1rem' }}>

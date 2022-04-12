@@ -3,8 +3,7 @@
   "title": "Text",
   "icon": "FormatColorText",
   "description": "A plain old text field",
-  "isRootElement": false,
-  "isContainer": false,
+  "componentType": "Element",
   "width": 160,
   "height": 35,
   "properties": {
@@ -43,10 +42,7 @@
         "fontStyle": {
           "title": "Font Style",
           "type": "string",
-          "enum": [
-            "normal",
-            "italic"
-          ],
+          "enum": ["normal", "italic"],
           "default": "normal"
         },
         "fontWeight": {
@@ -70,24 +66,13 @@
         "textAlign": {
           "title": "Text Align",
           "type": "string",
-          "enum": [
-            "auto",
-            "left",
-            "right",
-            "center",
-            "justify"
-          ],
+          "enum": ["auto", "left", "right", "center", "justify"],
           "default": "auto"
         },
         "textTransform": {
           "title": "Text Transform",
           "type": "string",
-          "enum": [
-            "none",
-            "uppercase",
-            "lowercase",
-            "capitalize"
-          ],
+          "enum": ["none", "uppercase", "lowercase", "capitalize"],
           "default": "none"
         }
       }

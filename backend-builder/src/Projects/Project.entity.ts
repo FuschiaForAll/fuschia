@@ -30,10 +30,6 @@ export class Project {
   @Property({ type: () => AppConfig, required: true })
   appConfig!: AppConfig;
 
-  @Field((type) => String, { nullable: true })
-  @Property({ required: false, default: null })
-  body?: String;
-
   @Field((type) => LabelLibrary)
   @Property({ type: () => LabelLibrary })
   labelLibrary?: LabelLibrary;

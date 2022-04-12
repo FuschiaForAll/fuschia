@@ -2,9 +2,8 @@
   "type": "array",
   "title": "List",
   "description": "Simple List",
+  "componentType": "Container",
   "icon": "List",
-  "isRootElement": false,
-  "isContainer": true,
   "width": 350,
   "height": 300,
   "properties": {

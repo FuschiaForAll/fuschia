@@ -83,10 +83,9 @@ type BindingContext {
 
 type Component {
   _id: ObjectId!
+  componentType: PackageComponentType!
   data: JSONObject
   fetched: [DataSource!]
-  isContainer: Boolean!
-  isRootElement: Boolean!
   layerSort: String!
   name: String!
   package: String!
@@ -100,10 +99,9 @@ type Component {
 }
 
 input ComponentInput {
+  componentType: PackageComponentType
   data: JSONObject
   fetched: [DataSourceInput!]
-  isContainer: Boolean
-  isRootElement: Boolean
   layerSort: String
   name: String
   package: String
@@ -321,21 +319,29 @@ type Package {
 
 type PackageComponent {
   _id: ObjectId!
-  defaultValue: JSONObject!
+  componentType: PackageComponentType!
+  defaultValue: JSONObject
   icon: String!
-  isContainer: Boolean!
-  isRootElement: Boolean!
   name: String!
   schema: JSONObject!
 }
 
 input PackageComponentInput {
+  componentType: PackageComponentType!
   defaultValue: JSONObject!
   icon: String!
-  isContainer: Boolean!
-  isRootElement: Boolean!
   name: String!
   schema: JSONObject!
+}
+
+"""
+The type of component, dictates where it can be dropped or if things can be dropped on it
+"""
+enum PackageComponentType {
+  Container
+  Element
+  Screen
+  Stack
 }
 
 input PackageInput {
@@ -367,14 +373,12 @@ type Project {
   _id: ObjectId!
   appConfig: AppConfig!
   appId: String!
-  body: String
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
 }
 
 input ProjectInput {
-  body: String
   organizationId: ObjectId!
   projectName: String!
 }
@@ -430,7 +434,6 @@ type Translation {
 }
 
 input UpdateProjectInput {
-  body: String!
   projectName: String
 }
 

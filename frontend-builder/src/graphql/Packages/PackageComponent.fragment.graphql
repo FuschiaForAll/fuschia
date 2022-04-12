@@ -4,6 +4,5 @@ fragment PackageComponentFragment on PackageComponent {
   schema
   defaultValue
   icon
-  isRootElement
-  isContainer
+  componentType
 }

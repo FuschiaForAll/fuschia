@@ -24,15 +24,16 @@ import { ProjectService } from "../../Project.service";
 import { Component, RequiredParameter } from "./Component.entity";
 import { ComponentInput, RequiredParameterInput } from "./Component.input";
 import * as _ from "lodash";
+import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
 
 @ObjectType()
 class ComponentSubscriptionPayload {
   @Field()
-  type!: 'CREATE' | 'DELETE' | 'UPDATE'
-  @Field(type => [ObjectIdScalar])
-  _ids!: ObjectId[]
-  @Field(type => [Component])
-  components!: Component[]
+  type!: "CREATE" | "DELETE" | "UPDATE";
+  @Field((type) => [ObjectIdScalar])
+  _ids!: ObjectId[];
+  @Field((type) => [Component])
+  components!: Component[];
 }
 
 @ObjectType()
@@ -102,7 +103,7 @@ async function getParentRecursive(
       ...(await getParentRecursive(component.parent.toString(), [...acc])),
     ];
   }
-  if (component.isRootElement) {
+  if (component.componentType === PackageComponentType.Screen) {
     return [
       ...ret,
       {
@@ -113,7 +114,7 @@ async function getParentRecursive(
       },
     ];
   }
-  if (component.isContainer) {
+  if (component.componentType === PackageComponentType.Container) {
     return [
       ...ret,
       {
@@ -338,7 +339,8 @@ export class ComponentResolver {
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Arg("componentInput", (type) => ComponentInput)
     componentInput: ComponentInput,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     if (
@@ -348,14 +350,17 @@ export class ComponentResolver {
       throw new ApolloError("Unauthorized");
     }
     const newcomponent = await ComponentModel.create({
-      parameters: componentInput.isRootElement ? [] : undefined,
+      parameters:
+        componentInput.componentType === PackageComponentType.Screen
+          ? []
+          : undefined,
       ...componentInput,
       projectId,
     });
     publish({
-      type: 'CREATE',
+      type: "CREATE",
       _ids: [newcomponent._id],
-      components: [newcomponent]
+      components: [newcomponent],
     });
     return {
       _id: newcomponent._id,
@@ -368,7 +373,8 @@ export class ComponentResolver {
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("componentInput", (type) => ComponentInput)
     componentInput: ComponentInput,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -391,11 +397,11 @@ export class ComponentResolver {
       );
       if (newUpdate) {
         publish({
-          type: 'UPDATE',
+          type: "UPDATE",
           _ids: [componentId],
-          components: [newUpdate]
-        })
-        return newUpdate
+          components: [newUpdate],
+        });
+        return newUpdate;
       }
     }
     throw new ApolloError("Component not found");
@@ -405,7 +411,8 @@ export class ComponentResolver {
   async deleteComponents(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Arg("componentIds", (type) => [ObjectIdScalar]) componentIds: ObjectId[],
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -424,10 +431,10 @@ export class ComponentResolver {
       { new: true }
     );
     publish({
-      type: 'DELETE',
+      type: "DELETE",
       _ids: componentIds,
-      components: []
-    })
+      components: [],
+    });
     return componentIds;
   }
 
@@ -436,7 +443,8 @@ export class ComponentResolver {
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("parameterInput", (type) => RequiredParameterInput)
     parameterInput: RequiredParameterInput,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -451,11 +459,11 @@ export class ComponentResolver {
       }
 
       await component.save();
-        publish({
-          type: 'UPDATE',
-          _ids: [componentId],
-          components: [component]
-        })
+      publish({
+        type: "UPDATE",
+        _ids: [componentId],
+        components: [component],
+      });
       return true;
     }
   }
@@ -466,7 +474,8 @@ export class ComponentResolver {
     @Arg("parameterId", (type) => ObjectIdScalar) parameterId: ObjectId,
     @Arg("parameterInput", (type) => RequiredParameterInput)
     parameterInput: RequiredParameterInput,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -486,11 +495,11 @@ export class ComponentResolver {
         }
       }
       await component.save();
-        publish({
-          type: 'UPDATE',
-          _ids: [componentId],
-          components: [component]
-        })
+      publish({
+        type: "UPDATE",
+        _ids: [componentId],
+        components: [component],
+      });
       await component.save();
       return true;
     }
@@ -501,7 +510,8 @@ export class ComponentResolver {
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("parameterId", (type) => ObjectIdScalar)
     parameterId: ObjectId,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -515,11 +525,11 @@ export class ComponentResolver {
         );
       }
       await component.save();
-        publish({
-          type: 'UPDATE',
-          _ids: [componentId],
-          components: [component]
-        })
+      publish({
+        type: "UPDATE",
+        _ids: [componentId],
+        components: [component],
+      });
       return true;
     }
   }
@@ -528,7 +538,8 @@ export class ComponentResolver {
   async duplicateComponent(
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -584,7 +595,8 @@ export class ComponentResolver {
   async updateComponentProps(
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("props", (type) => Object) props: Object,
-    @PubSub("COMPONENT_CHANGE") publish: Publisher<ComponentSubscriptionPayload>,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
     @Ctx() ctx: Context
   ) {
     console.error(
@@ -597,10 +609,10 @@ export class ComponentResolver {
     );
     if (updatedDocument) {
       publish({
-        type: 'UPDATE',
+        type: "UPDATE",
         _ids: [componentId],
-        components: [updatedDocument]
-      })
+        components: [updatedDocument],
+      });
     }
   }
 
@@ -612,18 +624,25 @@ export class ComponentResolver {
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Ctx() ctx: any
   ) {
-    const returnedSub = {...componentSubscription}
+    const returnedSub = { ...componentSubscription };
     // pub sub stringification messes up ObjectId and ObjectIdScalar
     // @ts-ignore
-    returnedSub._ids = returnedSub._ids.map(id => new mongoose.Types.ObjectId(id)) 
+    returnedSub._ids = returnedSub._ids.map(
+      // @ts-ignore
+      (id) => new mongoose.Types.ObjectId(id)
+    );
     // @ts-ignore
-    returnedSub.components = componentSubscription.components.map(component => ({
-      ...component,
-      // @ts-ignore
-      _id: new mongoose.Types.ObjectId(component._id),
-      // @ts-ignore
-      parent: component.parent ? new mongoose.Types.ObjectId(component.parent) : undefined
-    }))
-    return returnedSub
+    returnedSub.components = componentSubscription.components.map(
+      (component) => ({
+        ...component,
+        // @ts-ignore
+        _id: new mongoose.Types.ObjectId(component._id),
+        parent: component.parent
+          ? // @ts-ignore
+            new mongoose.Types.ObjectId(component.parent)
+          : undefined,
+      })
+    );
+    return returnedSub;
   }
 }

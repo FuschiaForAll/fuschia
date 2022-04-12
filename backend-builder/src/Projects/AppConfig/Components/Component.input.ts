@@ -3,6 +3,7 @@ import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { Component, DataSource } from "./Component.entity";
 import { Matches } from "class-validator";
+import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
 
 @InputType()
 export class RequiredParameterInput {
@@ -36,7 +37,7 @@ export class ComponentInput implements Partial<Component> {
   package!: string;
 
   @Field({ nullable: true })
-  @Matches('^[a-zA-Z_$][a-zA-Z_$0-9]*$')
+  @Matches("^[a-zA-Z_$][a-zA-Z_$0-9]*$")
   name?: string;
 
   @Field({ nullable: true })
@@ -51,11 +52,8 @@ export class ComponentInput implements Partial<Component> {
   @Field((type) => Object, { nullable: true })
   data?: Object;
 
-  @Field({ nullable: true })
-  isContainer!: boolean;
-
-  @Field({ nullable: true })
-  isRootElement!: boolean;
+  @Field((type) => PackageComponentType, { nullable: true })
+  componentType?: PackageComponentType;
 
   @Field({ nullable: true })
   requiresAuth?: boolean;
@@ -67,7 +65,7 @@ export class ComponentInput implements Partial<Component> {
   fetched?: DataSourceInput[];
 
   @Field((type) => ObjectIdScalar, { nullable: true })
-  parent!: ObjectId;  
+  parent!: ObjectId;
 
   @Field({ nullable: true })
   layerSort!: string;

@@ -18,7 +18,7 @@ import {
   useGetProjectQuery,
   useGetDataContextQuery,
 } from '../../../generated/graphql'
-import { useGetPackagesQuery } from '../../../generated/graphql-packages'
+import { useGetPackagesQuery } from '../../../generated/graphql'
 import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
 
 const EditorWrapper = styled.div`

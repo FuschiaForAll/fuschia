@@ -1,5 +1,4 @@
 import React from 'react'
-import { useQuery, gql } from '@apollo/client'
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import Settings from '../App/Settings'
 
@@ -14,25 +13,18 @@ import Previewer from '../Previewer'
 import { Modal, Paper } from '@mui/material'
 import Dashboard from '../Dashboard'
 import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
-
-const GET_PROJECT = gql`
-  query GetBuilderProject($projectId: ObjectId!) {
-    project: getProject(projectId: $projectId) {
-      _id
-      appId
-      projectName
-      body
-    }
-  }
-`
+import { useGetProjectQuery } from '../../generated/graphql'
 
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
-  const project = data?.project
+  const { data, loading } = useGetProjectQuery({
+    variables: {
+      projectId,
+    },
+  })
 
-  if (!data && loading) {
+  if (!data?.getProject && loading) {
     return <FullScreenLoader />
   } else if (!data) {
     return (
@@ -41,6 +33,7 @@ const Builder: React.FC = function Builder() {
       </div>
     )
   }
+  const project = data.getProject
   return (
     <DesignerHistoryProvider>
       <div>

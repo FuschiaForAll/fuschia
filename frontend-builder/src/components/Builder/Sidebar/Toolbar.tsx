@@ -1,12 +1,15 @@
 import React, { useState, useCallback } from 'react'
 import Paper from '@mui/material/Paper'
 import Item from './Item'
-import { useGetPackagesQuery } from '../../../generated/graphql-packages'
+import {
+  PackageComponentType,
+  useGetPackagesQuery,
+} from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
 import { useDragDrop } from '../../../utils/hooks'
 import { StructuredComponent } from '../../../utils/hooks/useProjectComponents'
 interface ToolProps {
-  defaultLayer: StructuredComponent & { isRootElement: boolean }
+  defaultLayer: StructuredComponent
 }
 
 interface DragEvent {
@@ -15,7 +18,7 @@ interface DragEvent {
 
 interface DragItemProps {
   drag: DragEvent
-  layer: StructuredComponent & { isRootElement: boolean }
+  layer: StructuredComponent
   onDrag: (evt: MouseEvent) => void
   onDragEnd: () => void
 }
@@ -59,7 +62,7 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
 
   const props = { ...layer.props }
   // @ts-ignore
-  const InlineComponent = window[layer.package].components[layer.type]
+  const InlineComponent = window[layer.package][layer.type]
   if (layer.data) {
     if (layer.data) {
       Object.keys(layer.data).forEach(key => {
@@ -71,7 +74,12 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   }
   return (
     <div
-      className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
+      className={`droppable ${
+        layer.componentType === PackageComponentType.Stack ||
+        layer.componentType === PackageComponentType.Screen
+          ? 'root-element'
+          : ''
+      }`}
       id="new-element"
       data-parent="toolbar"
       ref={ref}
@@ -149,8 +157,7 @@ const Toolbar: React.FC = function Toolbar() {
                 key={component._id}
                 defaultLayer={{
                   name: component.name,
-                  isContainer: component.isContainer,
-                  isRootElement: component.isRootElement,
+                  componentType: component.componentType,
                   package: _package.packageName,
                   _id: '',
                   type: component.name,

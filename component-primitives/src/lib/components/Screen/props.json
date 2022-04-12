@@ -1,9 +1,8 @@
 {
-  "type": "ui-component",
+  "type": "object",
   "title": "Screen",
   "icon": "Crop32",
-  "isRootElement": true,
-  "isContainer": true,
+  "componentType": "Screen",
   "description": "A plain old text field",
   "width": 350,
   "height": 667,

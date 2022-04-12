@@ -4,6 +4,7 @@ import {
   Component,
   OnComponentChangeDocument,
   OnComponentChangeSubscriptionResult,
+  PackageComponentType,
   useGetComponentsQuery,
 } from '../../generated/graphql'
 
@@ -14,8 +15,7 @@ export interface StructuredComponent {
   name: string
   x?: number | null
   y?: number | null
-  isContainer: boolean
-  isRootElement: boolean
+  componentType: PackageComponentType
   requiresAuth?: boolean | null
   parameters?: Array<{
     entityType: string
@@ -53,7 +53,9 @@ export const useProjectComponents = (
     if (componentData) {
       const components = componentData.getComponents
 
-      const rootElements = components.filter(c => c.isRootElement)
+      const rootElements = components.filter(
+        c => c.componentType === PackageComponentType.Stack
+      )
       const remappedEntities = rootElements.map(root => {
         const recursiveChildren = (
           component: Component

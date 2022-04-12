@@ -53,7 +53,7 @@ export function AuthConfig({ projectId }: { projectId: string }) {
     return <div>Error</div>
   }
   if (!authConfigData?.getAuth || loading) {
-    return <div>Loading...</div>
+    return <div>Loading Auth...</div>
   }
   return (
     <div>

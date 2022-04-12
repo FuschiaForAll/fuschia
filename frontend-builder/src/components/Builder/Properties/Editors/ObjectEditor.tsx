@@ -15,6 +15,9 @@ const ObjectEditor = function ObjectEditor(props: ObjectEditorProps) {
     props.initialValue[property] = value
     props.updateValue(props.initialValue as any, true)
   }
+  if (!props.schema || !props.schema.properties) {
+    return null
+  }
   return (
     <>
       {Object.keys(props.schema.properties).map(key => (

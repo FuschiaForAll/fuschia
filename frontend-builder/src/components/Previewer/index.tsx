@@ -5,6 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   GetPackagesQuery,
   GetPreviewerDataDocument,
+  PackageComponentType,
   useGetPackagesQuery,
   useGetPreviewerDataQuery,
   useGetProjectQuery,
@@ -168,7 +169,7 @@ function Viewer(props: {
     left: `${props.layer.x}px`,
     top: `${props.layer.y}px`,
   }
-  if (props.layer.isRootElement) {
+  if (props.layer.componentType === PackageComponentType.Screen) {
     return (
       <div>
         <InlineComponent {...componentProperties}>
@@ -191,7 +192,7 @@ function Viewer(props: {
       </div>
     )
   }
-  if (props.layer.isContainer) {
+  if (props.layer.componentType !== PackageComponentType.Element) {
     if (schema.type === 'array') {
       // get array data
       if (props.layer.fetched && props.layer.fetched.length === 1) {

@@ -15,6 +15,7 @@ export const currentProjectIdVar = makeVar(
 export const scaleFactorVar = makeVar(localStorage.getItem('scaleFactor'))
 export const previewerStateVar = makeVar(localStorage.getItem('previewerData'))
 export const selectionVar = makeVar<string[]>([])
+export const stackFilterVar = makeVar<string>('')
 
 const httpLink = createHttpLink({
   uri: `${process.env.REACT_APP_GQL_ENDPOINT}/graphql`,
@@ -70,6 +71,11 @@ const cache = new InMemoryCache({
         previewerState: {
           read() {
             return previewerStateVar()
+          },
+        },
+        stackFilter: {
+          read() {
+            return stackFilterVar()
           },
         },
       },

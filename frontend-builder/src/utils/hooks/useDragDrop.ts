@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
+import { gql, useQuery } from '@apollo/client'
 
 interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
@@ -50,6 +51,12 @@ function getDataAttributes(target: Element) {
 function getPosition(target: Element) {
   return [parseFloat(target.style.left) || 0, parseFloat(target.style.top) || 0]
 }
+
+const stackFilterQuery = gql`
+  query {
+    stackFilter @client
+  }
+`
 
 export const useDragDrop = (
   id: string,
@@ -209,6 +216,7 @@ export const useDragDrop = (
                * 1. Only a root component can be placed on the main-canvas
                * 2. Only containers or the main canvas can be dropped on
                */
+              debugger
               if (!event.relatedTarget) {
                 return
               }
@@ -252,8 +260,7 @@ export const useDragDrop = (
                     parentId === 'main-canvas' ? undefined : parentId
                   createComponent({
                     name: jsonLayer.type,
-                    isRootElement: jsonLayer.isRootElement,
-                    isContainer: jsonLayer.isContainer,
+                    componentType: jsonLayer.componentType,
                     package: jsonLayer.package,
                     type: jsonLayer.type,
                     parent: targetId,

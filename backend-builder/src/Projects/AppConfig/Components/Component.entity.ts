@@ -8,6 +8,7 @@ import {
   Ref,
   Severity,
 } from "@typegoose/typegoose";
+import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
 
 @ObjectType()
 export class DataMembers {
@@ -86,13 +87,9 @@ export class Component {
   @Property()
   y?: number;
 
-  @Field()
-  @Property()
-  isContainer!: boolean;
-
-  @Field()
-  @Property()
-  isRootElement!: boolean;
+  @Field((type) => PackageComponentType)
+  @Property({ required: true, enum: PackageComponentType })
+  componentType!: PackageComponentType;
 
   @Field({ nullable: true })
   @Property()
@@ -117,7 +114,7 @@ export class Component {
   @Field((type) => ObjectIdScalar, { nullable: true })
   @Property()
   parent?: ObjectId;
-  
+
   @Field()
   @Property()
   layerSort!: string;

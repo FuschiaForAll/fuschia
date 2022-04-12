@@ -3,12 +3,15 @@ import styled from '@emotion/styled'
 
 import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
 import { arrayXor } from '../../../../utils/arrays'
-import { useUpdateComponentMutation } from '../../../../generated/graphql'
+import {
+  PackageComponentType,
+  useUpdateComponentMutation,
+} from '../../../../generated/graphql'
 import PropertyWindow from '../../Properties'
 import {
   GetPackagesQuery,
   useGetPackagesQuery,
-} from '../../../../generated/graphql-packages'
+} from '../../../../generated/graphql'
 import { Schema } from '@fuchsia/types'
 import Portal from '../../../Shared/Portal'
 import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
@@ -44,12 +47,13 @@ const FrameWrapper = styled.div<{ name?: string }>`
   position: absolute;
 `
 
-const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
+const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   layer,
   children,
   selected,
   onClick,
 }) {
+  debugger
   const { x, y, props } = layer
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
@@ -92,17 +96,105 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   if (selected) {
     styles.boxShadow = BOX_SHADOW
   }
-
-  if (layer.isRootElement) {
-    styles.border = '#ccc solid 1px'
-  }
   const classNames = ['droppable']
-  if (layer.isRootElement) {
-    classNames.push('root-element')
+  switch (layer.componentType) {
+    case PackageComponentType.Stack:
+      styles.border = '#ccc dashed 1px'
+      classNames.push('root-element')
+      break
+    case PackageComponentType.Screen:
+      styles.border = '#ccc solid 1px'
+      break
   }
   return (
     <FrameWrapper
-      name={layer.isRootElement ? layer.name : ''}
+      name={
+        layer.componentType === PackageComponentType.Screen ||
+        layer.componentType === PackageComponentType.Stack
+          ? layer.name
+          : ''
+      }
+      id={layer._id}
+      className={classNames.join(' ')}
+      style={styles}
+      ref={ref}
+      onClick={onClick}
+      data-package={layer.package}
+      data-type={layer.type}
+      data-parentid={layer.parentId}
+    >
+      {children}
+    </FrameWrapper>
+  )
+}
+
+const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
+  layer,
+  children,
+  selected,
+  onClick,
+}) {
+  debugger
+  const { x, y, props } = layer
+  const [updateComponent] = useUpdateComponentMutation()
+  const { ref } = useDragDrop(layer._id, {
+    draggable: {
+      onDragEnd: id => {},
+    },
+    resizable: {
+      onResizeEnd: (id, { width, height }, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+              props: {
+                ...props,
+                style: { width, height },
+              },
+            },
+          },
+        })
+      },
+    },
+    droppable: {
+      dropClass: '#droppable',
+      onDrop: () => {},
+    },
+  })
+
+  const styles: React.CSSProperties = {
+    width: props?.style?.width || 50,
+    height: props?.style?.height || 50,
+    left: x || 0,
+    top: y || 0,
+    pointerEvents: 'all',
+    position: 'absolute',
+    zIndex: 10,
+  }
+
+  if (selected) {
+    styles.boxShadow = BOX_SHADOW
+  }
+  const classNames = ['droppable']
+  switch (layer.componentType) {
+    case PackageComponentType.Stack:
+      styles.border = '#ccc dashed 1px'
+      classNames.push('root-element')
+      break
+    case PackageComponentType.Screen:
+      styles.border = '#ccc solid 1px'
+      break
+  }
+  return (
+    <FrameWrapper
+      name={
+        layer.componentType === PackageComponentType.Screen ||
+        layer.componentType === PackageComponentType.Stack
+          ? layer.name
+          : ''
+      }
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}
@@ -209,7 +301,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
 }) {
   const { data: packageData } = useGetPackagesQuery()
   const selected = !!selection?.includes(layer._id)
-
+  debugger
   // @ts-ignore
   if (!window[layer.package]) {
     return (
@@ -219,8 +311,20 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
     )
   }
   // @ts-ignore
-  const InlineComponent = window[layer.package].components[layer.type]
-  const WrapperType = layer.isContainer ? FrameLayer : InlineLayer
+  const InlineComponent = window[layer.package][layer.type]
+  let WrapperType: React.FC<any>
+  switch (layer.componentType) {
+    case PackageComponentType.Stack:
+      WrapperType = StackLayer
+      break
+    case PackageComponentType.Screen:
+    case PackageComponentType.Container:
+      WrapperType = FrameLayer
+      break
+    case PackageComponentType.Element:
+      WrapperType = InlineLayer
+      break
+  }
   const props = { ...layer.props }
   Object.keys(props).forEach(
     key => (props[key] = convertDraftJSBindings(props[key]))
@@ -248,7 +352,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
         </Portal>
       )}
       <WrapperType layer={layer} selected={selected} onClick={onSelect}>
-        {layer.isContainer ? (
+        {layer.componentType !== PackageComponentType.Element ? (
           schema.type === 'array' ? (
             [0, 1, 2].map(item => (
               <InlineComponent
@@ -338,6 +442,7 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
     },
     [selection, setSelection]
   )
+  debugger
   return (
     <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
   )
