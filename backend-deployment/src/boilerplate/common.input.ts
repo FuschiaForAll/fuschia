@@ -40,25 +40,25 @@ registerEnumType(ModelAttributeTypes, {
 @InputType()
 export class ModelStringInput {
   @Field({ nullable: true })
-  ne?: String
+  ne?: string
   @Field({ nullable: true })
-  eq?: String
+  eq?: string
   @Field({ nullable: true })
-  le?: String
+  le?: string
   @Field({ nullable: true })
-  lt?: String
+  lt?: string
   @Field({ nullable: true })
-  ge?: String
+  ge?: string
   @Field({ nullable: true })
-  gt?: String
+  gt?: string
   @Field({ nullable: true })
-  contains?: String
+  contains?: string
   @Field({ nullable: true })
-  notContains?: String
+  notContains?: string
+  @Field(type => [String], { nullable: true })
+  between?: string[]
   @Field({ nullable: true })
-  between?: [String]
-  @Field({ nullable: true })
-  beginsWith?: String
+  beginsWith?: string
   @Field({ nullable: true })
   attributeExists?: Boolean
   @Field(type => ModelAttributeTypes, { nullable: true })

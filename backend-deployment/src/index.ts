@@ -347,6 +347,9 @@ async function generateEntityFile(model: Model, models: Model[]) {
   importsBuilder['../utils/object-id.scalar'] = {
     ObjectIdScalar: { type: 'single' },
   }
+  importsBuilder['../utils/ref-type'] = {
+    Ref: { type: 'single' },
+  }
   model.fields
     .filter(f => !checkTypeForPrimitive(f.dataType))
     .forEach(f => {
@@ -492,7 +495,7 @@ async function generateResolver(model: Model, models: Model[]) {
     ObjectIdScalar: { type: 'single' },
   }
   importBuilder['../utils/filter-parser'] = {
-    FilterParser: { type: 'single' },
+    FilterParser: { type: 'default' },
   }
   importBuilder[`./${model.name}.entity`] = {
     [model.name]: { type: 'single' },
@@ -550,7 +553,7 @@ class ${model.name}SubscriptionPayload {
     @Arg('nextToken', { nullable: true }) nextToken: String, 
     @Ctx() ctx: Context) {`)
   classBuilder.push(
-    `    return ${model.name}Model.find(FilterParser(filter) || {}).limit(limit || 0)`
+    `    return ${model.name}Model.find(FilterParser()(filter) || {}).limit(limit || 0)`
   )
   classBuilder.push(`  }`)
   // Create Query
@@ -575,7 +578,7 @@ class ${model.name}SubscriptionPayload {
     .filter(f => f.isHashed)
     .forEach(f =>
       classBuilder.push(
-        `      ${f.fieldName}: await hash(input.${f.fieldName}),`
+        `        ${f.fieldName}: await hash(input.${f.fieldName}),`
       )
     )
   classBuilder.push(`    })`)
@@ -626,7 +629,7 @@ class ${model.name}SubscriptionPayload {
     model.name
   }SubscriptionPayload>,
     @Ctx() ctx: Context) {`)
-  classBuilder.push(`    const updatedItem = await ${model.name}Model.findOneAndUpdate(FilterParser(condition) || {}, 
+  classBuilder.push(`    const updatedItem = await ${model.name}Model.findOneAndUpdate(FilterParser()(condition) || {}, 
     { 
       $set: {
         ...input,`)
@@ -634,7 +637,7 @@ class ${model.name}SubscriptionPayload {
     .filter(f => f.isHashed)
     .forEach(f =>
       classBuilder.push(
-        `        ${f.fieldName}: await hash(input.${f.fieldName}),`
+        `      ${f.fieldName}: input.${f.fieldName} ? await hash(input.${f.fieldName}) : undefined,`
       )
     )
   classBuilder.push(`    }}, { returnDocument: 'after' })`)
@@ -680,11 +683,15 @@ async function generateEntityField(field: Field, models: Model[]) {
       }${field.isList ? ']' : ''}, { nullable: ${field.nullable} })`
     )
   }
-  fieldBuilder.push(`  @Property()`)
   fieldBuilder.push(
-    `  ${field.fieldName}!: ${isPrimitive ? field.dataType : modelName}${
-      field.isList ? '[]' : ''
-    }`
+    `  @Property(${isPrimitive ? '' : `{ ref: () => ${modelName}, `}${
+      field.isList ? 'default: []' : ''
+    }${isPrimitive ? '' : '}'})`
+  )
+  fieldBuilder.push(
+    `  ${field.fieldName}!: ${
+      isPrimitive ? field.dataType.toLowerCase() : `Ref<${modelName}>`
+    }${field.isList ? '[]' : ''}`
   )
   return fieldBuilder.join('\n')
 }
@@ -750,6 +757,10 @@ async function createProjectStructure(mongoDbUrl: string, projectId: string) {
       path.join(biolerplatedir, 'auth-checker.ts'),
       path.join(utilsdir, 'auth-checker.ts')
     )
+    await fs.copyFile(
+      path.join(biolerplatedir, 'filter-parser.ts'),
+      path.join(utilsdir, 'filter-parser.ts')
+    )
     await fs.writeFile(
       path.join(utilsdir, 'config.ts'),
       `
@@ -804,6 +815,18 @@ export const PORT = +process.env.PORT
       path.join(srcdir, 'Models.ts'),
       await generateModelFile(models)
     )
+    await fs.writeFile(
+      path.join(srcdir, 'types.ts'),
+      `
+import { Redis } from "ioredis";
+
+export interface Context {
+  req: Request,
+  redis: Redis
+  res: Response,
+}
+      `
+    )
     return
   } finally {
     await mongoClient.close()
@@ -843,6 +866,7 @@ function generatePackageJson(projectId: string): any {
       "connect-redis": "^6.1.1",
       "cookie-parser": "^1.4.6",
       "cors": "^2.8.5",
+      "dotenv": "^16.0.0",
       "express-session": "^1.17.2",
       "graphql": "^15.3.0",
       "graphql-redis-subscriptions": "^2.4.2",
