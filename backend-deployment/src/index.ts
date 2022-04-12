@@ -552,9 +552,11 @@ class ${model.name}SubscriptionPayload {
     @Arg('limit', type => Int, { nullable: true }) limit: number, 
     @Arg('nextToken', { nullable: true }) nextToken: String, 
     @Ctx() ctx: Context) {`)
+
   classBuilder.push(
-    `    return ${model.name}Model.find(FilterParser()(filter) || {}).limit(limit || 0)`
+    `    const items = await ${model.name}Model.find(FilterParser()(filter) || {}).limit(limit || 0)`
   )
+  classBuilder.push(`  return { nextToken: null, items }`)
   classBuilder.push(`  }`)
   // Create Query
   classBuilder.push('')

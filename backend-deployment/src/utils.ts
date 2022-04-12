@@ -123,7 +123,7 @@ export function generateFilterInput({
   const builder = []
   builder.push(`@InputType()`)
   builder.push(`export class Model${typename}FilterInput {`)
-  builder.push(`  @Field(type => ObjectIdScalar)`)
+  builder.push(`  @Field(type => ObjectIdScalar, { nullable: true })`)
   builder.push(`  _id!: ObjectId`)
   keys.forEach(key => {
     builder.push(
