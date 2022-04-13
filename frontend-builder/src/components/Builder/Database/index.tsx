@@ -1,10 +1,13 @@
 import { Paper, Tab, Tabs, Typography } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
 import { Add } from '@mui/icons-material'
 import {
+  useCreateApiVariableMutation,
+  useDeleteApiVariableMutation,
   useCreateEntityModelMutation,
   useGetProjectQuery,
   useGetServerStatusQuery,
@@ -28,6 +31,8 @@ import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { Checkbox } from '../../Shared/primitives/Checkbox'
 import { variableNameRegex } from '../../../utils/regexp'
 import { MainTabHeader, TabWrapper } from '../../Shared/Tabs'
+import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
+import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -116,10 +121,96 @@ function VariableConfiguration({
   selectedPage: number
   pageIndex: number
 }) {
+  let { projectId } = useParams<{ projectId: string }>()
+  const { data, loading, error } = useGetProjectQuery({
+    variables: { projectId },
+  })
+  const [fieldName, setFieldName] = useState('')
+  const [dataType, setDataType] = useState('String')
+  const [createVariable] = useCreateApiVariableMutation({
+    refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
+  })
+  const [deleteVariable] = useDeleteApiVariableMutation({
+    refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
+  })
+
+  if (error) {
+    return <div>Error</div>
+  }
+  if (loading) {
+    return <div>Loading...</div>
+  }
+  if (!data) {
+    return <div>no data</div>
+  }
   return (
-    <div
-      style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}
-    ></div>
+    <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
+      {data.getProject.appConfig.apiConfig.variables.map(variable => (
+        <div key={variable._id}>
+          {variable.name} - {variable.type}
+          <IconButton
+            onClick={() => {
+              deleteVariable({
+                variables: {
+                  projectId,
+                  variableId: variable._id,
+                },
+              })
+            }}
+          >
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      ))}
+      <div>Create variable</div>
+      <div>
+        <LabeledTextInput
+          label="Field Name"
+          type="text"
+          value={fieldName}
+          onChange={e => {
+            const name = e.target.value
+            if (name === '' || variableNameRegex.test(name)) {
+              setFieldName(name)
+            }
+          }}
+        />
+        <LabeledSelect
+          label="Data Type"
+          selectedValue={dataType}
+          onChange={e => {
+            const type = e.target.value
+            setDataType(type)
+          }}
+          options={[
+            ...PRIMITIVE_DATA_TYPES.map(type => ({
+              label: type,
+              value: type,
+            })),
+            ...data.getProject.appConfig.apiConfig.models.map(modelType => ({
+              label: modelType.name,
+              value: modelType._id,
+            })),
+          ]}
+        />
+        <button
+          className="outlined-accent-button"
+          onClick={async () => {
+            await createVariable({
+              variables: {
+                projectId,
+                name: fieldName,
+                type: dataType,
+              },
+            })
+            setFieldName('')
+            setDataType('String')
+          }}
+        >
+          New Field
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -375,7 +466,7 @@ const Database: React.FC = function Database() {
           pageIndex={0}
           selectedPage={selectedTabIndex}
         />
-        <VariableConfiguration pageIndex={0} selectedPage={selectedTabIndex} />
+        <VariableConfiguration pageIndex={1} selectedPage={selectedTabIndex} />
         <DatabaseConfiguration
           isLocal={true}
           pageIndex={2}

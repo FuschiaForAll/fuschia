@@ -1,0 +1,3 @@
+mutation DeleteApiVariable($projectId: ObjectId!, $variableId: ObjectId!) {
+  deleteApiVariable(projectId: $projectId, variableId: $variableId)
+}

@@ -286,6 +286,7 @@ export type Mutation = {
   createSubscription?: Maybe<Scalars['Boolean']>;
   createTranslation: Project;
   createUser: User;
+  deleteApiVariable: Scalars['Boolean'];
   deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
   deleteEntityModel?: Maybe<Scalars['ObjectId']>;
@@ -399,6 +400,12 @@ export type MutationCreateTranslationArgs = {
 
 export type MutationCreateUserArgs = {
   user: UserInput;
+};
+
+
+export type MutationDeleteApiVariableArgs = {
+  projectId: Scalars['ObjectId'];
+  variableId: Scalars['ObjectId'];
 };
 
 
@@ -965,6 +972,14 @@ export type CreateApiVariableMutationVariables = Exact<{
 
 export type CreateApiVariableMutation = { __typename?: 'Mutation', createApiVariable: { __typename?: 'ApiVariable', _id: any, name: string, type: string } };
 
+export type DeleteApiVariableMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  variableId: Scalars['ObjectId'];
+}>;
+
+
+export type DeleteApiVariableMutation = { __typename?: 'Mutation', deleteApiVariable: boolean };
+
 export type AddParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
   parameterInput: RequiredParameterInput;
@@ -1512,6 +1527,38 @@ export function useCreateApiVariableMutation(baseOptions?: Apollo.MutationHookOp
 export type CreateApiVariableMutationHookResult = ReturnType<typeof useCreateApiVariableMutation>;
 export type CreateApiVariableMutationResult = Apollo.MutationResult<CreateApiVariableMutation>;
 export type CreateApiVariableMutationOptions = Apollo.BaseMutationOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
+export const DeleteApiVariableDocument = gql`
+    mutation DeleteApiVariable($projectId: ObjectId!, $variableId: ObjectId!) {
+  deleteApiVariable(projectId: $projectId, variableId: $variableId)
+}
+    `;
+export type DeleteApiVariableMutationFn = Apollo.MutationFunction<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
+
+/**
+ * __useDeleteApiVariableMutation__
+ *
+ * To run a mutation, you first call `useDeleteApiVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteApiVariableMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteApiVariableMutation, { data, loading, error }] = useDeleteApiVariableMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      variableId: // value for 'variableId'
+ *   },
+ * });
+ */
+export function useDeleteApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>(DeleteApiVariableDocument, options);
+      }
+export type DeleteApiVariableMutationHookResult = ReturnType<typeof useDeleteApiVariableMutation>;
+export type DeleteApiVariableMutationResult = Apollo.MutationResult<DeleteApiVariableMutation>;
+export type DeleteApiVariableMutationOptions = Apollo.BaseMutationOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
 export const AddParameterDocument = gql`
     mutation AddParameter($componentId: ObjectId!, $parameterInput: RequiredParameterInput!) {
   addParameter(componentId: $componentId, parameterInput: $parameterInput)

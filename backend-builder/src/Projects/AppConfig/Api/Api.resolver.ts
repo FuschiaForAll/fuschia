@@ -297,7 +297,7 @@ export class ApiResolver {
 
   @Mutation(() => ApiVariable)
   async createApiVariable(
-    @Arg("projectId", type => ObjectIdScalar) projectId: ObjectId,
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Arg("name") name: string,
     @Arg("type") type: string,
     @Ctx() ctx: Context
@@ -308,13 +308,48 @@ export class ApiResolver {
     ) {
       throw new ApolloError("Unauthorized");
     }
-    return await ProjectModel.findByIdAndUpdate(projectId, {
-      $push: { 'appConfig.apiConfig.variables': {
-        name,
-        type
-      }}
-    }, {
-      returnDocument: 'after'
-    })
+    const newProject = await ProjectModel.findByIdAndUpdate(
+      projectId,
+      {
+        $push: {
+          "appConfig.apiConfig.variables": {
+            name,
+            type,
+          },
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
+    return newProject?.appConfig.apiConfig.variables[
+      newProject?.appConfig.apiConfig.variables.length - 1
+    ];
+  }
+
+  @Mutation(() => Boolean)
+  async deleteApiVariable(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("variableId", (type) => ObjectIdScalar) variableId: ObjectId,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    const newProject = await ProjectModel.findByIdAndUpdate(
+      projectId,
+      {
+        $pull: {
+          "appConfig.apiConfig.variables": { _id: variableId },
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
+    return true;
   }
 }

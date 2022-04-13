@@ -257,6 +257,7 @@ type Mutation {
   createSubscription: Boolean
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
+  deleteApiVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
