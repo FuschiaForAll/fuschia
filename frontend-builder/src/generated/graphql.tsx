@@ -19,6 +19,8 @@ export type Scalars = {
   JSONObject: any;
   /** Mongo object id scalar type */
   ObjectId: any;
+  /** The `Upload` scalar type represents a file upload. */
+  Upload: any;
 };
 
 export type Api = {
@@ -225,6 +227,25 @@ export type FieldError = {
   message: Scalars['String'];
 };
 
+export type File = {
+  __typename?: 'File';
+  key: Scalars['String'];
+  type: Scalars['String'];
+};
+
+export type ImageFile = {
+  __typename?: 'ImageFile';
+  _id: Scalars['ObjectId'];
+  key: Scalars['String'];
+  name: Scalars['String'];
+};
+
+export type ImageLibrary = {
+  __typename?: 'ImageLibrary';
+  _id: Scalars['ObjectId'];
+  images: Array<ImageFile>;
+};
+
 export type Key = {
   __typename?: 'Key';
   fieldNames: Array<Scalars['String']>;
@@ -275,6 +296,7 @@ export type Mutation = {
   createComponent: Component;
   createDataField?: Maybe<DataField>;
   createEntityModel?: Maybe<EntityModel>;
+  createImageFolder: Scalars['Boolean'];
   createLabelTag: Project;
   createLanguage: Project;
   createMutation?: Maybe<Scalars['Boolean']>;
@@ -290,6 +312,7 @@ export type Mutation = {
   deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
   deleteEntityModel?: Maybe<Scalars['ObjectId']>;
+  deleteImage: Scalars['Boolean'];
   deleteMutations?: Maybe<Scalars['Boolean']>;
   deleteOrganization: Scalars['ObjectId'];
   deleteProject: Scalars['ObjectId'];
@@ -310,6 +333,7 @@ export type Mutation = {
   updateComponent: Component;
   updateComponentProps: Component;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
+  updateImageMetaData: Scalars['Boolean'];
   updateMe: User;
   updateMutation?: Maybe<Scalars['Boolean']>;
   updateParameter: Scalars['Boolean'];
@@ -319,6 +343,7 @@ export type Mutation = {
   updateRelationship?: Maybe<Scalars['Boolean']>;
   updateSubscription?: Maybe<Scalars['Boolean']>;
   updateTranslation: Project;
+  uploadImage: Scalars['Boolean'];
 };
 
 
@@ -357,6 +382,12 @@ export type MutationCreateDataFieldArgs = {
 export type MutationCreateEntityModelArgs = {
   isLocal: Scalars['Boolean'];
   name: Scalars['String'];
+  projectId: Scalars['ObjectId'];
+};
+
+
+export type MutationCreateImageFolderArgs = {
+  folderName: Scalars['String'];
   projectId: Scalars['ObjectId'];
 };
 
@@ -424,6 +455,12 @@ export type MutationDeleteDataFieldArgs = {
 
 export type MutationDeleteEntityModelArgs = {
   entityModelId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
+};
+
+
+export type MutationDeleteImageArgs = {
+  imageId: Scalars['ObjectId'];
   projectId: Scalars['ObjectId'];
 };
 
@@ -508,6 +545,11 @@ export type MutationUpdateComponentPropsArgs = {
 };
 
 
+export type MutationUpdateImageMetaDataArgs = {
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type MutationUpdateMeArgs = {
   userInput: UserInput;
 };
@@ -537,6 +579,13 @@ export type MutationUpdateTranslationArgs = {
   projectId: Scalars['ObjectId'];
   tagId: Scalars['ObjectId'];
   translations: Array<Scalars['String']>;
+};
+
+
+export type MutationUploadImageArgs = {
+  folder: Scalars['String'];
+  image: Scalars['Upload'];
+  projectId: Scalars['ObjectId'];
 };
 
 export type Organization = {
@@ -619,6 +668,7 @@ export type Project = {
   _id: Scalars['ObjectId'];
   appConfig: AppConfig;
   appId: Scalars['String'];
+  imageLibrary: ImageLibrary;
   labelLibrary: LabelLibrary;
   organization: Organization;
   projectName: Scalars['String'];
@@ -645,6 +695,7 @@ export type Query = {
   getProject: Project;
   getServerStatus: Scalars['Boolean'];
   listEntityModel?: Maybe<Scalars['Boolean']>;
+  listImageFolder: Array<File>;
   listMutations?: Maybe<Scalars['Boolean']>;
   listOrganizations: Array<Organization>;
   listProjects: Array<Project>;
@@ -714,6 +765,12 @@ export type QueryGetProjectArgs = {
 export type QueryGetServerStatusArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+};
+
+
+export type QueryListImageFolderArgs = {
+  folderName: Scalars['String'];
+  projectId: Scalars['ObjectId'];
 };
 
 export type RequiredParameter = {
@@ -1126,6 +1183,39 @@ export type DeleteEntityModelMutationVariables = Exact<{
 
 export type DeleteEntityModelMutation = { __typename?: 'Mutation', deleteEntityModel?: any | null };
 
+export type CreateImageFolderMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  folderName: Scalars['String'];
+}>;
+
+
+export type CreateImageFolderMutation = { __typename?: 'Mutation', createImageFolder: boolean };
+
+export type DeleteImageMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  imageId: Scalars['ObjectId'];
+}>;
+
+
+export type DeleteImageMutation = { __typename?: 'Mutation', deleteImage: boolean };
+
+export type ListImageFolderQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  folderName: Scalars['String'];
+}>;
+
+
+export type ListImageFolderQuery = { __typename?: 'Query', listImageFolder: Array<{ __typename?: 'File', key: string, type: string }> };
+
+export type UploadImageMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  folder: Scalars['String'];
+  image: Scalars['Upload'];
+}>;
+
+
+export type UploadImageMutation = { __typename?: 'Mutation', uploadImage: boolean };
+
 export type FullTypeFragment = { __typename?: '__Type', kind: __TypeKind, name?: string | null, fields?: Array<{ __typename?: '__Field', name: string, isDeprecated: boolean, deprecationReason?: string | null, args: Array<{ __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }>, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }> | null, inputFields?: Array<{ __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } }> | null, interfaces?: Array<{ __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null }> | null, enumValues?: Array<{ __typename?: '__EnumValue', name: string, isDeprecated: boolean, deprecationReason?: string | null }> | null, possibleTypes?: Array<{ __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null }> | null };
 
 export type InputValueFragment = { __typename?: '__InputValue', name: string, defaultValue?: string | null, type: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null, ofType?: { __typename?: '__Type', kind: __TypeKind, name?: string | null } | null } | null } | null } | null } | null } | null } | null } };
@@ -1258,7 +1348,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }>, variables: Array<{ __typename?: 'ApiVariable', _id: any, name: string, type: string }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, imageLibrary: { __typename?: 'ImageLibrary', images: Array<{ __typename?: 'ImageFile', _id: any, key: string, name: string }> }, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }>, variables: Array<{ __typename?: 'ApiVariable', _id: any, name: string, type: string }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -2234,6 +2324,140 @@ export function useDeleteEntityModelMutation(baseOptions?: Apollo.MutationHookOp
 export type DeleteEntityModelMutationHookResult = ReturnType<typeof useDeleteEntityModelMutation>;
 export type DeleteEntityModelMutationResult = Apollo.MutationResult<DeleteEntityModelMutation>;
 export type DeleteEntityModelMutationOptions = Apollo.BaseMutationOptions<DeleteEntityModelMutation, DeleteEntityModelMutationVariables>;
+export const CreateImageFolderDocument = gql`
+    mutation CreateImageFolder($projectId: ObjectId!, $folderName: String!) {
+  createImageFolder(projectId: $projectId, folderName: $folderName)
+}
+    `;
+export type CreateImageFolderMutationFn = Apollo.MutationFunction<CreateImageFolderMutation, CreateImageFolderMutationVariables>;
+
+/**
+ * __useCreateImageFolderMutation__
+ *
+ * To run a mutation, you first call `useCreateImageFolderMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateImageFolderMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createImageFolderMutation, { data, loading, error }] = useCreateImageFolderMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      folderName: // value for 'folderName'
+ *   },
+ * });
+ */
+export function useCreateImageFolderMutation(baseOptions?: Apollo.MutationHookOptions<CreateImageFolderMutation, CreateImageFolderMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateImageFolderMutation, CreateImageFolderMutationVariables>(CreateImageFolderDocument, options);
+      }
+export type CreateImageFolderMutationHookResult = ReturnType<typeof useCreateImageFolderMutation>;
+export type CreateImageFolderMutationResult = Apollo.MutationResult<CreateImageFolderMutation>;
+export type CreateImageFolderMutationOptions = Apollo.BaseMutationOptions<CreateImageFolderMutation, CreateImageFolderMutationVariables>;
+export const DeleteImageDocument = gql`
+    mutation DeleteImage($projectId: ObjectId!, $imageId: ObjectId!) {
+  deleteImage(projectId: $projectId, imageId: $imageId)
+}
+    `;
+export type DeleteImageMutationFn = Apollo.MutationFunction<DeleteImageMutation, DeleteImageMutationVariables>;
+
+/**
+ * __useDeleteImageMutation__
+ *
+ * To run a mutation, you first call `useDeleteImageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteImageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteImageMutation, { data, loading, error }] = useDeleteImageMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      imageId: // value for 'imageId'
+ *   },
+ * });
+ */
+export function useDeleteImageMutation(baseOptions?: Apollo.MutationHookOptions<DeleteImageMutation, DeleteImageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteImageMutation, DeleteImageMutationVariables>(DeleteImageDocument, options);
+      }
+export type DeleteImageMutationHookResult = ReturnType<typeof useDeleteImageMutation>;
+export type DeleteImageMutationResult = Apollo.MutationResult<DeleteImageMutation>;
+export type DeleteImageMutationOptions = Apollo.BaseMutationOptions<DeleteImageMutation, DeleteImageMutationVariables>;
+export const ListImageFolderDocument = gql`
+    query ListImageFolder($projectId: ObjectId!, $folderName: String!) {
+  listImageFolder(projectId: $projectId, folderName: $folderName) {
+    key
+    type
+  }
+}
+    `;
+
+/**
+ * __useListImageFolderQuery__
+ *
+ * To run a query within a React component, call `useListImageFolderQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListImageFolderQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListImageFolderQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      folderName: // value for 'folderName'
+ *   },
+ * });
+ */
+export function useListImageFolderQuery(baseOptions: Apollo.QueryHookOptions<ListImageFolderQuery, ListImageFolderQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListImageFolderQuery, ListImageFolderQueryVariables>(ListImageFolderDocument, options);
+      }
+export function useListImageFolderLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListImageFolderQuery, ListImageFolderQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListImageFolderQuery, ListImageFolderQueryVariables>(ListImageFolderDocument, options);
+        }
+export type ListImageFolderQueryHookResult = ReturnType<typeof useListImageFolderQuery>;
+export type ListImageFolderLazyQueryHookResult = ReturnType<typeof useListImageFolderLazyQuery>;
+export type ListImageFolderQueryResult = Apollo.QueryResult<ListImageFolderQuery, ListImageFolderQueryVariables>;
+export const UploadImageDocument = gql`
+    mutation UploadImage($projectId: ObjectId!, $folder: String!, $image: Upload!) {
+  uploadImage(projectId: $projectId, folder: $folder, image: $image)
+}
+    `;
+export type UploadImageMutationFn = Apollo.MutationFunction<UploadImageMutation, UploadImageMutationVariables>;
+
+/**
+ * __useUploadImageMutation__
+ *
+ * To run a mutation, you first call `useUploadImageMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUploadImageMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [uploadImageMutation, { data, loading, error }] = useUploadImageMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      folder: // value for 'folder'
+ *      image: // value for 'image'
+ *   },
+ * });
+ */
+export function useUploadImageMutation(baseOptions?: Apollo.MutationHookOptions<UploadImageMutation, UploadImageMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UploadImageMutation, UploadImageMutationVariables>(UploadImageDocument, options);
+      }
+export type UploadImageMutationHookResult = ReturnType<typeof useUploadImageMutation>;
+export type UploadImageMutationResult = Apollo.MutationResult<UploadImageMutation>;
+export type UploadImageMutationOptions = Apollo.BaseMutationOptions<UploadImageMutation, UploadImageMutationVariables>;
 export const IntrospectionQueryDocument = gql`
     query IntrospectionQuery {
   __schema {
@@ -2874,6 +3098,13 @@ export const GetProjectDocument = gql`
     _id
     appId
     projectName
+    imageLibrary {
+      images {
+        _id
+        key
+        name
+      }
+    }
     appConfig {
       appEntryComponentId
       apiConfig {

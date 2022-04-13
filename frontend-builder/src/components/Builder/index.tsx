@@ -14,6 +14,7 @@ import { Modal, Paper } from '@mui/material'
 import Dashboard from '../Dashboard'
 import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
 import { useGetProjectQuery } from '../../generated/graphql'
+import ImageLibrary from './ImageLibrary'
 
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
@@ -47,6 +48,7 @@ const Builder: React.FC = function Builder() {
         <Route path="previewer" element={<Previewer />} />
         <Route path="app-settings" element={<Settings />} />
         <Route path="label-library" element={<LabelLibrary />} />
+        <Route path="image-library/*" element={<ImageLibrary />} />
         <Route
           path="dashboard"
           element={

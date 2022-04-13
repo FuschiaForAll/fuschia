@@ -1,0 +1,3 @@
+mutation CreateImageFolder($projectId: ObjectId!, $folderName: String!) {
+  createImageFolder(projectId: $projectId, folderName: $folderName)
+}

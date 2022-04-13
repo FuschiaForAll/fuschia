@@ -198,6 +198,22 @@ type FieldError {
   message: String!
 }
 
+type File {
+  key: String!
+  type: String!
+}
+
+type ImageFile {
+  _id: ObjectId!
+  key: String!
+  name: String!
+}
+
+type ImageLibrary {
+  _id: ObjectId!
+  images: [ImageFile!]!
+}
+
 """
 The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -246,6 +262,7 @@ type Mutation {
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(isLocal: Boolean!, name: String!, projectId: ObjectId!): EntityModel
+  createImageFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createLabelTag(numberOfStates: Int!, projectId: ObjectId!, tagName: String!): Project!
   createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
@@ -261,6 +278,7 @@ type Mutation {
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
+  deleteImage(imageId: ObjectId!, projectId: ObjectId!): Boolean!
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
   deleteProject(projectId: ObjectId!): ObjectId!
@@ -281,6 +299,7 @@ type Mutation {
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component!
   updateEntityModel: Boolean
+  updateImageMetaData(projectId: ObjectId!): Boolean!
   updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
   updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
@@ -290,6 +309,7 @@ type Mutation {
   updateRelationship: Boolean
   updateSubscription: Boolean
   updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
+  uploadImage(folder: String!, image: Upload!, projectId: ObjectId!): Boolean!
 }
 
 """Mongo object id scalar type"""
@@ -374,6 +394,7 @@ type Project {
   _id: ObjectId!
   appConfig: AppConfig!
   appId: String!
+  imageLibrary: ImageLibrary
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
@@ -399,6 +420,7 @@ type Query {
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
   listEntityModel: Boolean
+  listImageFolder(folderName: String!, projectId: ObjectId!): [File!]!
   listMutations: Boolean
   listOrganizations: [Organization!]!
   listProjects: [Project!]!
@@ -437,6 +459,9 @@ type Translation {
 input UpdateProjectInput {
   projectName: String
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 type User {
   _id: ObjectId!

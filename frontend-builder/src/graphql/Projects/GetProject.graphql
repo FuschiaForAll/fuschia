@@ -3,6 +3,13 @@ query GetProject($projectId: ObjectId!) {
     _id
     appId
     projectName
+    imageLibrary {
+      images {
+        _id
+        key
+        name
+      }
+    }
     appConfig {
       appEntryComponentId
       apiConfig {

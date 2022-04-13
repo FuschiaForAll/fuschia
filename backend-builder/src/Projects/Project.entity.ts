@@ -8,6 +8,7 @@ import { ObjectIdScalar } from "../utils/object-id.scalar";
 import { v4 as uuid } from "uuid";
 import { Component } from "./AppConfig/Components/Component.entity";
 import { LabelLibrary } from "./AppConfig/Libraries/LabelLibrary/LabelLibrary.entity";
+import { ImageLibrary } from "./AppConfig/Libraries/ImageLibrary/ImageLibrary.entity";
 
 @ObjectType()
 export class Project {
@@ -33,4 +34,8 @@ export class Project {
   @Field((type) => LabelLibrary)
   @Property({ type: () => LabelLibrary })
   labelLibrary?: LabelLibrary;
+
+  @Field((type) => ImageLibrary, { nullable: true })
+  @Property({ type: () => ImageLibrary })
+  imageLibrary?: ImageLibrary;
 }

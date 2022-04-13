@@ -1,0 +1,3 @@
+mutation DeleteImage($projectId: ObjectId!, $imageId: ObjectId!) {
+  deleteImage(projectId: $projectId, imageId: $imageId)
+}

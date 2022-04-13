@@ -18,7 +18,7 @@ import { authChecker } from "./utils/auth-checker";
 import { ApolloServer } from "apollo-server-express";
 import { OrganizationResolver } from "./Organizations/Organization.resolver";
 import { ProjectResolver } from "./Projects/Project.resolver";
-import express from "express";
+import express, { json } from "express";
 import { UserModel } from "./Models";
 import cors from "cors";
 import { v4 as uuid } from "uuid";
@@ -41,6 +41,10 @@ import { AppConfigResolver } from "./Projects/AppConfig/AppConfig.resolver";
 import { PackageResolver } from "./Packages/Package.resolver";
 import { PackageComponentResolver } from "./Packages/PackageComponents/PackageComponent.resolver";
 import { PreviewerResolver } from "./Previewer/Previewer.resolver";
+import { ImageLibraryResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageLibrary.resolver";
+import { graphqlUploadExpress } from "graphql-upload";
+import { S3Uploader } from "./utils/s3-uploader";
+import { ImageFileResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageFile/ImageFile.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -76,6 +80,8 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       PackageResolver,
       PackageComponentResolver,
       PreviewerResolver,
+      ImageLibraryResolver,
+      ImageFileResolver,
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],
@@ -92,6 +98,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
   const app = express();
 
   app.set("trust proxy", 1);
+  app.use(json({ limit: "2mb" }));
   app.use(
     cors({
       origin: "http://localhost:3000",
@@ -99,6 +106,9 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
     })
   );
   app.use(cookies());
+
+  app.use(graphqlUploadExpress({ maxFileSize: 20000000, maxFiles: 10 }));
+
   app.use(
     session({
       genid: (req) => uuid(),
@@ -120,6 +130,12 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       resave: false,
     })
   );
+
+  app.get(`/project-files/*`, async (req, res) => {
+    const fileKey = decodeURI(req.path.replace("/project-files/", ""));
+    const uploader = Container.get(S3Uploader);
+    const file = uploader.getFile(fileKey, res);
+  });
 
   const apolloServer = new ApolloServer({
     schema,

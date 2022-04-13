@@ -8,6 +8,7 @@ import {
 } from '@apollo/client'
 import { WebSocketLink } from '@apollo/client/link/ws'
 import { getMainDefinition } from '@apollo/client/utilities'
+import { createUploadLink } from 'apollo-upload-client'
 
 export const currentProjectIdVar = makeVar(
   localStorage.getItem('currentProjectId')
@@ -17,7 +18,7 @@ export const previewerStateVar = makeVar(localStorage.getItem('previewerData'))
 export const selectionVar = makeVar<string[]>([])
 export const stackFilterVar = makeVar<string>('')
 
-const httpLink = createHttpLink({
+const httpLink = createUploadLink({
   uri: `${process.env.REACT_APP_GQL_ENDPOINT}/graphql`,
   credentials: 'include',
 })
@@ -46,7 +47,7 @@ const splitLink = split(
     )
   },
   wsLink,
-  httpLink
+  httpLink as unknown as ApolloLink
 )
 
 const cache = new InMemoryCache({
