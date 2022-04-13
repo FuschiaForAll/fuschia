@@ -53,7 +53,6 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   selected,
   onClick,
 }) {
-  debugger
   const { x, y, props } = layer
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
@@ -134,7 +133,6 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   selected,
   onClick,
 }) {
-  debugger
   const { x, y, props } = layer
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
@@ -301,7 +299,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
 }) {
   const { data: packageData } = useGetPackagesQuery()
   const selected = !!selection?.includes(layer._id)
-  debugger
   // @ts-ignore
   if (!window[layer.package]) {
     return (
@@ -442,7 +439,6 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
     },
     [selection, setSelection]
   )
-  debugger
   return (
     <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
   )

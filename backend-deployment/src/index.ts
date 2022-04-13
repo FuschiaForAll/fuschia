@@ -54,6 +54,7 @@ export interface Project {
       tableId: ObjectId
       usernameFieldId: ObjectId
       passwordFieldId: ObjectId
+      usernameCaseSensitive: boolean
     }
   }
 }
@@ -101,7 +102,7 @@ export function convertImports(imports: Import) {
     .join('\n')
 }
 
-function generateIndexFile(projectId: string, models: Model[]) {
+function generateIndexFile(project: Project, models: Model[]) {
   const importsBuilder: Import = {}
   importsBuilder['express-session'] = {
     session: { type: 'default' },
@@ -183,7 +184,11 @@ function generateIndexFile(projectId: string, models: Model[]) {
   importsBuilder['./utils/consts'] = {
     COOKIE_NAME: { type: 'single' },
   }
-
+  if (project.appConfig.authConfig.requiresAuth) {
+    importsBuilder['./Authentication/Authentication.resolver'] = {
+      AuthenticationResolver: { type: 'single' },
+    }
+  }
   const classBuilder = ['\n']
   classBuilder.push(`(async () => {`)
   classBuilder.push(`
@@ -191,7 +196,7 @@ function generateIndexFile(projectId: string, models: Model[]) {
   const redis = new Redis(\`\${REDIS_URL}:\${REDIS_PORT}\`);
   `)
   classBuilder.push(`
-  const mongoose = await connect(MONGO_DB_URL, { dbName: "${projectId}" });
+  const mongoose = await connect(MONGO_DB_URL, { dbName: "${project._id.toString()}" });
   const options = {
     host: REDIS_URL,
     port: REDIS_PORT,
@@ -206,6 +211,9 @@ function generateIndexFile(projectId: string, models: Model[]) {
   `)
   classBuilder.push(`  const schema = await buildSchema({`)
   classBuilder.push(`    resolvers: [`)
+  if (project.appConfig.authConfig.requiresAuth) {
+    classBuilder.push(`      AuthenticationResolver,`)
+  }
   models.forEach(m => {
     if (!importsBuilder[`./${m.name}/${m.name}.resolver`]) {
       importsBuilder[`./${m.name}/${m.name}.resolver`] = {}
@@ -685,10 +693,22 @@ async function generateEntityField(field: Field, models: Model[]) {
       }${field.isList ? ']' : ''}, { nullable: ${field.nullable} })`
     )
   }
+  // TODO: Unique
+  const propertyBuilder = {} as { [key: string]: string }
+  if (!isPrimitive) {
+    propertyBuilder.ref = `() => ${modelName}`
+  }
+  if (field.isList) {
+    propertyBuilder.default = `[]`
+  }
+  if (field.isUnique) {
+    propertyBuilder.unique = 'true'
+  }
+  propertyBuilder.nullable = `${field.nullable}`
   fieldBuilder.push(
-    `  @Property(${isPrimitive ? '' : `{ ref: () => ${modelName}, `}${
-      field.isList ? 'default: []' : ''
-    }${isPrimitive ? '' : '}'})`
+    `  @Property({ ${Object.keys(propertyBuilder)
+      .map(key => `${key}: ${propertyBuilder[key]}`)
+      .join(', ')} })`
   )
   fieldBuilder.push(
     `  ${field.fieldName}!: ${
@@ -731,7 +751,7 @@ async function createProjectStructure(mongoDbUrl: string, projectId: string) {
     await fs.ensureDir(srcdir)
     await fs.writeFile(
       path.join(srcdir, 'index.ts'),
-      generateIndexFile(project._id.toString(), models)
+      generateIndexFile(project, models)
     )
     await fs.copyFile(
       path.join(biolerplatedir, 'common.input.ts'),
@@ -821,6 +841,18 @@ export const PORT = +process.env.PORT
       path.join(srcdir, 'types.ts'),
       `
 import { Redis } from "ioredis";
+import { Request as ExpressRequest, Response } from "express";
+import { Session, SessionData } from "express-session";
+
+export interface Request extends ExpressRequest {
+  session: Session & Partial<{
+    email: string,
+    userId: ObjectId,
+    data?: {
+      token: string,
+    }
+  }>
+}
 
 export interface Context {
   req: Request,
@@ -829,6 +861,14 @@ export interface Context {
 }
       `
     )
+    if (project.appConfig.authConfig.requiresAuth) {
+      const modelFolder = path.join(srcdir, 'Authentication')
+      await fs.ensureDir(modelFolder)
+      await fs.writeFile(
+        path.join(modelFolder, `Authentication.resolver.ts`),
+        await generateAuthenticationResolver(project, models)
+      )
+    }
     return
   } finally {
     await mongoClient.close()
@@ -896,4 +936,170 @@ function generatePackageJson(projectId: string): any {
       "typescript": "^4.5.5"
     }
   }`
+}
+function generateAuthenticationResolver(
+  project: Project,
+  models: Model[]
+): any {
+  const importsBuilder: Import = {}
+  const classBuilder = [] as string[]
+  const authModel = models.find(
+    m => m._id.toString() === project.appConfig.authConfig.tableId.toString()
+  )
+  if (authModel) {
+    importsBuilder['apollo-server'] = {
+      ApolloError: { type: 'single' },
+    }
+    importsBuilder['mongoose'] = {
+      ObjectId: { type: 'single' },
+    }
+    importsBuilder['type-graphql'] = {
+      Arg: { type: 'single' },
+      Ctx: { type: 'single' },
+      Mutation: { type: 'single' },
+      Query: { type: 'single' },
+      Resolver: { type: 'single' },
+      Int: { type: 'single' },
+      PubSub: { type: 'single' },
+      Publisher: { type: 'single' },
+      Subscription: { type: 'single' },
+      Field: { type: 'single' },
+      Root: { type: 'single' },
+      ObjectType: { type: 'single' },
+    }
+    importsBuilder['typedi'] = {
+      Service: { type: 'single' },
+    }
+    importsBuilder['../types'] = {
+      Context: { type: 'single' },
+    }
+    importsBuilder['../utils/object-id.scalar'] = {
+      ObjectIdScalar: { type: 'single' },
+    }
+    importsBuilder[`../${authModel.name}/${authModel.name}.entity`] = {
+      [authModel.name]: { type: 'single' },
+    }
+    importsBuilder[`../${authModel.name}/${authModel.name}.input`] = {
+      [`Create${authModel.name}Input`]: { type: 'single' },
+    }
+    importsBuilder[`../Models`] = {
+      [`${authModel.name}Model`]: { type: 'single' },
+    }
+    importsBuilder['argon2'] = {
+      hash: { type: 'single' },
+      verify: { type: 'single' },
+    }
+    importsBuilder['../utils/consts'] = {
+      COOKIE_NAME: { type: 'single' },
+    }
+    const usernameField = authModel.fields.find(
+      f =>
+        f._id.toString() ===
+        project.appConfig.authConfig.usernameFieldId.toString()
+    )
+    const passwordField = authModel.fields.find(
+      f =>
+        f._id.toString() ===
+        project.appConfig.authConfig.passwordFieldId.toString()
+    )
+    if (!usernameField || !passwordField) {
+      throw new Error('Misconfigured')
+    }
+    classBuilder.push(``)
+    classBuilder.push(`@Service()`)
+    classBuilder.push(`@Resolver()`)
+    classBuilder.push('export class AuthenticationResolver {')
+    // Me resolver
+    classBuilder.push(`  @Query(() => User, { nullable: true })`)
+    classBuilder.push(`  async me(@Ctx() ctx: Context) {`)
+    classBuilder.push(`    if (!ctx.req.session.email) {`)
+    classBuilder.push(`      throw new ApolloError("Unauthorized");`)
+    classBuilder.push(`    }`)
+    classBuilder.push(
+      `  return ${authModel.name}Model.findOne({ ${usernameField.fieldName}: ctx.req.session.email });`
+    )
+    classBuilder.push(`  }`)
+    classBuilder.push(``)
+    // Login resolver
+    classBuilder.push(`  @Mutation(() => String)`)
+    classBuilder.push(`  async login(`)
+    classBuilder.push(
+      `    @Arg("${usernameField.fieldName}") ${usernameField.fieldName}: string,`
+    )
+    classBuilder.push(
+      `    @Arg("${passwordField.fieldName}") ${passwordField.fieldName}: string,`
+    )
+    classBuilder.push(`    @Ctx() ctx: Context`)
+    classBuilder.push(`  ) {`)
+    classBuilder.push(
+      `    const user = await ${authModel.name}Model.findOne({ email: ${
+        project.appConfig.authConfig.usernameCaseSensitive
+          ? usernameField.fieldName
+          : `${usernameField.fieldName}.toLowerCase()`
+      } });`
+    )
+    classBuilder.push(`    if (!user) {`)
+    classBuilder.push(`      throw new ApolloError("Login error");`)
+    classBuilder.push(`    }`)
+    classBuilder.push(
+      `    const valid = await verify(user.${passwordField.fieldName}, ${passwordField.fieldName});`
+    )
+    classBuilder.push(`    if (!valid) {`)
+    classBuilder.push(`      throw new ApolloError("Login error");`)
+    classBuilder.push(`    }`)
+    classBuilder.push(
+      `    ctx.req.session.email = user.${usernameField.fieldName};`
+    )
+    classBuilder.push(`    ctx.req.session.userId = user._id;`)
+    classBuilder.push(`    return ctx.req.session.id;`)
+    classBuilder.push(`  }`)
+    classBuilder.push('')
+    classBuilder.push(`
+  @Mutation(() => Boolean)
+  async logout(@Ctx() ctx: Context) {
+    return new Promise((resolve) =>
+      ctx.req.session.destroy((err) => {
+        ctx.res.clearCookie(COOKIE_NAME);
+        if (err) {
+          resolve(false);
+          return;
+        }
+
+        resolve(true);
+      })
+    );
+  }
+    `)
+    // register resolver
+    classBuilder.push(`  @Mutation(() => String)`)
+    classBuilder.push(`  async register(`)
+    classBuilder.push(
+      `    @Arg("input", type => Create${authModel.name}Input) input: Create${authModel.name}Input,`
+    )
+    classBuilder.push(`    @Ctx() ctx: Context`)
+    classBuilder.push(`  ) {`)
+
+    classBuilder.push(`    const user = await ${authModel.name}Model.create({`)
+    classBuilder.push(`      ...input,`)
+    authModel.fields
+      .filter(f => f.isHashed)
+      .forEach(f =>
+        classBuilder.push(
+          `        ${f.fieldName}: await hash(input.${f.fieldName}),`
+        )
+      )
+    classBuilder.push(`    })`)
+    classBuilder.push(`    if (!user) {`)
+    classBuilder.push(`      throw new ApolloError("Registration error");`)
+    classBuilder.push(`    }`)
+    classBuilder.push(
+      `    ctx.req.session.email = user.${usernameField.fieldName};`
+    )
+    classBuilder.push(`    ctx.req.session.userId = user._id;`)
+    classBuilder.push(`    return ctx.req.session.id;`)
+    classBuilder.push(`  }`)
+
+    classBuilder.push('}')
+  }
+  return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }

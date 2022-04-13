@@ -22,6 +22,7 @@ export function AuthConfig({ projectId }: { projectId: string }) {
   function onChangeHandler(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
+    debugger
     const field = e.target.name
     let value
     if (e.target.type === 'checkbox') {
@@ -250,7 +251,17 @@ export function AuthConfig({ projectId }: { projectId: string }) {
                     })
                   ) || []),
                 ]}
-                onChange={onChangeHandler}
+                onChange={e => {
+                  const value = e.target.value
+                  updateAuthData({
+                    variables: {
+                      projectId,
+                      input: {
+                        tableId: value,
+                      },
+                    },
+                  })
+                }}
               />
             </div>
             <div>

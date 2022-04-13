@@ -216,7 +216,6 @@ export const useDragDrop = (
                * 1. Only a root component can be placed on the main-canvas
                * 2. Only containers or the main canvas can be dropped on
                */
-              debugger
               if (!event.relatedTarget) {
                 return
               }

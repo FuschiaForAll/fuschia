@@ -112,7 +112,6 @@ const Canvas: React.FC = function Canvas() {
   if (!components) {
     return <div>Loading...</div>
   }
-  debugger
   return (
     <Wrapper
       id="main-canvas"

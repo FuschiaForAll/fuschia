@@ -164,7 +164,6 @@ export function executeAction(
       }
       break
     case 'DELETE':
-      debugger
       if (action.deleteElement) {
         if (entityState[action.deleteElement.path]) {
           const newState = { ...entityState }
@@ -176,7 +175,6 @@ export function executeAction(
       }
       break
     case 'UPDATE':
-      debugger
       if (action.updateElement) {
         if (entityState[action.updateElement.entity]) {
           const newState = { ...entityState }
