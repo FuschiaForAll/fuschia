@@ -30,6 +30,7 @@ const cardStyles = {
   flexDirection: 'column',
   alignItems: 'center',
   pointerEvents: 'all',
+  gap: '1em',
 }
 
 const DragItem: React.FC<DragItemProps> = function DragItem({

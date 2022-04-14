@@ -17,6 +17,7 @@ import { useUpdateComponent } from '../../../utils/hooks'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { gql } from '@apollo/client'
 import { variableNameRegex } from '../../../utils/regexp'
+import { DragDropContext, DropResult } from 'react-beautiful-dnd'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -237,6 +238,8 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
       componentId: props.elementId,
     },
   })
+  function handleDragEnd(e: DropResult) {}
+
   if (componentData && componentData.getComponent) {
     return (
       <Wrapper
@@ -244,16 +247,18 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
         onWheel={e => e.stopPropagation()}
         onKeyDown={e => e.stopPropagation()}
       >
-        <Inner>
-          <Paper elevation={12} sx={cardStyles}>
-            <span>{props.schema.title}</span>
-            <Properties
-              component={componentData.getComponent}
-              elementId={props.elementId}
-              schema={props.schema}
-            />
-          </Paper>
-        </Inner>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Inner>
+            <Paper elevation={12} sx={cardStyles}>
+              <span>{props.schema.title}</span>
+              <Properties
+                component={componentData.getComponent}
+                elementId={props.elementId}
+                schema={props.schema}
+              />
+            </Paper>
+          </Inner>
+        </DragDropContext>
       </Wrapper>
     )
   }

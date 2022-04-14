@@ -44,7 +44,6 @@ const FrameWrapper = styled.div<{ name?: string }>`
     color: var(--attention);
   }
   pointer-events: all;
-  position: absolute;
 `
 
 const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
@@ -168,7 +167,6 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
     left: x || 0,
     top: y || 0,
     pointerEvents: 'all',
-    position: 'absolute',
     zIndex: 10,
   }
 
@@ -243,7 +241,6 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
     height: props?.style?.height || 50,
     pointerEvents: 'all',
     zIndex: 1000,
-    position: 'absolute',
     left: `${x}px`,
     top: `${y}px`,
   }
@@ -312,9 +309,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   let WrapperType: React.FC<any>
   switch (layer.componentType) {
     case PackageComponentType.Stack:
+    case PackageComponentType.Screen:
       WrapperType = StackLayer
       break
-    case PackageComponentType.Screen:
     case PackageComponentType.Container:
       WrapperType = FrameLayer
       break
@@ -379,7 +376,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
                 ...props.style,
                 width: '100%',
                 height: '100%',
-                position: 'absolute',
               }}
             >
               {layer.children?.map(child => (
@@ -397,7 +393,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
               style={{
                 width: '100%',
                 height: '100%',
-                position: 'absolute',
               }}
             >
               <InlineComponent
@@ -407,13 +402,11 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
                   ...props.style,
                   width: '100%',
                   height: '100%',
-                  position: 'absolute',
                 }}
               />
             </div>
             <div
               style={{
-                position: 'absolute',
                 width: '100%',
                 height: '100%',
               }}

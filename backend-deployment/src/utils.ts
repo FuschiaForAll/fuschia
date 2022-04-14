@@ -9,6 +9,15 @@ function checkTypeForPrimitive(type: string) {
   return false
 }
 
+function checkTypeForSpecial(type: string) {
+  switch (type) {
+    case 'FileUpload':
+    case 'GeoLocation':
+      return true
+  }
+  return false
+}
+
 export interface Key {
   fieldName: string
   dataType: string
@@ -46,6 +55,20 @@ export function generateCreateInput({
           key.nullable ? '?' : '!'
         }: ${key.dataType.toLowerCase()}`
       )
+    } else {
+      switch (key.dataType) {
+        case 'FileUpload':
+          builder.push(
+            `  @Field(type => GraphQLUpload, { nullable: ${key.nullable} })`
+          )
+          builder.push(
+            `  ${key.fieldName}${key.nullable ? '?' : '!'}: FileUpload`
+          )
+          break
+      }
+      const isSpecial = checkTypeForSpecial(key.dataType)
+      if (isSpecial) {
+      }
     }
   })
   builder.push(`}`)

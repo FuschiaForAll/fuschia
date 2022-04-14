@@ -21,6 +21,15 @@ function checkTypeForPrimitive(type: string) {
   return false
 }
 
+function checkTypeForSpecial(type: string) {
+  switch (type) {
+    case 'FileUpload':
+    case 'GeoLocation':
+      return true
+  }
+  return false
+}
+
 export interface Field {
   _id: ObjectId
   isUnique: boolean
@@ -184,6 +193,12 @@ function generateIndexFile(project: Project, models: Model[]) {
   importsBuilder['./utils/consts'] = {
     COOKIE_NAME: { type: 'single' },
   }
+  importsBuilder['graphql-upload'] = {
+    graphqlUploadExpress: { type: 'single' },
+  }
+  importsBuilder['./utils/s3-uploader'] = {
+    S3Uploader: { type: 'single' },
+  }
   if (project.appConfig.authConfig.requiresAuth) {
     importsBuilder['./Authentication/Authentication.resolver'] = {
       AuthenticationResolver: { type: 'single' },
@@ -248,6 +263,9 @@ function generateIndexFile(project: Project, models: Model[]) {
   );
 `)
   classBuilder.push(`  app.use(cookies());`)
+  classBuilder.push(
+    `  app.use(graphqlUploadExpress({ maxFileSize: 20000000, maxFiles: 10 }));`
+  )
   classBuilder.push(`
   app.use(
     session({
@@ -270,6 +288,13 @@ function generateIndexFile(project: Project, models: Model[]) {
       resave: false,
     })
   );
+  `)
+  classBuilder.push(`
+  app.get("/project-files/*", async (req, res) => {
+    const fileKey = decodeURI(req.path.replace("/project-files/", ""));
+    const uploader = Container.get(S3Uploader);
+    uploader.getFile(fileKey, res);
+  });
   `)
   classBuilder.push(`
   const apolloServer = new ApolloServer({
@@ -783,6 +808,10 @@ async function createProjectStructure(mongoDbUrl: string, projectId: string) {
       path.join(biolerplatedir, 'filter-parser.ts'),
       path.join(utilsdir, 'filter-parser.ts')
     )
+    await fs.copyFile(
+      path.join(biolerplatedir, 's3-uploader.ts'),
+      path.join(utilsdir, 's3-uploader.ts')
+    )
     await fs.writeFile(
       path.join(utilsdir, 'config.ts'),
       `
@@ -797,6 +826,9 @@ if (!process.env.DATABASE_NAME) { throw new Error('DATABASE_NAME is missing')}
 if (!process.env.REDIS_URL) { throw new Error('REDIS_URL is missing')}
 if (!process.env.REDIS_PORT) { throw new Error('REDIS_PORT is missing')}
 if (!process.env.PORT) { throw new Error('PORT is missing')}
+if (!process.env.S3_ACCESS_KEY) { throw new Error('S3_ACCESS_KEY is missing')}
+if (!process.env.S3_SECRET) { throw new Error('S3_SECRET is missing')}
+if (!process.env.S3_BUCKET_NAME) { throw new Error('S3_BUCKET_NAME is missing')}
 
 export const SERVER_VERSION = packageJsonInfo.version
 export const SESSION_SECRET = process.env.SESSION_SECRET
@@ -805,6 +837,9 @@ export const DATABASE_NAME = process.env.DATABASE_NAME
 export const REDIS_URL = process.env.REDIS_URL
 export const REDIS_PORT = +process.env.REDIS_PORT
 export const PORT = +process.env.PORT
+export const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY
+export const S3_SECRET = process.env.S3_SECRET
+export const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME
     `
     )
 
@@ -992,6 +1027,7 @@ function generateAuthenticationResolver(
     importsBuilder['../utils/consts'] = {
       COOKIE_NAME: { type: 'single' },
     }
+
     const usernameField = authModel.fields.find(
       f =>
         f._id.toString() ===

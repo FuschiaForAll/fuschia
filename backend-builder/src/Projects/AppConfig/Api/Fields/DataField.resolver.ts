@@ -9,77 +9,91 @@ import { ProjectService } from "../../../Project.service";
 import { DataField } from "./DataField.entity";
 import { DataFieldInput } from "./DataField.input";
 
-const PRIMITIVE_DATA_TYPES = [
-  "ID",
-  "String",
-  "Boolean",
-  "Int",
-  "Float"
-]
+const PRIMITIVE_DATA_TYPES = ["ID", "String", "Boolean", "Int", "Float"];
 
 @Service()
 @Resolver()
 export class DataFieldResolver {
-  constructor(
-    private projectService: ProjectService
-  ) { }
+  constructor(private projectService: ProjectService) {}
 
   @Mutation(() => DataField, { nullable: true })
-  async createDataField(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('entityModelId', type => ObjectIdScalar) entityModelId: ObjectId, @Arg('dataField') dataField: DataFieldInput, @Ctx() ctx: Context) {
-    if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
-    const project = await ProjectModel.findById(projectId)
+  async createDataField(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("entityModelId", (type) => ObjectIdScalar) entityModelId: ObjectId,
+    @Arg("dataField") dataField: DataFieldInput,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    const project = await ProjectModel.findById(projectId);
     if (project) {
-      const entityModel = project.appConfig.apiConfig.models.find(model => {
+      const entityModel = project.appConfig.apiConfig.models.find((model) => {
         // @ts-ignore
-        return model._id.equals(entityModelId)
-      })
+        return model._id.equals(entityModelId);
+      });
       if (entityModel) {
-        const newDataField = new DataField()
+        const newDataField = new DataField();
         if (PRIMITIVE_DATA_TYPES.includes(dataField.dataType)) {
-          newDataField.dataType = dataField.dataType
+          newDataField.dataType = dataField.dataType;
         } else {
-          const linkedEntity = project.appConfig.apiConfig.models.find(model => {
-            // @ts-ignore
-            return model._id.equals(dataField.dataType)
-          })
+          const linkedEntity = project.appConfig.apiConfig.models.find(
+            (model) => {
+              // @ts-ignore
+              return model._id.equals(dataField.dataType);
+            }
+          );
           if (linkedEntity) {
-            newDataField.connection = true
-            newDataField.dataType = linkedEntity._id.toString()
+            newDataField.connection = true;
+            newDataField.dataType = linkedEntity._id.toString();
           } else {
-            throw new ApolloError("DataType does not exist")
+            throw new ApolloError("DataType does not exist");
           }
         }
-        newDataField.fieldName = dataField.fieldName
-        newDataField.isUnique = dataField.isUnique
-        newDataField.isHashed = dataField.isHashed
-        newDataField.nullable = dataField.nullable
-        newDataField.isList = dataField.isList
-        entityModel.fields.push(newDataField)
-        project.save()
-        return entityModel.fields.at(-1)
+        newDataField.fieldName = dataField.fieldName;
+        newDataField.isUnique = dataField.isUnique;
+        newDataField.isHashed = dataField.isHashed;
+        newDataField.nullable = dataField.nullable;
+        newDataField.isList = dataField.isList;
+        entityModel.fields.push(newDataField);
+        project.save();
+        return entityModel.fields.at(-1);
       }
     }
-    return null
+    return null;
   }
 
   @Mutation(() => ObjectIdScalar, { nullable: true })
-  async deleteDataField(@Arg('projectId', type => ObjectIdScalar) projectId: ObjectId, @Arg('entityModelId', type => ObjectIdScalar) entityModelId: ObjectId, @Arg('dataFieldId', type => ObjectIdScalar) dataFieldId: ObjectId, @Ctx() ctx: Context) {
-    if (!ctx.req.session.userId || !this.projectService.checkAccess(projectId, ctx.req.session.userId)) { throw new ApolloError('Unauthorized')}
-    const project = await ProjectModel.findById(projectId)
+  async deleteDataField(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("entityModelId", (type) => ObjectIdScalar) entityModelId: ObjectId,
+    @Arg("dataFieldId", (type) => ObjectIdScalar) dataFieldId: ObjectId,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    const project = await ProjectModel.findById(projectId);
     if (project) {
-      const entityModel = project.appConfig.apiConfig.models.find(model => {
+      const entityModel = project.appConfig.apiConfig.models.find((model) => {
         // @ts-ignore
-        return model._id.equals(entityModelId)
-      })
+        return model._id.equals(entityModelId);
+      });
       if (entityModel) {
-        entityModel.fields = entityModel.fields.filter(field => {
+        entityModel.fields = entityModel.fields.filter((field) => {
           // @ts-ignore
-        return !field._id.equals(dataFieldId)
-        })
-        project.save()
-        return dataFieldId
+          return !field._id.equals(dataFieldId);
+        });
+        project.save();
+        return dataFieldId;
       }
     }
-    return null
+    return null;
   }
 }

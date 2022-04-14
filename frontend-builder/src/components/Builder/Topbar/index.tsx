@@ -14,22 +14,25 @@ import RedoIcon from '@mui/icons-material/Redo'
 import HistoryIcon from '@mui/icons-material/History'
 import { useNavigate } from 'react-router-dom'
 import { useDesignerHistory } from '../../../utils/hooks/useDesignerHistory'
-
+import Icon from '../../Shared/Icon'
+import LabelIcon from '@mui/icons-material/Label'
+import ImageIcon from '@mui/icons-material/Image'
+import SBItem from '../Sidebar/Item'
 interface TopbarProps {
   projectName: string
 }
-const buttonStyles = {
-  margin: '0 0.5rem',
-}
+// const buttonStyles = {
+//   margin: '0 0.5rem',
+// }
 
-const Item: React.FC<{ onClick?: React.MouseEventHandler<HTMLButtonElement> }> =
-  function Item({ children, onClick }) {
-    return (
-      <IconButton color="primary" sx={buttonStyles} onClick={onClick}>
-        {children}
-      </IconButton>
-    )
-  }
+// const Item: React.FC<{ onClick?: React.MouseEventHandler<HTMLButtonElement> }> =
+//   function Item({ children, onClick }) {
+//     return (
+//       <IconButton color="primary" sx={buttonStyles} onClick={onClick}>
+//         {children}
+//       </IconButton>
+//     )
+//   }
 
 const Wrapper = styled.div`
   position: fixed;
@@ -43,7 +46,7 @@ const Wrapper = styled.div`
   justify-content: space-between;
   pointer-events: all;
 `
-
+const Item = SBItem
 const Topbar: React.FC<TopbarProps> = function Topbar({
   projectName,
 }: TopbarProps) {
@@ -60,16 +63,17 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             gridAutoFlow: 'column',
             alignItems: 'center',
             padding: '0.5rem',
+            gap: '1rem',
           }}
         >
-          <Item>
+          <Item title="Logo">
             <RedditIcon />
           </Item>
           <Typography>{projectName}</Typography>
-          <Item onClick={() => navigate('app-settings')}>
+          <Item title="App Settings" onClick={() => navigate('app-settings')}>
             <SettingsIcon />
           </Item>
-          <Item>
+          <Item title="Find Item">
             <SearchIcon />
           </Item>
         </Paper>
@@ -80,12 +84,13 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             gridAutoFlow: 'column',
             alignItems: 'center',
             padding: '0.5rem',
+            gap: '1rem',
           }}
         >
-          <Item onClick={undo}>
+          <Item title="Undo" onClick={undo}>
             <UndoIcon />
           </Item>
-          <Item onClick={redo}>
+          <Item title="Redo" onClick={redo}>
             <RedoIcon />
           </Item>
         </Paper>
@@ -98,10 +103,36 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             padding: '0.5rem',
           }}
         >
-          <Item>
+          <Item title="History">
             <HistoryIcon />
           </Item>
         </Box>
+        <Paper
+          elevation={12}
+          sx={{
+            display: 'grid',
+            gridAutoFlow: 'column',
+            alignItems: 'center',
+            padding: '0.5rem',
+            gap: '1rem',
+          }}
+        >
+          <Item title="Database" onClick={() => navigate('database')}>
+            <Icon icon="database" />
+          </Item>
+          <Item title="Label Library" onClick={() => navigate('label-library')}>
+            <LabelIcon />
+          </Item>
+          <Item title="Image Library" onClick={() => navigate('image-library')}>
+            <ImageIcon />
+          </Item>
+          <Item title="Styles">
+            <Icon icon="styles" />
+          </Item>
+          <Item title="Analytics">
+            <Icon icon="analytics" />
+          </Item>
+        </Paper>
       </Box>
       <Box sx={{ display: 'grid', gridAutoFlow: 'column', gap: '1rem' }}>
         <Select value={'editingMode'}>
@@ -119,7 +150,7 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
             padding: '0.5rem',
           }}
         >
-          <Item onClick={() => navigate('dashboard')}>
+          <Item onClick={() => navigate('dashboard')} title="Dashboard">
             <PersonIcon />
           </Item>
         </Paper>

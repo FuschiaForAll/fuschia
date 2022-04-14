@@ -25,6 +25,8 @@ import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
 import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
+import { Droppable, Draggable, DraggableProvided } from 'react-beautiful-dnd'
+import { DragIndicator } from '@mui/icons-material'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -1124,40 +1126,69 @@ function ConfigureFunction({
       <span style={{ fontSize: '0.75em' }}>{title || 'undefined'}</span>
       <FunctionWrapper>
         {Control}
-        {functions.map((f, index) => (
-          <ActionWrapper key={index}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto' }}>
-              <LabeledSelect
-                label="action type"
-                selectedValue={f.type}
-                onChange={e => {
-                  const newFunctions = [...functions]
-                  // @ts-ignore
-                  newFunctions[index] = { type: e.target.value }
-                  updateValue(newFunctions, true)
-                }}
-                options={FUNCTION_TYPES.map(t => ({
-                  label: t.label,
-                  value: t.value,
-                }))}
-              />
-              <IconButton
-                onClick={() => {
-                  const newFunctions = [...functions]
-                  newFunctions.splice(index, 1)
-                  updateValue(newFunctions, true)
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
+        <Droppable droppableId="actionList" type="ACTIONS" direction="vertical">
+          {droppableActionsProvided => (
+            <div
+              ref={droppableActionsProvided.innerRef}
+              {...droppableActionsProvided.droppableProps}
+            >
+              {functions.map((f, index) => (
+                <Draggable
+                  key={index}
+                  draggableId={`${Math.random()}`}
+                  index={index}
+                >
+                  {(provided: DraggableProvided) => (
+                    <ActionWrapper
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto',
+                        }}
+                      >
+                        <LabeledSelect
+                          label="action type"
+                          selectedValue={f.type}
+                          onChange={e => {
+                            const newFunctions = [...functions]
+                            // @ts-ignore
+                            newFunctions[index] = { type: e.target.value }
+                            updateValue(newFunctions, true)
+                          }}
+                          options={FUNCTION_TYPES.map(t => ({
+                            label: t.label,
+                            value: t.value,
+                          }))}
+                        />
+                        <div {...provided.dragHandleProps}>
+                          <DragIndicator />
+                        </div>
+                        <IconButton
+                          onClick={() => {
+                            const newFunctions = [...functions]
+                            newFunctions.splice(index, 1)
+                            updateValue(newFunctions, true)
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                      </div>
+                      {editor(f, newValue => {
+                        const newFunctions = [...functions]
+                        newFunctions[index] = newValue
+                        updateValue(newFunctions, true)
+                      })}
+                    </ActionWrapper>
+                  )}
+                </Draggable>
+              ))}
+              {droppableActionsProvided.placeholder}
             </div>
-            {editor(f, newValue => {
-              const newFunctions = [...functions]
-              newFunctions[index] = newValue
-              updateValue(newFunctions, true)
-            })}
-          </ActionWrapper>
-        ))}
+          )}
+        </Droppable>
         <OutlinedButton
           onClick={() => {
             updateValue([...functions, { type: 'CREATE' }], true)
