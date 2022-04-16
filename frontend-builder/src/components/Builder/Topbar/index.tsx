@@ -16,7 +16,7 @@ import { useNavigate } from 'react-router-dom'
 import { useDesignerHistory } from '../../../utils/hooks/useDesignerHistory'
 import Icon from '../../Shared/Icon'
 import LabelIcon from '@mui/icons-material/Label'
-import ImageIcon from '@mui/icons-material/Image'
+import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import SBItem from '../Sidebar/Item'
 interface TopbarProps {
   projectName: string
@@ -123,8 +123,8 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           <Item title="Label Library" onClick={() => navigate('label-library')}>
             <LabelIcon />
           </Item>
-          <Item title="Image Library" onClick={() => navigate('image-library')}>
-            <ImageIcon />
+          <Item title="App Assets" onClick={() => navigate('asset-library')}>
+            <FolderSpecialIcon />
           </Item>
           <Item title="Styles">
             <Icon icon="styles" />

@@ -6,18 +6,18 @@ import {
   Ref,
   Severity,
 } from "@typegoose/typegoose";
-import { ObjectIdScalar } from "../../../../utils/object-id.scalar";
-import { ImageFile } from "./ImageFile/ImageFile.entity";
+import { ObjectIdScalar } from "../../../../../utils/object-id.scalar";
 
 @ObjectType()
-export class ImageLibrary {
+export class Asset {
   @Field((type) => ObjectIdScalar)
   readonly _id!: ObjectId;
 
+  @Field()
   @Property()
-  readonly projectId!: ObjectId;
+  name!: string;
 
-  @Field((type) => [ImageFile])
-  @Property({ ref: () => ImageFile, default: [] })
-  images!: ImageFile[];
+  @Field()
+  @Property()
+  key!: string;
 }

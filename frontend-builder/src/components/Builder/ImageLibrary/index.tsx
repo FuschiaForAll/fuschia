@@ -22,12 +22,13 @@ import {
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
   Mutation,
-  useCreateImageFolderMutation,
+  OnAssetChangeDocument,
+  OnAssetChangeSubscriptionResult,
+  useCreateAssetFolderMutation,
   useGetProjectQuery,
-  useListImageFolderLazyQuery,
-  useUploadImageMutation,
+  useListAssetFolderQuery,
+  useUploadAssetMutation,
 } from '../../../generated/graphql'
-import { useQuery, useLazyQuery, useMutation } from '@apollo/client'
 import { ArrowRight, Folder, Description } from '@mui/icons-material'
 
 interface FolderStructure {
@@ -78,24 +79,59 @@ const ImageLibrary = function ImageLibrary() {
     mouseX: null | number
     mouseY: null | number
   }>(initialState)
-  const [listImageFolder, { data: FilesData }] = useListImageFolderLazyQuery()
-  const [uploadImage] = useUploadImageMutation()
-  const [createImageFolder] = useCreateImageFolderMutation()
+  const { subscribeToMore, data: FilesData } = useListAssetFolderQuery({
+    variables: {
+      projectId,
+    },
+  })
+  const [uploadAsset] = useUploadAssetMutation()
+  const [createAssetFolder] = useCreateAssetFolderMutation()
   let dragCounter = 0
-
   useEffect(() => {
-    listImageFolder({
-      variables: {
-        projectId,
-        folderName: `/`,
+    subscribeToMore({
+      document: OnAssetChangeDocument,
+      variables: { projectId },
+      updateQuery: (prev, { subscriptionData }) => {
+        const subData =
+          subscriptionData as unknown as OnAssetChangeSubscriptionResult
+        if (subData.data) {
+          switch (subData.data.onAssetChange.type) {
+            case 'CREATE':
+              return {
+                ...prev,
+                listAssetFolder: prev.listAssetFolder.concat(
+                  subData.data.onAssetChange.assets
+                ),
+              }
+            case 'UPDATE':
+              const newAssets = [...prev.listAssetFolder]
+              subData.data.onAssetChange.assets.forEach(c => {
+                const toupdate = newAssets.findIndex(nc => nc._id === c._id)
+                if (toupdate > -1) {
+                  newAssets[toupdate] = c
+                }
+              })
+              return {
+                ...prev,
+                listAssetFolder: newAssets,
+              }
+            case 'DELETE':
+              const data = subData.data
+              return {
+                ...prev,
+                listAssetFolder: prev.listAssetFolder.filter(
+                  c => !data.onAssetChange._ids.includes(c._id)
+                ),
+              }
+          }
+        }
+        return prev
       },
     })
-  }, [projectId, listImageFolder])
-
+  }, [projectId, subscribeToMore])
   useEffect(() => {
-    debugger
     const currentFolderObject = currentFolderPath
-      .slice(0, -1)
+      .slice(2, -1)
       .reduce((obj, path) => {
         if (obj) {
           return obj[path]
@@ -118,7 +154,8 @@ const ImageLibrary = function ImageLibrary() {
 
   useEffect(() => {
     if (FilesData) {
-      const keyArray = FilesData.listImageFolder.map(file => file.key)
+      debugger
+      const keyArray = FilesData.listAssetFolder.map(file => file.key)
       setKeys(keyArray)
       setFolderData(buildNestedStructure(keyArray))
     }
@@ -129,11 +166,10 @@ const ImageLibrary = function ImageLibrary() {
     folderPath.shift()
     folderPath.shift()
     folderPath.shift()
-    folderPath.shift()
     if (folderPath[folderPath.length - 1] !== '') {
       folderPath.push('')
     }
-    setCurrentFolderPath([projectId!, ...folderPath])
+    setCurrentFolderPath(folderPath)
   }, [location, projectId])
 
   function handleNewFolderClose() {
@@ -180,12 +216,12 @@ const ImageLibrary = function ImageLibrary() {
     useDragging(false)
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const files = e.dataTransfer.files
-      const folder = currentFolderPath.join('/')
-      uploadImage({
+      const folder = currentFolderPath.slice(2, -1).join('/')
+      uploadAsset({
         variables: {
           projectId,
           folder,
-          image: files[0],
+          file: files[0],
         },
       })
       e.dataTransfer.clearData()
@@ -259,10 +295,9 @@ const ImageLibrary = function ImageLibrary() {
                                 0,
                                 idx + 2
                               )
+                              debugger
                               navigate(
-                                `/projects/${projectId}/builder/image-library/${newPath.join(
-                                  '/'
-                                )}`
+                                `/projects/${projectId}/${newPath.join('/')}`
                               )
                             }}
                           >
@@ -296,8 +331,10 @@ const ImageLibrary = function ImageLibrary() {
                         path.pop()
                         path.pop()
                         path.pop()
+                        path.pop()
+                        debugger
                         navigate(
-                          `/projects/${projectId}/builder/image-library/${path.join(
+                          `/projects/${projectId}/builder/asset-library/${path.join(
                             '/'
                           )}`
                         )
@@ -321,18 +358,18 @@ const ImageLibrary = function ImageLibrary() {
                       <ListItem
                         button
                         onClick={() => {
+                          debugger
                           const path = JSON.parse(
                             JSON.stringify(currentFolderPath)
                           )
                           path[path.length - 1] = title
                           if (isFolder) {
-                            navigate(
-                              `/projects/${projectId}/builder/image-library/${path.join(
-                                '/'
-                              )}`
-                            )
+                            debugger
+                            navigate(`/projects/${projectId}/${path.join('/')}`)
                           } else {
-                            window.open(`/project-files/${path.join('/')}`)
+                            window.open(
+                              `/project-files/${path.slice(2, -1).join('/')}`
+                            )
                           }
                         }}
                       >
@@ -355,12 +392,12 @@ const ImageLibrary = function ImageLibrary() {
                 onChange={e => {
                   if (e.target.files) {
                     const files = e.target.files
-                    const folder = currentFolderPath.join('/')
-                    uploadImage({
+                    const folder = currentFolderPath.slice(2, -1).join('/')
+                    uploadAsset({
                       variables: {
                         projectId,
                         folder,
-                        image: files[0],
+                        file: files[0],
                       },
                     })
                   }
@@ -454,12 +491,15 @@ const ImageLibrary = function ImageLibrary() {
               </Button>
               <Button
                 onClick={() => {
-                  createImageFolder({
+                  debugger
+                  const folderName = [
+                    ...currentFolderPath.slice(2, -1),
+                    newFolderName,
+                  ]
+                  createAssetFolder({
                     variables: {
                       projectId,
-                      folderName: `${currentFolderPath.join(
-                        '/'
-                      )}${newFolderName}/`,
+                      folderName: `${folderName.join('/')}/`,
                     },
                   })
                   handleNewFolderClose()

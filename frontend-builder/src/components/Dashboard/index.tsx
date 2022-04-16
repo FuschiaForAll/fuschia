@@ -74,6 +74,7 @@ function Teams({
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
       Teams
+      <div>TOD: Pending invitaions and acceptances</div>
     </div>
   )
 }

@@ -1,6 +1,0 @@
-query ListImageFolder($projectId: ObjectId!, $folderName: String!) {
-  listImageFolder(projectId: $projectId, folderName: $folderName) {
-    key
-    type
-  }
-}

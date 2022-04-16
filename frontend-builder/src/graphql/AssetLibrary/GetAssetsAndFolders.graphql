@@ -1,0 +1,7 @@
+query ListAssetFolder($projectId: ObjectId!) {
+  listAssetFolder(projectId: $projectId) {
+    _id
+    key
+    name
+  }
+}

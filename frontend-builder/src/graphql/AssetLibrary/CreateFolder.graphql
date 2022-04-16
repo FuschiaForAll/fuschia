@@ -1,0 +1,3 @@
+mutation CreateAssetFolder($projectId: ObjectId!, $folderName: String!) {
+  createAssetFolder(projectId: $projectId, folderName: $folderName)
+}

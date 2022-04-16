@@ -237,7 +237,6 @@ function DatabaseConfiguration({
       projectId,
       sandbox: true,
     },
-    pollInterval: 10000,
   })
   const [newModelName, setNewModelName] = useState('')
   const { data, loading, error } = useGetProjectQuery({

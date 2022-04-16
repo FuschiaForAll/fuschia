@@ -1,3 +1,0 @@
-mutation UploadImage($projectId: ObjectId!, $folder: String!, $image: Upload!) {
-  uploadImage(projectId: $projectId, folder: $folder, image: $image)
-}

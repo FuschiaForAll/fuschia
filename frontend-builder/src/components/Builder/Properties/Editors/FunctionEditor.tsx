@@ -26,7 +26,7 @@ import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
 import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
 import { Droppable, Draggable, DraggableProvided } from 'react-beautiful-dnd'
-import { DragIndicator } from '@mui/icons-material'
+import { DragIndicator, Email } from '@mui/icons-material'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -44,6 +44,7 @@ const FUNCTION_TYPES = [
   { label: 'Do something conditionally...', value: 'CONDITIONAL' },
   { label: 'Set a timer...', value: 'TIMER' },
   { label: 'Switch case...', value: 'SWITCH' },
+  { label: 'Send an Email...', value: 'EMAIL' },
 ]
 
 type ComponentId = string
@@ -56,6 +57,14 @@ interface SwitchProps {
     key: EditorState
     actions: ActionProps[]
   }>
+}
+interface EmailProps {
+  type: 'EMAIL'
+  serverside: boolean
+  from?: string
+  to: string
+  subject: string
+  html: string
 }
 
 interface TimerProps {
@@ -143,6 +152,7 @@ export type ActionProps =
   | ConditionalProps
   | TimerProps
   | SwitchProps
+  | EmailProps
 
 const FunctionWrapper = styled.div`
   background: var(--canvasBg);
@@ -157,6 +167,14 @@ const ActionWrapper = styled.div`
     padding-bottom: 0.5em;
   }
 `
+
+const EmailEditor = (props: {
+  componentId: string
+  params: EmailProps
+  onUpdate: (newValue: SwitchProps) => void
+}) => {
+  return <div>Email Editor</div>
+}
 
 const SwitchEditor = (props: {
   componentId: string
@@ -1103,6 +1121,14 @@ function ConfigureFunction({
       case 'SWITCH':
         return (
           <SwitchEditor
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
+      case 'EMAIL':
+        return (
+          <EmailEditor
             componentId={componentId}
             params={actionProps}
             onUpdate={onUpdate}

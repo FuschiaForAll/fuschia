@@ -1,0 +1,3 @@
+mutation DeleteAsset($projectId: ObjectId!, $imageId: ObjectId!) {
+  deleteAsset(projectId: $projectId, imageId: $imageId)
+}

@@ -48,7 +48,7 @@ const Builder: React.FC = function Builder() {
         <Route path="previewer" element={<Previewer />} />
         <Route path="app-settings" element={<Settings />} />
         <Route path="label-library" element={<LabelLibrary />} />
-        <Route path="image-library/*" element={<ImageLibrary />} />
+        <Route path="asset-library/*" element={<ImageLibrary />} />
         <Route
           path="dashboard"
           element={

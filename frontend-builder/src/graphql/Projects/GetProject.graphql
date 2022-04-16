@@ -3,8 +3,8 @@ query GetProject($projectId: ObjectId!) {
     _id
     appId
     projectName
-    imageLibrary {
-      images {
+    assetLibrary {
+      assets {
         _id
         key
         name

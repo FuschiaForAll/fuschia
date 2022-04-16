@@ -1,0 +1,3 @@
+mutation UploadAsset($projectId: ObjectId!, $folder: String!, $file: Upload!) {
+  uploadAsset(projectId: $projectId, folder: $folder, file: $file)
+}

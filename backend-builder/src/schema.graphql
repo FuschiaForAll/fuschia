@@ -29,6 +29,23 @@ input AppConfigInput {
   appEntryComponentId: ObjectId
 }
 
+type Asset {
+  _id: ObjectId!
+  key: String!
+  name: String!
+}
+
+type AssetLibrary {
+  _id: ObjectId!
+  assets: [Asset!]!
+}
+
+type AssetSubscriptionPayload {
+  _ids: [ObjectId!]!
+  assets: [Asset!]!
+  type: String!
+}
+
 type Auth {
   _id: ObjectId!
   allowUnauthenticatedUsers: Boolean!
@@ -198,20 +215,11 @@ type FieldError {
   message: String!
 }
 
-type File {
-  key: String!
-  type: String!
-}
-
-type ImageFile {
+type Invitation {
   _id: ObjectId!
-  key: String!
-  name: String!
-}
-
-type ImageLibrary {
-  _id: ObjectId!
-  images: [ImageFile!]!
+  acceptedDate: DateTime
+  organizationId: ObjectId!
+  userEmail: String!
 }
 
 """
@@ -256,13 +264,14 @@ type MenuStructure {
 }
 
 type Mutation {
+  acceptInvitaion(invitationId: ObjectId!): Boolean!
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
   createApiVariable(name: String!, projectId: ObjectId!, type: String!): ApiVariable!
+  createAssetFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
   createEntityModel(isLocal: Boolean!, name: String!, projectId: ObjectId!): EntityModel
-  createImageFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createLabelTag(numberOfStates: Int!, projectId: ObjectId!, tagName: String!): Project!
   createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
@@ -275,10 +284,11 @@ type Mutation {
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
   deleteApiVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
+  deleteAsset(imageId: ObjectId!, projectId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
-  deleteImage(imageId: ObjectId!, projectId: ObjectId!): Boolean!
+  deleteInvitation(email: String!, organizationId: ObjectId!): Boolean!
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
   deleteProject(projectId: ObjectId!): ObjectId!
@@ -287,6 +297,7 @@ type Mutation {
   deleteSubscription: Boolean
   duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
   forgotPassword(email: String!): Boolean!
+  inviteMember(email: String!, organizationId: ObjectId!, sendInvite: Boolean): Invitation!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
@@ -295,6 +306,7 @@ type Mutation {
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
   resetPassword(newPassword: String!, token: String!): Boolean!
   updateAppConfig(appConfig: AppConfigInput!, projectId: ObjectId!): Boolean!
+  updateAssetMetaData(projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component!
@@ -309,7 +321,7 @@ type Mutation {
   updateRelationship: Boolean
   updateSubscription: Boolean
   updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
-  uploadImage(folder: String!, image: Upload!, projectId: ObjectId!): Boolean!
+  uploadAsset(file: Upload!, folder: String!, projectId: ObjectId!): Boolean!
 }
 
 """Mongo object id scalar type"""
@@ -394,7 +406,7 @@ type Project {
   _id: ObjectId!
   appConfig: AppConfig!
   appId: String!
-  imageLibrary: ImageLibrary
+  assetLibrary: AssetLibrary
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
@@ -419,8 +431,9 @@ type Query {
   getPreviewerData(projectId: ObjectId!): Previewer!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
+  invitation(invitationId: ObjectId!): Invitation!
+  listAssetFolder(projectId: ObjectId!): [Asset!]!
   listEntityModel: Boolean
-  listImageFolder(folderName: String!, projectId: ObjectId!): [File!]!
   listMutations: Boolean
   listOrganizations: [Organization!]!
   listProjects: [Project!]!
@@ -448,6 +461,7 @@ input RequiredParameterInput {
 }
 
 type Subscription {
+  onAssetChange(projectId: ObjectId!): AssetSubscriptionPayload!
   onComponentChange(projectId: ObjectId!): ComponentSubscriptionPayload!
 }
 
@@ -467,6 +481,7 @@ type User {
   _id: ObjectId!
   email: String!
   fullName: String
+  invitations: [Invitation!]!
   lastLogin: DateTime
   organizations: [Organization!]!
   status: String!

@@ -173,7 +173,7 @@ async function buildScreen(
                 propsBuilder.push(`${''.padStart(indentation, ' ')}{
                   ${fetchedModel.name}Data?.list${
                   fetchedModel.name
-                }?.items?.map(item => (
+                }?.items?.map((item, index) => (
                 `)
                 propsBuilder.push(
                   `${''.padStart(indentation, ' ')}<${

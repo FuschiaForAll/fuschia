@@ -41,10 +41,11 @@ import { AppConfigResolver } from "./Projects/AppConfig/AppConfig.resolver";
 import { PackageResolver } from "./Packages/Package.resolver";
 import { PackageComponentResolver } from "./Packages/PackageComponents/PackageComponent.resolver";
 import { PreviewerResolver } from "./Previewer/Previewer.resolver";
-import { ImageLibraryResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageLibrary.resolver";
+import { AssetLibraryResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/AssetLibrary.resolver";
 import { graphqlUploadExpress } from "graphql-upload";
 import { S3Uploader } from "./utils/s3-uploader";
-import { ImageFileResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageFile/ImageFile.resolver";
+import { AssetResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageFile/Asset.resolver";
+import { InvitationResolver } from "./Invitations/Invitation.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
@@ -80,8 +81,9 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       PackageResolver,
       PackageComponentResolver,
       PreviewerResolver,
-      ImageLibraryResolver,
-      ImageFileResolver,
+      AssetLibraryResolver,
+      AssetResolver,
+      InvitationResolver,
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],

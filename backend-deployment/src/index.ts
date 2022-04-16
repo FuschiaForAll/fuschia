@@ -810,6 +810,10 @@ async function createProjectStructure(mongoDbUrl: string, projectId: string) {
     )
     await fs.copyFile(
       path.join(biolerplatedir, 's3-uploader.ts'),
+      path.join(utilsdir, 'mail-client.ts')
+    )
+    await fs.copyFile(
+      path.join(biolerplatedir, 's3-uploader.ts'),
       path.join(utilsdir, 's3-uploader.ts')
     )
     await fs.writeFile(
@@ -820,6 +824,26 @@ const packageJsonInfo = require('../../package.json')
 
 dotenv.config();
 
+type EmailClient = OAuthEmailClient | SimpleEmailClient;
+
+interface OAuthEmailClient {
+  type: "OAuth2";
+  service: string;
+  user: string;
+  clientId: string;
+  clientSecret: string;
+  refreshToken: string;
+  expires: number;
+}
+
+interface SimpleEmailClient {
+  type: "Simple";
+  host: string;
+  port: number;
+  user: string;
+  pass: string;
+}
+
 if (!process.env.SESSION_SECRET) { throw new Error('SESSION_SECRET is missing')}
 if (!process.env.MONGO_DB_URL) { throw new Error('MONGO_DB_URL is missing')}
 if (!process.env.DATABASE_NAME) { throw new Error('DATABASE_NAME is missing')}
@@ -829,6 +853,71 @@ if (!process.env.PORT) { throw new Error('PORT is missing')}
 if (!process.env.S3_ACCESS_KEY) { throw new Error('S3_ACCESS_KEY is missing')}
 if (!process.env.S3_SECRET) { throw new Error('S3_SECRET is missing')}
 if (!process.env.S3_BUCKET_NAME) { throw new Error('S3_BUCKET_NAME is missing')}
+if (!process.env.APP_ENDPOINT) { throw new Error("APP_ENDPOINT is missing")}
+if (!process.env.FROM_EMAIL_ADDRESS) { throw new Error("FROM_EMAIL_ADDRESS is missing")}
+
+let emailClient: EmailClient;
+// email type could be mailtrap or google
+if (process.env.EMAL_TYPE === "OAuth2") {
+  if (!process.env.EMAIL_SERVICE) {
+    throw new Error("EMAIL_SERVICE is missing");
+  }
+  if (!process.env.EMAIL_TYPE) {
+    throw new Error("EMAIL_TYPE is missing");
+  }
+  if (!process.env.EMAIL_USER) {
+    throw new Error("EMAIL_USER is missing");
+  }
+  if (!process.env.EMAIL_CLIENT_ID) {
+    throw new Error("EMAIL_CLIENT_ID is missing");
+  }
+  if (!process.env.EMAIL_CLIENT_SECRET) {
+    throw new Error("EMAIL_CLIENT_SECRET is missing");
+  }
+  if (!process.env.EMAIL_REFRESH_TOKEN) {
+    throw new Error("EMAIL_REFRESH_TOKEN is missing");
+  }
+  if (!process.env.EMAIL_EXPIRES) {
+    throw new Error("EMAIL_EXPIRES is missing");
+  }
+
+  emailClient = {
+    type: "OAuth2",
+    user: process.env.EMAL_USER,
+    service: process.env.EMAL_USER,
+    clientId: process.env.EMAL_CLIENT_ID,
+    clientSecret: process.env.EMAL_CLIENT_SECRET,
+    refreshToken: process.env.EMAL_REFRESH_TOKEN,
+    expires: +process.env.EMAIL_EXPIRES,
+  };
+} else {
+  if (!process.env.EMAIL_HOST) {
+    throw new Error("EMAIL_HOST is missing");
+  }
+  if (!process.env.EMAIL_PORT) {
+    throw new Error("EMAIL_PORT is missing");
+  }
+  if (!process.env.EMAIL_USER) {
+    throw new Error("EMAIL_USER is missing");
+  }
+  if (!process.env.EMAIL_PASS) {
+    throw new Error("EMAIL_PASS is missing");
+  }
+  if (!process.env.APP_ENDPOINT) {
+    throw new Error("APP_ENDPOINT is missing");
+  }
+  if (!process.env.FROM_EMAIL_ADDRESS) {
+    throw new Error("FROM_EMAIL_ADDRESS is missing");
+  }
+
+  emailClient = {
+    type: "Simple",
+    host: process.env.EMAIL_HOST,
+    port: +process.env.EMAIL_PORT,
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  };
+}
 
 export const SERVER_VERSION = packageJsonInfo.version
 export const SESSION_SECRET = process.env.SESSION_SECRET
@@ -840,6 +929,9 @@ export const PORT = +process.env.PORT
 export const S3_ACCESS_KEY = process.env.S3_ACCESS_KEY
 export const S3_SECRET = process.env.S3_SECRET
 export const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME
+export const EMAIL_CLIENT = emailClient
+export const FROM_EMAIL_ADDRESS = process.env.FROM_EMAIL_ADDRESS
+export const APP_ENDPOINT = process.env.APP_ENDPOINT
     `
     )
 

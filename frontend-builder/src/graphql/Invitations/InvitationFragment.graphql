@@ -1,0 +1,6 @@
+fragment InvitationFragment on Invitation {
+  _id
+  userEmail
+  organizationId
+  acceptedDate
+}
