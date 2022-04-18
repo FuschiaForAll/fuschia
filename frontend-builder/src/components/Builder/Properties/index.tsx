@@ -13,11 +13,15 @@ import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
-import { useUpdateComponent } from '../../../utils/hooks'
+import { useSelection, useUpdateComponent } from '../../../utils/hooks'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { gql } from '@apollo/client'
 import { variableNameRegex } from '../../../utils/regexp'
 import { DragDropContext, DropResult } from 'react-beautiful-dnd'
+import {
+  useProjectComponents,
+  StructuredComponent,
+} from '../../../utils/hooks/useProjectComponents'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -46,6 +50,62 @@ const cardStyles = {
   pointerEvents: 'all',
   overflowY: 'auto',
   overflowX: 'hidden',
+}
+
+function Layers({ componentId }: { componentId: string }) {
+  const { projectId } = useParams<{ projectId: string }>()
+  const components = useProjectComponents(projectId!)
+  const { setSelection } = useSelection()
+  // find the component in the structure
+  let component: StructuredComponent | undefined = undefined
+  components.some(c => {
+    const search = (children: StructuredComponent[]) => {
+      children.some(ch => {
+        if (ch._id === componentId) {
+          component = ch
+          return true
+        }
+        if (ch.children) {
+          return search(ch.children)
+        }
+      })
+      return true
+    }
+    if (c._id === componentId) {
+      component = c
+      return true
+    }
+    if (c.children) {
+      return search(c.children)
+    }
+    return false
+  })
+  const displayChildren = (c: StructuredComponent[]) => {
+    return (
+      <ul>
+        {c.map(_c => (
+          <li
+            onClick={e => {
+              e.stopPropagation()
+              setSelection([_c._id])
+            }}
+          >
+            {_c.name}
+            {_c.children && displayChildren(_c.children)}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  return (
+    <div>
+      {component && (component as StructuredComponent).children ? (
+        displayChildren((component as StructuredComponent).children!)
+      ) : (
+        <div>No Children</div>
+      )}
+    </div>
+  )
 }
 
 function Properties({
@@ -181,21 +241,40 @@ function Properties({
         >
           Properties
         </span>
-        {component.isContainer && (
+        {component.componentType === 'Screen' && (
+          <>
+            <span
+              onClick={() => setValue(1)}
+              style={{
+                fontWeight: 600,
+                color: value === 1 ? 'var(--accent)' : '#808080',
+                borderWidth: '2px',
+                borderStyle: 'solid',
+                padding: '2px 5px',
+                borderRadius: '5px',
+                borderColor: value === 1 ? 'var(--accent)' : 'transparent',
+                cursor: 'pointer',
+              }}
+            >
+              Data
+            </span>
+          </>
+        )}
+        {component.componentType !== 'Element' && (
           <span
-            onClick={() => setValue(1)}
+            onClick={() => setValue(2)}
             style={{
               fontWeight: 600,
-              color: value === 1 ? 'var(--accent)' : '#808080',
+              color: value === 2 ? 'var(--accent)' : '#808080',
               borderWidth: '2px',
               borderStyle: 'solid',
               padding: '2px 5px',
               borderRadius: '5px',
-              borderColor: value === 1 ? 'var(--accent)' : 'transparent',
+              borderColor: value === 2 ? 'var(--accent)' : 'transparent',
               cursor: 'pointer',
             }}
           >
-            Data
+            Layers
           </span>
         )}
       </div>
@@ -219,6 +298,10 @@ function Properties({
           componentId={elementId}
           component={component}
         />
+      </TabPanel>
+
+      <TabPanel value={value} index={2}>
+        <Layers componentId={elementId} />
       </TabPanel>
     </>
   )

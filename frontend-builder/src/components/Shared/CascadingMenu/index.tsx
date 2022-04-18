@@ -66,7 +66,13 @@ export interface MenuStructure {
   entity: EntityId
   label: string
   hasSubMenu: boolean
-  type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+  type:
+    | 'LOCAL_DATA'
+    | 'SERVER_DATA'
+    | 'INPUT'
+    | 'PRIMITIVE'
+    | 'ASSET'
+    | 'VARIABLE'
 }
 
 type RootMenu = MenuStructure[]
@@ -82,7 +88,13 @@ export function CascadingMenu({
     entityId: string,
     value: string,
     label: string,
-    type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+    type:
+      | 'LOCAL_DATA'
+      | 'SERVER_DATA'
+      | 'INPUT'
+      | 'PRIMITIVE'
+      | 'ASSET'
+      | 'VARIABLE'
   ) => void
 }) {
   return (

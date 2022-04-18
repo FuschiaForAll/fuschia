@@ -17,9 +17,33 @@ import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
+  useListAssetFolderQuery,
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql'
 import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+
+interface FolderStructure {
+  [key: string]: null | FolderStructure
+}
+
+function buildNestedStructure(keys: string[]) {
+  return keys.reduce((obj, key) => {
+    let branch = obj
+    const parts = key.split('/')
+    while (parts.length) {
+      const part = parts.shift()
+      if (part) {
+        if (!branch[part]) {
+          branch[part] = parts.length > 0 ? {} : null
+        }
+        if (branch[part] !== null) {
+          branch = branch[part] as FolderStructure
+        }
+      }
+    }
+    return obj
+  }, {} as FolderStructure)
+}
 
 const EditorWrapper = styled.div`
   margin-top: 2px;
@@ -115,6 +139,25 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
   }: TextInputBindingProps) {
     const [editorFocused, setEditorFocused] = useState(false)
     const ref = useRef<Editor>(null)
+    const [keys, setKeys] = useState<string[]>([])
+    let { projectId } = useParams<{ projectId: string }>()
+
+    const [folderData, setFolderData] = useState<FolderStructure>({})
+    const { subscribeToMore, data: FilesData } = useListAssetFolderQuery({
+      variables: {
+        projectId,
+      },
+    })
+    useEffect(() => {
+      if (FilesData) {
+        const keyArray = FilesData.listAssetFolder.map(file => file.key)
+        setKeys(keyArray)
+        setFolderData(buildNestedStructure(keyArray))
+      }
+    }, [FilesData])
+    useEffect(() => {
+      console.log(folderData)
+    }, [folderData])
     function insertPlaceholder(label: string, path: any) {
       const currentContent = editorState.getCurrentContent()
       const selection = editorState.getSelection()
@@ -140,7 +183,6 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         decorator
       )
     )
-    let { projectId } = useParams<{ projectId: string }>()
     const [modelStructures, setModelStructures] = useState<{
       [key: string]: DataStructure
     }>({})
@@ -202,19 +244,19 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           entity: 'InputObject',
           source: 'InputObject',
         })
-        const modelStructure = {
-          InputObject: {
-            _id: 'InputObject',
-            name: 'Inputs',
-            fields: components.map(c => ({
-              type: 'INPUT',
-              entity: c._id,
-              hasSubMenu: !!(c.children && c.children.length > 0),
-              source: c._id,
-              label: c.name,
-            })),
-          },
-        } as { [key: string]: DataStructure }
+        const modelStructure = {} as { [key: string]: DataStructure }
+        modelStructure.InputObject = {
+          _id: 'InputObject',
+          name: 'Inputs',
+          fields: components.map(c => ({
+            type: 'INPUT',
+            entity: c._id,
+            hasSubMenu: !!(c.children && c.children.length > 0),
+            source: c._id,
+            label: c.name,
+          })),
+        }
+
         const search = (c: Component) => {
           modelStructure[c._id] = {
             _id: c._id,
@@ -251,8 +293,50 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
           }
         }
         components.forEach(c => search(c))
-        console.log(`structure`)
-        console.log(structure)
+
+        structure.push({
+          type: 'ASSET',
+          label: 'Assets',
+          hasSubMenu: true,
+          entity: 'AssetObject',
+          source: 'AssetObject',
+        })
+        modelStructure.AssetObject = {
+          _id: 'AssetObject',
+          name: 'Assets',
+          fields: Object.keys(folderData || {}).map(subKey => ({
+            type: 'ASSET',
+            entity: subKey,
+            hasSubMenu: true,
+            source: subKey,
+            label: subKey,
+          })),
+        }
+
+        const flattenAssets = (
+          folderName: string,
+          folderStructure: FolderStructure
+        ) => {
+          modelStructure[folderName] = {
+            _id: folderName,
+            name: folderName,
+            fields: [],
+          }
+          Object.keys(folderStructure[folderName] || {}).forEach(subKey => {
+            const currentFolder = folderStructure[folderName]!
+            modelStructure[folderName].fields.push({
+              type: 'ASSET',
+              label: subKey,
+              source: subKey,
+              entity: subKey,
+              hasSubMenu: !!currentFolder[subKey],
+            })
+            if (currentFolder) {
+              flattenAssets(subKey, currentFolder)
+            }
+          })
+        }
+        Object.keys(folderData).forEach(key => flattenAssets(key, folderData))
 
         projectData?.getProject.appConfig.apiConfig.models.forEach(item => {
           modelStructure[item._id] = {
@@ -300,6 +384,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       projectData,
       packageData,
       components,
+      folderData,
     ])
     return (
       <EditorWrapper

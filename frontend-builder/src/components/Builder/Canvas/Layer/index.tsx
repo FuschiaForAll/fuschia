@@ -265,6 +265,7 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
 function convertDraftJSBindings(value: any) {
   try {
     if (value.blocks) {
+      debugger
       return value.blocks.map((block: any) => block.text).join('\n')
     }
   } catch {}

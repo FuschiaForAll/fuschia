@@ -22,7 +22,6 @@ export function AuthConfig({ projectId }: { projectId: string }) {
   function onChangeHandler(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
-    debugger
     const field = e.target.name
     let value
     if (e.target.type === 'checkbox') {

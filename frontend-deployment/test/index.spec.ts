@@ -5,14 +5,6 @@ describe('Frontend builder tests', () => {
   const { convertImports, convertHooks } = require('../src/utils')
   describe('convertImports', () => {
     it('should parse single default import properly', () => {
-      console.log('CONVERT_IMPORTS')
-      console.log(
-        convertImports({
-          react: {
-            React: 'default',
-          },
-        })
-      )
       assert.strictEqual(
         convertImports({
           react: {

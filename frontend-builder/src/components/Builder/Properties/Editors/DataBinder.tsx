@@ -13,7 +13,13 @@ export interface DataStructure {
 }
 
 export interface MenuStructure {
-  type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+  type:
+    | 'LOCAL_DATA'
+    | 'SERVER_DATA'
+    | 'INPUT'
+    | 'PRIMITIVE'
+    | 'ASSET'
+    | 'VARIABLE'
   source: ComponentId
   entity: EntityId
   label: string
@@ -28,7 +34,13 @@ interface DataBinderProps {
     entityType: string,
     entityPath: string,
     labelPath: string,
-    type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+    type:
+      | 'LOCAL_DATA'
+      | 'SERVER_DATA'
+      | 'INPUT'
+      | 'PRIMITIVE'
+      | 'ASSET'
+      | 'VARIABLE'
   ) => void
 }
 
@@ -62,7 +74,13 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
     entityType: string,
     entityPath: string,
     labelPath: string,
-    type: 'LOCAL_DATA' | 'SERVER_DATA' | 'INPUT' | 'PRIMITIVE'
+    type:
+      | 'LOCAL_DATA'
+      | 'SERVER_DATA'
+      | 'INPUT'
+      | 'PRIMITIVE'
+      | 'ASSET'
+      | 'VARIABLE'
   ) => {
     props.onSelect(entityType, `${entityPath}`, `${labelPath}`, type)
     handleClose()

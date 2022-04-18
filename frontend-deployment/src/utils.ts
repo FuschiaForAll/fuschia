@@ -47,12 +47,9 @@ function findNestedComponent(
   project: Component[]
 ): Component | undefined {
   for (const p of project) {
-    console.log(`looking at ${p._id.toString()}`)
     if (p._id.toString() === componentId) {
-      console.log(`found ${p}`)
       return p
     } else if (p.children) {
-      console.log(`searching children ${componentId}`)
       const nested = findNestedComponent(componentId, p.children)
       if (nested) {
         return nested
@@ -118,27 +115,19 @@ export const draftJsStuff = (
                 range.key
               ].data.entityPath.split('.') as string[]
               const component = findNestedComponent(entityParts[0], project)
-              console.log(`component`)
-              console.log(component)
               if (component) {
                 // we are targeting a component, lets find it's type
                 const componentPackage = packages.find(
                   p => p.packageName === component.package
                 )
-                console.log(`componentPackage`)
-                console.log(componentPackage)
                 if (componentPackage) {
                   const componentElement = componentPackage.components.find(
                     c => c.name === component.type
                   )
-                  console.log(`componentElement`)
-                  console.log(componentElement)
 
                   if (componentElement) {
                     if (componentElement.schema.type === 'array') {
                       // we need to find the field name targeted and prefix with item
-                      console.log(`component.fetched`)
-                      console.log(component.fetched)
 
                       if (component.fetched) {
                         component.fetched.forEach(fetched => {

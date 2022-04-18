@@ -154,7 +154,6 @@ const ImageLibrary = function ImageLibrary() {
 
   useEffect(() => {
     if (FilesData) {
-      debugger
       const keyArray = FilesData.listAssetFolder.map(file => file.key)
       setKeys(keyArray)
       setFolderData(buildNestedStructure(keyArray))
@@ -295,7 +294,6 @@ const ImageLibrary = function ImageLibrary() {
                                 0,
                                 idx + 2
                               )
-                              debugger
                               navigate(
                                 `/projects/${projectId}/${newPath.join('/')}`
                               )
@@ -332,7 +330,6 @@ const ImageLibrary = function ImageLibrary() {
                         path.pop()
                         path.pop()
                         path.pop()
-                        debugger
                         navigate(
                           `/projects/${projectId}/builder/asset-library/${path.join(
                             '/'
@@ -358,13 +355,11 @@ const ImageLibrary = function ImageLibrary() {
                       <ListItem
                         button
                         onClick={() => {
-                          debugger
                           const path = JSON.parse(
                             JSON.stringify(currentFolderPath)
                           )
                           path[path.length - 1] = title
                           if (isFolder) {
-                            debugger
                             navigate(`/projects/${projectId}/${path.join('/')}`)
                           } else {
                             window.open(
@@ -491,7 +486,6 @@ const ImageLibrary = function ImageLibrary() {
               </Button>
               <Button
                 onClick={() => {
-                  debugger
                   const folderName = [
                     ...currentFolderPath.slice(2, -1),
                     newFolderName,
