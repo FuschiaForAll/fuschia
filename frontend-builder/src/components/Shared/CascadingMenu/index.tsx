@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
 
-const NavMenu = styled.ul`
+export const NavMenu = styled.ul`
   list-style-type: none;
   border-radius: 0.5rem;
   z-index: 500;

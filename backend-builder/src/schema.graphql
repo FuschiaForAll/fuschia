@@ -309,7 +309,7 @@ type Mutation {
   updateAssetMetaData(projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
-  updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component!
+  updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component
   updateEntityModel: Boolean
   updateImageMetaData(projectId: ObjectId!): Boolean!
   updateMe(userInput: UserInput!): User!

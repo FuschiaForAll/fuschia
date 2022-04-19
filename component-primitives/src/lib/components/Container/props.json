@@ -14,13 +14,13 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 150
+          "type": "string",
+          "default": "150px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 150
+          "type": "string",
+          "default": "150px"
         },
         "backgroundColor": {
           "title": "Background Color",
@@ -30,8 +30,58 @@
         },
         "borderRadius": {
           "title": "Border Radius",
-          "type": "number",
-          "default": 5
+          "type": "string",
+          "default": "5px"
+        },
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "marginLeft": {
+          "title": "Margin left",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginRight": {
+          "title": "Margin right",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginTop": {
+          "title": "Margin top",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginBottm": {
+          "title": "Margin bottom",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingLeft": {
+          "title": "Padding left",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingRight": {
+          "title": "Padding right",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingTop": {
+          "title": "Padding top",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingBottm": {
+          "title": "Padding bottom",
+          "type": "string",
+          "default": "5 px"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string",
+          "default": "1"
         }
       }
     }

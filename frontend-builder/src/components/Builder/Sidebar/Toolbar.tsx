@@ -143,11 +143,7 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
 }
 
 const Toolbar: React.FC = function Toolbar() {
-  const { data: packageData } = useGetPackagesQuery({
-    context: {
-      clientName: 'package-manager',
-    },
-  })
+  const { data: packageData } = useGetPackagesQuery()
   return (
     <Paper elevation={12} sx={cardStyles} id="toolbar">
       {packageData &&

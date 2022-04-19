@@ -591,7 +591,7 @@ export class ComponentResolver {
     return true;
   }
 
-  @Mutation((returns) => Component)
+  @Mutation((returns) => Component, { nullable: true })
   async updateComponentProps(
     @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
     @Arg("props", (type) => Object) props: Object,
@@ -613,6 +613,7 @@ export class ComponentResolver {
         _ids: [componentId],
         components: [updatedDocument],
       });
+      return updatedDocument;
     }
   }
 

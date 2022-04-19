@@ -4,7 +4,9 @@ import Paper from '@mui/material/Paper'
 import Editor from './Editors/Editor'
 import {
   GetProjectDocument,
+  PackageComponentType,
   useGetComponentQuery,
+  useGetPackagesQuery,
   useGetProjectQuery,
   useUpdateAppConfigMutation,
 } from '../../../generated/graphql'
@@ -13,7 +15,11 @@ import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
-import { useSelection, useUpdateComponent } from '../../../utils/hooks'
+import {
+  useInsertComponent,
+  useSelection,
+  useUpdateComponent,
+} from '../../../utils/hooks'
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { gql } from '@apollo/client'
 import { variableNameRegex } from '../../../utils/regexp'
@@ -22,6 +28,7 @@ import {
   useProjectComponents,
   StructuredComponent,
 } from '../../../utils/hooks/useProjectComponents'
+import { NavMenu } from '../../Shared/CascadingMenu'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -52,10 +59,81 @@ const cardStyles = {
   overflowX: 'hidden',
 }
 
+function AddMenu({ parentId }: { parentId?: string }) {
+  const { data: packageData } = useGetPackagesQuery()
+  const createComponent = useInsertComponent()
+
+  return (
+    <NavMenu>
+      {packageData &&
+        packageData.getPackages.flatMap(_package => {
+          return _package.components.map(component => (
+            <li
+              onClick={() => {
+                createComponent({
+                  name: component.name,
+                  componentType: component.componentType,
+                  package: _package.packageName,
+                  type: component.name,
+                  parent: parentId,
+                  props: component.defaultValue,
+                  x: 0,
+                  y: 0,
+                })
+              }}
+            >
+              {component.name}
+            </li>
+          ))
+        })}
+    </NavMenu>
+  )
+}
+
+function LayerChildren({
+  childComponents,
+}: {
+  childComponents: StructuredComponent[]
+}) {
+  const { setSelection } = useSelection()
+  const [addMenuOpened, setAddMenuOpened] = useState(false)
+  return (
+    <ul>
+      {childComponents.map(_c => (
+        <li
+          onClick={e => {
+            e.stopPropagation()
+            setSelection([_c._id])
+          }}
+        >
+          <span>
+            {_c.name}
+            {_c.componentType !== PackageComponentType.Element ? (
+              <button
+                onClick={e => {
+                  e.stopPropagation()
+                  setAddMenuOpened(o => !o)
+                }}
+              >
+                Add
+              </button>
+            ) : (
+              <></>
+            )}
+          </span>
+          {_c.children && <LayerChildren childComponents={_c.children} />}
+          {addMenuOpened && <AddMenu parentId={_c._id} />}
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 function Layers({ componentId }: { componentId: string }) {
   const { projectId } = useParams<{ projectId: string }>()
   const components = useProjectComponents(projectId!)
   const { setSelection } = useSelection()
+  const [addMenuOpened, setAddMenuOpened] = useState(false)
   // find the component in the structure
   let component: StructuredComponent | undefined = undefined
   components.some(c => {
@@ -80,30 +158,18 @@ function Layers({ componentId }: { componentId: string }) {
     }
     return false
   })
-  const displayChildren = (c: StructuredComponent[]) => {
-    return (
-      <ul>
-        {c.map(_c => (
-          <li
-            onClick={e => {
-              e.stopPropagation()
-              setSelection([_c._id])
-            }}
-          >
-            {_c.name}
-            {_c.children && displayChildren(_c.children)}
-          </li>
-        ))}
-      </ul>
-    )
-  }
+
   return (
     <div>
       {component && (component as StructuredComponent).children ? (
-        displayChildren((component as StructuredComponent).children!)
+        <LayerChildren
+          childComponents={(component as StructuredComponent).children!}
+        />
       ) : (
         <div>No Children</div>
       )}
+      <button onClick={() => setAddMenuOpened(o => !o)}>Add</button>
+      {addMenuOpened && <AddMenu />}
     </div>
   )
 }
@@ -204,7 +270,7 @@ function Properties({
           )
         }}
       />
-      {component.isRootElement && (
+      {component.componentType === PackageComponentType.Screen && (
         <LabeledCheckbox
           label="Welcome Screen?"
           checked={

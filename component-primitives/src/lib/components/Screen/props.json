@@ -39,6 +39,46 @@
           "type": "string",
           "default": "#ffffff",
           "format": "color"
+        },
+        "marginLeft": {
+          "title": "Margin left",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginRight": {
+          "title": "Margin right",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginTop": {
+          "title": "Margin top",
+          "type": "string",
+          "default": "5 px"
+        },
+        "marginBottm": {
+          "title": "Margin bottom",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingLeft": {
+          "title": "Padding left",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingRight": {
+          "title": "Padding right",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingTop": {
+          "title": "Padding top",
+          "type": "string",
+          "default": "5 px"
+        },
+        "paddingBottm": {
+          "title": "Padding bottom",
+          "type": "string",
+          "default": "5 px"
         }
       }
     },

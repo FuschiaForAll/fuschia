@@ -37,6 +37,7 @@ interface FrameProps extends InlineProps {
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
 
 const FrameWrapper = styled.div<{ name?: string }>`
+  position: absolute;
   &:before {
     content: '${p => p.name}';
     position: absolute;
@@ -45,6 +46,47 @@ const FrameWrapper = styled.div<{ name?: string }>`
   }
   pointer-events: all;
 `
+
+const ContainerLayer: React.FC<FrameProps> = ({
+  layer,
+  children,
+  selected,
+  onClick,
+}) => {
+  const { x, y, props } = layer
+  const [updateComponent] = useUpdateComponentMutation()
+  const { ref } = useDragDrop(layer._id, {
+    draggable: {
+      onDragEnd: id => {},
+    },
+    resizable: {
+      onResizeEnd: (id, { width, height }, { x, y }) => {
+        updateComponent({
+          variables: {
+            componentId: id,
+            componentInput: {
+              x,
+              y,
+              props: {
+                ...props,
+                style: { width, height },
+              },
+            },
+          },
+        })
+      },
+    },
+    droppable: {
+      dropClass: '#droppable',
+      onDrop: () => {},
+    },
+  })
+  return (
+    <div onClick={onClick} id={layer._id} ref={ref}>
+      {children}
+    </div>
+  )
+}
 
 const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   layer,
@@ -84,100 +126,19 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   const styles: React.CSSProperties = {
     width: props?.style?.width || 50,
     height: props?.style?.height || 50,
+    pointerEvents: 'all',
     left: x || 0,
     top: y || 0,
-    pointerEvents: 'all',
-    position: 'absolute',
     zIndex: 10,
   }
 
   if (selected) {
     styles.boxShadow = BOX_SHADOW
   }
-  const classNames = ['droppable']
+  const classNames = ['droppable', 'root-element']
   switch (layer.componentType) {
     case PackageComponentType.Stack:
       styles.border = '#ccc dashed 1px'
-      classNames.push('root-element')
-      break
-    case PackageComponentType.Screen:
-      styles.border = '#ccc solid 1px'
-      break
-  }
-  return (
-    <FrameWrapper
-      name={
-        layer.componentType === PackageComponentType.Screen ||
-        layer.componentType === PackageComponentType.Stack
-          ? layer.name
-          : ''
-      }
-      id={layer._id}
-      className={classNames.join(' ')}
-      style={styles}
-      ref={ref}
-      onClick={onClick}
-      data-package={layer.package}
-      data-type={layer.type}
-      data-parentid={layer.parentId}
-    >
-      {children}
-    </FrameWrapper>
-  )
-}
-
-const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
-  layer,
-  children,
-  selected,
-  onClick,
-}) {
-  const { x, y, props } = layer
-  const [updateComponent] = useUpdateComponentMutation()
-  const { ref } = useDragDrop(layer._id, {
-    draggable: {
-      onDragEnd: id => {},
-    },
-    resizable: {
-      onResizeEnd: (id, { width, height }, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-              props: {
-                ...props,
-                style: { width, height },
-              },
-            },
-          },
-        })
-      },
-    },
-    droppable: {
-      dropClass: '#droppable',
-      onDrop: () => {},
-    },
-  })
-
-  const styles: React.CSSProperties = {
-    width: props?.style?.width || 50,
-    height: props?.style?.height || 50,
-    left: x || 0,
-    top: y || 0,
-    pointerEvents: 'all',
-    zIndex: 10,
-  }
-
-  if (selected) {
-    styles.boxShadow = BOX_SHADOW
-  }
-  const classNames = ['droppable']
-  switch (layer.componentType) {
-    case PackageComponentType.Stack:
-      styles.border = '#ccc dashed 1px'
-      classNames.push('root-element')
       break
     case PackageComponentType.Screen:
       styles.border = '#ccc solid 1px'
@@ -263,13 +224,18 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
 }
 
 function convertDraftJSBindings(value: any) {
-  try {
+  if (typeof value === 'object') {
     if (value.blocks) {
-      debugger
+      // draftjs
       return value.blocks.map((block: any) => block.text).join('\n')
     }
-  } catch {}
-  return value
+    return Object.keys(value).reduce((acc, key) => {
+      acc[key] = convertDraftJSBindings(value[key])
+      return acc
+    }, {} as any)
+  } else {
+    return value
+  }
 }
 
 function getComponentSchema(
@@ -314,19 +280,19 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
       WrapperType = StackLayer
       break
     case PackageComponentType.Container:
-      WrapperType = FrameLayer
+      WrapperType = ContainerLayer
       break
     case PackageComponentType.Element:
       WrapperType = InlineLayer
       break
   }
-  const props = { ...layer.props }
-  Object.keys(props).forEach(
-    key => (props[key] = convertDraftJSBindings(props[key]))
-  )
+
+  const convertedProps = convertDraftJSBindings({ ...layer.props })
+  console.log(`convertedProps`)
+  console.log(convertedProps)
   if (layer.data) {
     Object.keys(layer.data).forEach(key => {
-      props[key] = {
+      convertedProps[key] = {
         onChange: (e: any) => {},
       }
     })
@@ -342,7 +308,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
           <PropertyWindow
             elementId={layer._id}
             schema={JSON.parse(JSON.stringify(schema))}
-            properties={JSON.parse(JSON.stringify(props))}
+            properties={JSON.parse(JSON.stringify(convertedProps))}
           />
         </Portal>
       )}
@@ -352,9 +318,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
             [0, 1, 2].map(item => (
               <InlineComponent
                 id={`component=${layer._id}-${item}`}
-                {...props}
+                {...convertedProps}
                 style={{
-                  ...props.style,
+                  ...convertedProps.style,
                   width: '100%',
                   height: '100%',
                   opacity: item ? 0.2 : 1,
@@ -372,11 +338,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
           ) : (
             <InlineComponent
               id={`component=${layer._id}`}
-              {...props}
+              {...convertedProps}
               style={{
-                ...props.style,
-                width: '100%',
-                height: '100%',
+                ...convertedProps.style,
               }}
             >
               {layer.children?.map(child => (
@@ -398,9 +362,9 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
             >
               <InlineComponent
                 id={`component=${layer._id}`}
-                {...props}
+                {...convertedProps}
                 style={{
-                  ...props.style,
+                  ...convertedProps.style,
                   width: '100%',
                   height: '100%',
                 }}
@@ -419,6 +383,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   )
 }
 
+// A layer is a root level object
 const Layer: React.FC<LayerProps> = function Layer({ layer }) {
   const { selection, setSelection } = useSelection()
 
@@ -433,8 +398,15 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
     },
     [selection, setSelection]
   )
+
+  const style = {
+    left: layer.x || 0,
+    top: layer.y || 0,
+  }
   return (
-    <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
+    <FrameWrapper style={style}>
+      <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
+    </FrameWrapper>
   )
 }
 
