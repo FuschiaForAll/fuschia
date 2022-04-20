@@ -6,6 +6,7 @@ import {
   GetProjectDocument,
   PackageComponentType,
   useGetComponentQuery,
+  useGetComponentsQuery,
   useGetPackagesQuery,
   useGetProjectQuery,
   useUpdateAppConfigMutation,
@@ -23,7 +24,6 @@ import {
 import { LabeledCheckbox } from '../../Shared/primitives/LabeledCheckbox'
 import { gql } from '@apollo/client'
 import { variableNameRegex } from '../../../utils/regexp'
-import { DragDropContext, DropResult } from 'react-beautiful-dnd'
 import {
   useProjectComponents,
   StructuredComponent,
@@ -31,6 +31,15 @@ import {
 import { NavMenu } from '../../Shared/CascadingMenu'
 import { FunctionWrapper, ActionWrapper } from './Editors/FunctionEditor'
 import { OutlinedButton } from '../../Shared/primitives/Button'
+import {
+  DragDropContext,
+  DropResult,
+  Droppable,
+  Draggable,
+  DraggableProvided,
+} from 'react-beautiful-dnd'
+import { DragIndicator, Email } from '@mui/icons-material'
+import { LexoRankHelper } from '../../../utils/lexoRankHelper'
 
 const TabHeader = styled.span`
   font-weight: 600;
@@ -108,6 +117,7 @@ function AddMenu({ parentId }: { parentId: string }) {
                   parent: parentId,
                   props: component.defaultPropValue,
                   layout: component.defaultLayoutValue,
+                  layerSort: LexoRankHelper.generateNewLexoRanking(),
                   x: 0,
                   y: 0,
                 })
@@ -122,49 +132,73 @@ function AddMenu({ parentId }: { parentId: string }) {
 }
 
 function LayerChildren({
+  parentId,
   childComponents,
 }: {
+  parentId: string
   childComponents: StructuredComponent[]
 }) {
   const { setSelection } = useSelection()
   const [addMenuOpened, setAddMenuOpened] = useState(false)
   return (
-    <FunctionWrapper>
-      {childComponents.map(_c => (
-        <ActionWrapper
-          onClick={e => {
-            e.stopPropagation()
-            setSelection([_c._id])
-          }}
+    <Droppable droppableId={parentId} type="ACTIONS" direction="vertical">
+      {droppableActionsProvided => (
+        <FunctionWrapper
+          ref={droppableActionsProvided.innerRef}
+          {...droppableActionsProvided.droppableProps}
         >
-          <span>
-            {_c.name}
-            {_c.componentType !== PackageComponentType.Element ? (
-              <OutlinedButton
-                onClick={e => {
-                  e.stopPropagation()
-                  setAddMenuOpened(o => !o)
-                }}
-              >
-                Add
-              </OutlinedButton>
-            ) : (
-              <></>
-            )}
-          </span>
-          {_c.children && _c.children.length > 0 && (
-            <LayerChildren childComponents={_c.children} />
-          )}
-          {addMenuOpened && <AddMenu parentId={_c._id} />}
-        </ActionWrapper>
-      ))}
-    </FunctionWrapper>
+          {childComponents.map((_c, index) => (
+            <Draggable draggableId={_c._id} index={index} key={_c._id}>
+              {(provided: DraggableProvided) => (
+                <ActionWrapper
+                  ref={provided.innerRef}
+                  {...provided.draggableProps}
+                  onClick={e => {
+                    e.stopPropagation()
+                    setSelection([_c._id])
+                  }}
+                >
+                  <div {...provided.dragHandleProps}>
+                    <DragIndicator />
+                  </div>
+                  <span>
+                    {_c.name}
+                    {_c._id}
+                    {_c.layerSort}
+                    {_c.componentType !== PackageComponentType.Element ? (
+                      <OutlinedButton
+                        onClick={e => {
+                          e.stopPropagation()
+                          setAddMenuOpened(o => !o)
+                        }}
+                      >
+                        Add
+                      </OutlinedButton>
+                    ) : (
+                      <></>
+                    )}
+                  </span>
+                  {_c.children && _c.children.length > 0 && (
+                    <LayerChildren
+                      parentId={_c._id}
+                      childComponents={_c.children}
+                    />
+                  )}
+                  {addMenuOpened && <AddMenu parentId={_c._id} />}
+                </ActionWrapper>
+              )}
+            </Draggable>
+          ))}
+          {droppableActionsProvided.placeholder}
+        </FunctionWrapper>
+      )}
+    </Droppable>
   )
 }
 
 function Layers({ componentId }: { componentId: string }) {
   const { projectId } = useParams<{ projectId: string }>()
-  const components = useProjectComponents(projectId!)
+  const { structuredComponents: components } = useProjectComponents()
   const { setSelection } = useSelection()
   const [addMenuOpened, setAddMenuOpened] = useState(false)
   // find the component in the structure
@@ -196,7 +230,10 @@ function Layers({ componentId }: { componentId: string }) {
     return (
       <div>
         {structuredComponent.children ? (
-          <LayerChildren childComponents={structuredComponent.children!} />
+          <LayerChildren
+            parentId={structuredComponent._id}
+            childComponents={structuredComponent.children!}
+          />
         ) : (
           <div>No Children</div>
         )}
@@ -228,6 +265,11 @@ function Properties({
       projectId,
     },
   })
+  const { data: componentData } = useGetComponentsQuery({
+    variables: {
+      projectId,
+    },
+  })
   const [updateAppConfig] = useUpdateAppConfigMutation({
     refetchQueries: [
       {
@@ -245,6 +287,43 @@ function Properties({
       return schema.definitions[name.substring('#/definitions/'.length)]
     }
     return undefined
+  }
+
+  function handleLayerDragEnd(e: DropResult) {
+    if (!componentData?.getComponents) {
+      return
+    }
+    const { destination, source, type } = e
+    if (!destination) {
+      return
+    }
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return
+    }
+    if (source.droppableId === destination.droppableId) {
+      const siblings = componentData.getComponents.filter(
+        c => c.parent === destination.droppableId
+      )
+      const sortOrder = LexoRankHelper.sortOrderAfterReorder(
+        siblings,
+        source.index,
+        destination.index
+      )
+      updateComponent(
+        e.draggableId,
+        {
+          layerSort: sortOrder,
+        },
+        {
+          // TODO, this is not right
+          layerSort: sortOrder,
+        }
+      )
+      console.log(sortOrder)
+    }
   }
 
   return (
@@ -272,9 +351,9 @@ function Properties({
           }
         }}
       />
-      {(component.componetType === PackageComponentType.Screen ||
-        component.componetType === PackageComponentType.Stack) && (
-        <>
+      {(component.componentType === PackageComponentType.Screen ||
+        component.componentType === PackageComponentType.Stack) && (
+        <div style={{ display: 'grid', gap: '1em', gridAutoFlow: 'column' }}>
           <LabeledTextInput
             label="x"
             value={component.x}
@@ -309,7 +388,7 @@ function Properties({
               )
             }}
           />
-        </>
+        </div>
       )}
       {component.componentType === PackageComponentType.Screen && (
         <LabeledCheckbox
@@ -424,7 +503,9 @@ function Properties({
       </TabPanel>
 
       <TabPanel value={value} index={4}>
-        <Layers componentId={elementId} />
+        <DragDropContext onDragEnd={handleLayerDragEnd}>
+          <Layers componentId={elementId} />
+        </DragDropContext>
       </TabPanel>
     </>
   )
@@ -444,7 +525,6 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
       componentId: props.elementId,
     },
   })
-  function handleDragEnd(e: DropResult) {}
 
   if (componentData && componentData.getComponent) {
     return (
@@ -453,18 +533,16 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
         onWheel={e => e.stopPropagation()}
         onKeyDown={e => e.stopPropagation()}
       >
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Inner>
-            <Paper elevation={12} sx={cardStyles}>
-              <span>{props.schema.title}</span>
-              <Properties
-                component={componentData.getComponent}
-                elementId={props.elementId}
-                schema={props.schema}
-              />
-            </Paper>
-          </Inner>
-        </DragDropContext>
+        <Inner>
+          <Paper elevation={12} sx={cardStyles}>
+            <span>{props.schema.title}</span>
+            <Properties
+              component={componentData.getComponent}
+              elementId={props.elementId}
+              schema={props.schema}
+            />
+          </Paper>
+        </Inner>
       </Wrapper>
     )
   }

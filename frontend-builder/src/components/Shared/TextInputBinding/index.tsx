@@ -193,7 +193,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         componentId,
       },
     })
-    const components = useProjectComponents(projectId!)
+    const { structuredComponents: components } = useProjectComponents()
     const { data: packageData } = useGetPackagesQuery()
     const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
     const extractModelName = useCallback(

@@ -1,5 +1,11 @@
 import { RawDraftContentState } from 'draft-js'
-import { useEffect, useState } from 'react'
+import {
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useEffect,
+  useState,
+} from 'react'
 import {
   Component,
   OnComponentChangeDocument,
@@ -36,12 +42,21 @@ export interface StructuredComponent {
       value: RawDraftContentState
     }>
   }> | null
-  data?: any | null
+  layerSort: string
 }
 
-export const useProjectComponents = (
-  projectId: string
-): StructuredComponent[] => {
+interface IProjectComponentContext {
+  structuredComponents: StructuredComponent[]
+}
+
+export const ProjectComponentContext = createContext<IProjectComponentContext>({
+  structuredComponents: [],
+})
+
+export const ProjectComponentProvider = ({
+  projectId,
+  children,
+}: PropsWithChildren<{ projectId: string }>) => {
   const [structuredComponent, setStructuredComponent] = useState<
     StructuredComponent[]
   >([])
@@ -66,14 +81,18 @@ export const useProjectComponents = (
           return {
             ...remappedComponent,
             // @ts-ignore
-            children: findChildren.map(child => recursiveChildren(child)),
+            children: findChildren
+              .map(child => recursiveChildren(child))
+              .sort((a, b) => a.layerSort.localeCompare(b.layerSort)),
           }
         }
         const findChildren = components.filter(c => c.parent === root._id)
         return {
           ...root,
           // @ts-ignore
-          children: findChildren.map(child => recursiveChildren(child)),
+          children: findChildren
+            .map(child => recursiveChildren(child))
+            .sort((a, b) => a.layerSort.localeCompare(b.layerSort)),
         }
       }) as StructuredComponent[]
       setStructuredComponent(remappedEntities)
@@ -121,5 +140,17 @@ export const useProjectComponents = (
       },
     })
   }, [projectId, subscribeToMore])
-  return structuredComponent
+  return (
+    <ProjectComponentContext.Provider
+      value={{
+        structuredComponents: structuredComponent,
+      }}
+    >
+      {children}
+    </ProjectComponentContext.Provider>
+  )
+}
+
+export const useProjectComponents = () => {
+  return useContext(ProjectComponentContext)
 }

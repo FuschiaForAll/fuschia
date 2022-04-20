@@ -112,6 +112,7 @@ export type NumberSchema = CommonSchema & {
   enumTitles?: string[]
   format?: 'select' | 'radiobox'
   step?: number | 'any'
+  dataBound: boolean
 }
 
 export type StringSchema = CommonSchema & {
@@ -143,11 +144,13 @@ export type StringSchema = CommonSchema & {
   pattern?: string
   enumTitles?: string[]
   step?: number | 'any'
+  dataBound: boolean
 }
 
 export type BooleanSchema = CommonSchema & {
   type: 'boolean'
   format?: 'checkbox' | 'select'
+  dataBound: boolean
 }
 
 export type NullSchema = CommonSchema & {

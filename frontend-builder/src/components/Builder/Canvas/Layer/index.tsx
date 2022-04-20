@@ -12,7 +12,7 @@ import {
   GetPackagesQuery,
   useGetPackagesQuery,
 } from '../../../../generated/graphql'
-import { Schema } from '@fuchsia/types'
+import { ArraySchema, ObjectSchema, Schema } from '@fuchsia/types'
 import Portal from '../../../Shared/Portal'
 import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
 
@@ -294,18 +294,58 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
       break
   }
 
-  const convertedProps = convertDraftJSBindings({ ...layer.props })
-  if (layer.data) {
-    Object.keys(layer.data).forEach(key => {
-      convertedProps[key] = {
-        onChange: (e: any) => {},
-      }
-    })
-  }
   if (!packageData?.getPackages) {
     return <div>loading...</div>
   }
-  const schema = getComponentSchema(packageData, layer)
+  const schema = getComponentSchema(packageData, layer) as
+    | ObjectSchema
+    | ArraySchema
+
+  const convertedProps = convertDraftJSBindings({ ...layer.props })
+  // find all data items
+  const findDataBound = (schema: Schema, properties: any, keys: string[]) => {
+    switch (schema.type) {
+      case 'object':
+        if (!properties) {
+          return
+        }
+        Object.keys(schema.properties).forEach(key => {
+          findDataBound(schema.properties[key], properties[key], [...keys, key])
+        })
+        break
+      case 'string':
+      case 'number':
+      case 'boolean':
+        if (schema.dataBound) {
+          // update the property
+          console.log('FOUND DATABOUND ITEM')
+          console.log(keys)
+          console.log(schema)
+          let root = convertedProps
+          keys.forEach(key => {
+            if (!convertedProps[key]) {
+              convertedProps[key] = {}
+            }
+            root = convertedProps[key]
+          })
+          root.value = 'here'
+          console.log(root)
+          console.log(convertedProps)
+        }
+        break
+    }
+  }
+  Object.keys(schema.properties).forEach(key =>
+    findDataBound(schema.properties[key], convertedProps[key], [key])
+  )
+  // if (layer.data) {
+  //   Object.keys(layer.data).forEach(key => {
+  //     convertedProps[key] = {
+  //       onChange: (e: any) => {},
+  //     }
+  //   })
+  // }
+
   return (
     <>
       {selected && (
@@ -331,13 +371,15 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
                   opacity: item ? 0.2 : 1,
                 }}
               >
-                {layer.children?.map(child => (
-                  <LayerSub
-                    layer={child}
-                    selection={selection}
-                    onSelect={onSelect}
-                  />
-                ))}
+                {layer.children
+                  ?.sort((a, b) => a.layerSort.localeCompare(b.layerSort))
+                  .map(child => (
+                    <LayerSub
+                      layer={child}
+                      selection={selection}
+                      onSelect={onSelect}
+                    />
+                  ))}
               </InlineComponent>
             ))
           ) : (

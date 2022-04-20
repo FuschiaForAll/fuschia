@@ -36,6 +36,7 @@ export function Container(props) {
         <ImageBackground
           source={style?.backgroundImage?.source}
           resizeMode={style?.backgroundImage?.resizeMode}
+          style={style?.backgroundImage?.style}
         />
       )}
       {children}

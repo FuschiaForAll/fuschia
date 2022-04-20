@@ -25,6 +25,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "graphql": "^15.0.0",
     "interactjs": "^1.10.11",
+    "lexorank": "^1.0.4",
     "live-plugin-manager": "^0.17.1",
     "path-browserify": "^1.0.1",
     "prettier": "^2.5.1",

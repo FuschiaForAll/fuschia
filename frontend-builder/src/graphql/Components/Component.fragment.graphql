@@ -5,6 +5,7 @@ fragment ComponentFragment on Component {
   name
   x
   y
+  layerSort
   componentType
   requiresAuth
   parameters {

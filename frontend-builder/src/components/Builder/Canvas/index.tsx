@@ -6,7 +6,10 @@ import Layer from './Layer'
 import KeyboardEvents from './KeyboardEvents'
 import { scaleFactorVar } from '../../../apolloClient'
 import { useScale } from '../../../utils/hooks/useScale'
-import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+import {
+  ProjectComponentProvider,
+  useProjectComponents,
+} from '../../../utils/hooks/useProjectComponents'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -40,7 +43,7 @@ const Canvas: React.FC = function Canvas() {
   const { zoomFactor } = useScale()
   const { projectId } = useParams()
   const objectCollectionRef = useRef<HTMLDivElement>(null)
-  const components = useProjectComponents(projectId!)
+  const { structuredComponents: components } = useProjectComponents()
   const { setSelection } = useSelection()
   const { ref } = useDragDrop('main-canvas', {
     droppable: {
@@ -111,6 +114,9 @@ const Canvas: React.FC = function Canvas() {
   }, [])
   if (!components) {
     return <div>Loading...</div>
+  }
+  if (!projectId) {
+    return null
   }
   return (
     <Wrapper

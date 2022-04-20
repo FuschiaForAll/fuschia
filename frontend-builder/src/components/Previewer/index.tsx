@@ -276,17 +276,17 @@ function Viewer(props: {
       </div>
     )
   } else {
-    if (props.layer.data) {
-      Object.keys(props.layer.data).forEach(key => {
-        componentProperties[key] = {
-          // @ts-ignore
-          value: props.inputState[`${props.layer?._id}+${key}`] || '',
-          onChange: (e: any) => {
-            props.onInputChange(`${props.layer?._id}+${key}`, e)
-          },
-        }
-      })
-    }
+    // if (props.layer.data) {
+    //   Object.keys(props.layer.data).forEach(key => {
+    //     componentProperties[key] = {
+    //       // @ts-ignore
+    //       value: props.inputState[`${props.layer?._id}+${key}`] || '',
+    //       onChange: (e: any) => {
+    //         props.onInputChange(`${props.layer?._id}+${key}`, e)
+    //       },
+    //     }
+    //   })
+    // }
     // TODO: this must be dynamic based on schema
     if (componentProperties.onPress) {
       componentProperties.onPressActions = componentProperties.onPress
@@ -349,7 +349,7 @@ const Previewer: React.FC = function Previewer() {
       projectId,
     },
   })
-  const components = useProjectComponents(projectId!)
+  const { structuredComponents: components } = useProjectComponents()
   const { data: PreviewerData } = useGetPreviewerDataQuery({
     variables: {
       projectId,

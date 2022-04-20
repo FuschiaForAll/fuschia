@@ -8,6 +8,7 @@ import {
 import * as MaterialIcons from '@mui/icons-material'
 import { useDragDrop } from '../../../utils/hooks'
 import { StructuredComponent } from '../../../utils/hooks/useProjectComponents'
+import { LexoRankHelper } from '../../../utils/lexoRankHelper'
 interface ToolProps {
   defaultLayer: StructuredComponent
 }
@@ -64,15 +65,15 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
   const props = { ...layer.props }
   // @ts-ignore
   const InlineComponent = window[layer.package][layer.type]
-  if (layer.data) {
-    if (layer.data) {
-      Object.keys(layer.data).forEach(key => {
-        props[key] = {
-          onChange: (e: any) => {},
-        }
-      })
-    }
-  }
+  // if (layer.data) {
+  //   if (layer.data) {
+  //     Object.keys(layer.data).forEach(key => {
+  //       props[key] = {
+  //         onChange: (e: any) => {},
+  //       }
+  //     })
+  //   }
+  // }
   return (
     <div
       className={`droppable ${
@@ -160,7 +161,7 @@ const Toolbar: React.FC = function Toolbar() {
                   type: component.name,
                   props: component.defaultPropValue,
                   layout: component.defaultLayoutValue,
-                  data: component.schema.data,
+                  layerSort: LexoRankHelper.generateNewLexoRanking(),
                 }}
               >
                 {/* @ts-ignore */}

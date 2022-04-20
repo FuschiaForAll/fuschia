@@ -25,7 +25,13 @@ import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
 import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
-import { Droppable, Draggable, DraggableProvided } from 'react-beautiful-dnd'
+import {
+  Droppable,
+  Draggable,
+  DraggableProvided,
+  DragDropContext,
+  DropResult,
+} from 'react-beautiful-dnd'
 import { DragIndicator, Email } from '@mui/icons-material'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
@@ -937,7 +943,7 @@ const NavigateEditor = ({
   onUpdate: (newValue: NavigateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const components = useProjectComponents(projectId!)
+  const { structuredComponents: components } = useProjectComponents()
   const [navTargets, setNagTargets] = useState<
     Array<{
       name: string
@@ -1228,13 +1234,17 @@ function ConfigureFunction({
 }
 
 const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
+  function handleDragEnd(e: DropResult) {}
+
   return (
-    <ConfigureFunction
-      componentId={props.componentId}
-      value={props.initialValue}
-      title={props.schema.title}
-      updateValue={props.updateValue}
-    />
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <ConfigureFunction
+        componentId={props.componentId}
+        value={props.initialValue}
+        title={props.schema.title}
+        updateValue={props.updateValue}
+      />
+    </DragDropContext>
   )
 }
 

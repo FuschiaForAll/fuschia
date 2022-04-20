@@ -6,6 +6,7 @@ import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
 import { gql, useQuery } from '@apollo/client'
+import { LexoRankHelper } from '../lexoRankHelper'
 
 interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
@@ -266,6 +267,7 @@ export const useDragDrop = (
                     props: jsonLayer.props,
                     layout: jsonLayer.layout,
                     data: jsonLayer.data,
+                    layerSort: LexoRankHelper.generateNewLexoRanking(),
                     x: newX,
                     y: newY,
                   })

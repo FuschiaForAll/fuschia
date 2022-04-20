@@ -25,7 +25,7 @@ import { Component, RequiredParameter } from "./Component.entity";
 import { ComponentInput, RequiredParameterInput } from "./Component.input";
 import * as _ from "lodash";
 import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
-
+import { LexoRank } from "lexorank";
 @ObjectType()
 class ComponentSubscriptionPayload {
   @Field()
@@ -349,12 +349,29 @@ export class ComponentResolver {
     ) {
       throw new ApolloError("Unauthorized");
     }
+    const input = { ...componentInput };
+    // check the lexorank
+    const siblings = await ComponentModel.find({
+      parent: componentInput.parent,
+    }).sort("layerSort");
+    if (siblings) {
+      console.log(siblings);
+      if (siblings.length > 0) {
+        input.layerSort = LexoRank.parse(
+          siblings[siblings.length - 1].layerSort
+        )
+          .genNext()
+          .toString();
+      } else {
+        input.layerSort = LexoRank.middle().toString();
+      }
+    }
     const newcomponent = await ComponentModel.create({
       parameters:
         componentInput.componentType === PackageComponentType.Screen
           ? []
           : undefined,
-      ...componentInput,
+      ...input,
       projectId,
     });
     publish({

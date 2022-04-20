@@ -7,17 +7,23 @@
   "width": 160,
   "height": 35,
   "properties": {
-    "text": {
-      "type": "string",
-      "title": "Text Value",
-      "description": "The value of the text",
-      "dataBound": true
-    },
-    "placeholder": {
-      "type": "string",
-      "title": "Placeholder",
-      "description": "Placeholder text for the input",
-      "default": "Enter..."
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "text": {
+          "type": "string",
+          "title": "Text Value",
+          "description": "The value of the text",
+          "dataBound": true
+        },
+        "placeholder": {
+          "type": "string",
+          "title": "Placeholder",
+          "description": "Placeholder text for the input",
+          "default": "Enter..."
+        }
+      }
     },
     "style": {
       "type": "object",
