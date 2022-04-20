@@ -155,9 +155,6 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         setFolderData(buildNestedStructure(keyArray))
       }
     }, [FilesData])
-    useEffect(() => {
-      console.log(folderData)
-    }, [folderData])
     function insertPlaceholder(label: string, path: any) {
       const currentContent = editorState.getCurrentContent()
       const selection = editorState.getSelection()

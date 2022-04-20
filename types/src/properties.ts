@@ -27,10 +27,51 @@ export type AnySchema = CommonSchema & {
   type: undefined
 }
 
+export type FlexContainerSchema = CommonSchema & {
+  type: 'flexContainer'
+  size: string
+  style: string
+  weight: string
+  textAlign: string
+  textTransform: string
+  lineHeight: string
+}
+
+export type FontSchema = CommonSchema & {
+  type: 'font'
+  size: string
+  style: string
+  weight: string
+  textAlign: string
+  textTransform: string
+  lineHeight: string
+}
+
+export type MarginSchema = CommonSchema & {
+  type: 'margin'
+  marginLeft: string
+  marginRight: string
+  marginTop: string
+  marginBottom: string
+}
+
+export type PaddingSchema = CommonSchema & {
+  type: 'padding'
+  paddingLeft: string
+  paddingRight: string
+  paddingTop: string
+  paddingBottom: string
+}
+
 export type UIComponentSchema = Omit<ObjectSchema, 'type'> & {
   type: 'ui-component'
   isRootElement: boolean
   isContainer: boolean
+}
+
+export type LayoutComponentSchema = Omit<ObjectSchema, 'type'> & {
+  type: 'layout-component'
+  layout: ObjectSchema
 }
 
 export type FunctionSchema = CommonSchema & {
@@ -51,6 +92,7 @@ export type ObjectSchema = CommonSchema & {
 export type ArraySchema = CommonSchema & {
   type: 'array'
   items: Schema
+  properties: { [name: string]: Schema }
   minItems?: number
   uniqueItems?: boolean
   collapsed?: boolean
@@ -122,6 +164,11 @@ export type Schema =
   | AnySchema
   | FunctionSchema
   | UIComponentSchema
+  | PaddingSchema
+  | MarginSchema
+  | LayoutComponentSchema
+  | FontSchema
+  | FlexContainerSchema
 
 export type ValueType =
   | { [name: string]: any }

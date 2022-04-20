@@ -1,5 +1,5 @@
 {
-  "type": "object",
+  "type": "layout-component",
   "title": "Screen",
   "icon": "Crop32",
   "componentType": "Screen",
@@ -16,6 +16,20 @@
           "title": "Page Title",
           "description": "The title for the page",
           "default": "Page 1"
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "title": "Layout",
+      "properties": {
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
         }
       }
     },
@@ -40,53 +54,47 @@
           "default": "#ffffff",
           "format": "color"
         },
-        "marginLeft": {
-          "title": "Margin left",
-          "type": "string",
-          "default": "5 px"
-        },
-        "marginRight": {
-          "title": "Margin right",
-          "type": "string",
-          "default": "5 px"
-        },
-        "marginTop": {
-          "title": "Margin top",
-          "type": "string",
-          "default": "5 px"
-        },
-        "marginBottm": {
-          "title": "Margin bottom",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingLeft": {
-          "title": "Padding left",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingRight": {
-          "title": "Padding right",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingTop": {
-          "title": "Padding top",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingBottm": {
-          "title": "Padding bottom",
-          "type": "string",
-          "default": "5 px"
+        "backgroundImage": {
+          "type": "object",
+          "title": "Background Image",
+          "properties": {
+            "source": {
+              "title": "Image URL",
+              "type": "string"
+            },
+            "resizeMode": {
+              "title": "Resize Mode",
+              "type": "string"
+            },
+            "style": {
+              "type": "object",
+              "title": "Style",
+              "properties": {
+                "justifyContent": {
+                  "title": "Justify Content",
+                  "type": "string"
+                },
+                "flex": {
+                  "title": "Flex",
+                  "type": "number"
+                }
+              }
+            }
+          }
         }
       }
     },
-    "onLoad": {
-      "type": "function",
-      "title": "onLoad",
-      "arguments": [],
-      "returnType": "null"
+    "actions": {
+      "type": "object",
+      "title": "Actions",
+      "properties": {
+        "onLoad": {
+          "type": "function",
+          "title": "onLoad",
+          "arguments": [],
+          "returnType": "null"
+        }
+      }
     }
   }
 }

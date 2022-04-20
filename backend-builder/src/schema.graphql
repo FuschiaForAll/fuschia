@@ -104,6 +104,7 @@ type Component {
   data: JSONObject
   fetched: [DataSource!]
   layerSort: String!
+  layout: JSONObject
   name: String!
   package: String!
   parameters: [RequiredParameter!]
@@ -120,6 +121,7 @@ input ComponentInput {
   data: JSONObject
   fetched: [DataSourceInput!]
   layerSort: String
+  layout: JSONObject
   name: String
   package: String
   parameters: [RequiredParameterInput!]
@@ -309,6 +311,7 @@ type Mutation {
   updateAssetMetaData(projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
+  updateComponentLayout(componentId: ObjectId!, layout: JSONObject!): Component
   updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component
   updateEntityModel: Boolean
   updateImageMetaData(projectId: ObjectId!): Boolean!
@@ -353,7 +356,8 @@ type Package {
 type PackageComponent {
   _id: ObjectId!
   componentType: PackageComponentType!
-  defaultValue: JSONObject
+  defaultLayoutValue: JSONObject
+  defaultPropValue: JSONObject
   icon: String!
   name: String!
   schema: JSONObject!
@@ -361,7 +365,8 @@ type PackageComponent {
 
 input PackageComponentInput {
   componentType: PackageComponentType!
-  defaultValue: JSONObject!
+  defaultLayoutValue: JSONObject
+  defaultPropValue: JSONObject!
   icon: String!
   name: String!
   schema: JSONObject!

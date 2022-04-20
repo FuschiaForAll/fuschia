@@ -617,6 +617,32 @@ export class ComponentResolver {
     }
   }
 
+  @Mutation((returns) => Component, { nullable: true })
+  async updateComponentLayout(
+    @Arg("componentId", (type) => ObjectIdScalar) componentId: ObjectId,
+    @Arg("layout", (type) => Object) layout: Object,
+    @PubSub("COMPONENT_CHANGE")
+    publish: Publisher<ComponentSubscriptionPayload>,
+    @Ctx() ctx: Context
+  ) {
+    console.error(
+      `SECURITY WARNING: Validate that the user has access to add parameters`
+    );
+    const updatedDocument = await ComponentModel.findByIdAndUpdate(
+      componentId,
+      { layout },
+      { returnDocument: "after" }
+    );
+    if (updatedDocument) {
+      publish({
+        type: "UPDATE",
+        _ids: [componentId],
+        components: [updatedDocument],
+      });
+      return updatedDocument;
+    }
+  }
+
   @Subscription((returns) => ComponentSubscriptionPayload, {
     topics: "COMPONENT_CHANGE",
   })

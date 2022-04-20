@@ -2,7 +2,8 @@ fragment PackageComponentFragment on PackageComponent {
   _id
   name
   schema
-  defaultValue
+  defaultPropValue
+  defaultLayoutValue
   icon
   componentType
 }

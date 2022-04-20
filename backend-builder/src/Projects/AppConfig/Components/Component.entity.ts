@@ -109,6 +109,10 @@ export class Component {
 
   @Field((type) => Object, { nullable: true })
   @Property()
+  layout?: Object;
+
+  @Field((type) => Object, { nullable: true })
+  @Property()
   data?: Object;
 
   @Field((type) => ObjectIdScalar, { nullable: true })

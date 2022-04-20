@@ -133,6 +133,7 @@ export type Component = {
   data?: Maybe<Scalars['JSONObject']>;
   fetched?: Maybe<Array<DataSource>>;
   layerSort: Scalars['String'];
+  layout?: Maybe<Scalars['JSONObject']>;
   name: Scalars['String'];
   package: Scalars['String'];
   parameters?: Maybe<Array<RequiredParameter>>;
@@ -149,6 +150,7 @@ export type ComponentInput = {
   data?: InputMaybe<Scalars['JSONObject']>;
   fetched?: InputMaybe<Array<DataSourceInput>>;
   layerSort?: InputMaybe<Scalars['String']>;
+  layout?: InputMaybe<Scalars['JSONObject']>;
   name?: InputMaybe<Scalars['String']>;
   package?: InputMaybe<Scalars['String']>;
   parameters?: InputMaybe<Array<RequiredParameterInput>>;
@@ -344,7 +346,8 @@ export type Mutation = {
   updateAssetMetaData: Scalars['Boolean'];
   updateAuth?: Maybe<Auth>;
   updateComponent: Component;
-  updateComponentProps: Component;
+  updateComponentLayout?: Maybe<Component>;
+  updateComponentProps?: Maybe<Component>;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
   updateImageMetaData: Scalars['Boolean'];
   updateMe: User;
@@ -575,6 +578,12 @@ export type MutationUpdateComponentArgs = {
 };
 
 
+export type MutationUpdateComponentLayoutArgs = {
+  componentId: Scalars['ObjectId'];
+  layout: Scalars['JSONObject'];
+};
+
+
 export type MutationUpdateComponentPropsArgs = {
   componentId: Scalars['ObjectId'];
   props: Scalars['JSONObject'];
@@ -653,7 +662,8 @@ export type PackageComponent = {
   __typename?: 'PackageComponent';
   _id: Scalars['ObjectId'];
   componentType: PackageComponentType;
-  defaultValue?: Maybe<Scalars['JSONObject']>;
+  defaultLayoutValue?: Maybe<Scalars['JSONObject']>;
+  defaultPropValue?: Maybe<Scalars['JSONObject']>;
   icon: Scalars['String'];
   name: Scalars['String'];
   schema: Scalars['JSONObject'];
@@ -661,7 +671,8 @@ export type PackageComponent = {
 
 export type PackageComponentInput = {
   componentType: PackageComponentType;
-  defaultValue: Scalars['JSONObject'];
+  defaultLayoutValue?: InputMaybe<Scalars['JSONObject']>;
+  defaultPropValue: Scalars['JSONObject'];
   icon: Scalars['String'];
   name: Scalars['String'];
   schema: Scalars['JSONObject'];
@@ -1132,7 +1143,7 @@ export type AddParameterMutationVariables = Exact<{
 
 export type AddParameterMutation = { __typename?: 'Mutation', addParameter: boolean };
 
-export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null };
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null };
 
 export type CreateComponentMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1140,7 +1151,7 @@ export type CreateComponentMutationVariables = Exact<{
 }>;
 
 
-export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
 
 export type DeleteComponentsMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1171,7 +1182,7 @@ export type GetComponentQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } | null };
+export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } | null };
 
 export type GetDataContextQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1185,7 +1196,7 @@ export type GetComponentsQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> };
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> };
 
 export type GetEntityModelQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1200,7 +1211,7 @@ export type OnComponentChangeSubscriptionVariables = Exact<{
 }>;
 
 
-export type OnComponentChangeSubscription = { __typename?: 'Subscription', onComponentChange: { __typename?: 'ComponentSubscriptionPayload', type: string, _ids: Array<any>, components: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> } };
+export type OnComponentChangeSubscription = { __typename?: 'Subscription', onComponentChange: { __typename?: 'ComponentSubscriptionPayload', type: string, _ids: Array<any>, components: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> } };
 
 export type RemoveParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1216,7 +1227,7 @@ export type UpdateComponentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
 
 export type UpdateComponentPropsMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1224,7 +1235,7 @@ export type UpdateComponentPropsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
+export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } | null };
 
 export type UpdateParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1376,14 +1387,14 @@ export type GetPackageComponentQueryVariables = Exact<{
 }>;
 
 
-export type GetPackageComponentQuery = { __typename?: 'Query', getPackageComponent?: { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue?: any | null, icon: string, componentType: PackageComponentType } | null };
+export type GetPackageComponentQuery = { __typename?: 'Query', getPackageComponent?: { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultPropValue?: any | null, defaultLayoutValue?: any | null, icon: string, componentType: PackageComponentType } | null };
 
 export type GetPackagesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue?: any | null, icon: string, componentType: PackageComponentType }> }> };
+export type GetPackagesQuery = { __typename?: 'Query', getPackages: Array<{ __typename?: 'Package', _id: any, packageName: string, repositoryUrl: string, version: string, bundle: string, authorId: any, scope: PackageScope, components: Array<{ __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultPropValue?: any | null, defaultLayoutValue?: any | null, icon: string, componentType: PackageComponentType }> }> };
 
-export type PackageComponentFragmentFragment = { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultValue?: any | null, icon: string, componentType: PackageComponentType };
+export type PackageComponentFragmentFragment = { __typename?: 'PackageComponent', _id: any, name: string, schema: any, defaultPropValue?: any | null, defaultLayoutValue?: any | null, icon: string, componentType: PackageComponentType };
 
 export type GetPreviewerDataQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1546,6 +1557,7 @@ export const ComponentFragmentFragmentDoc = gql`
     variables
   }
   props
+  layout
   data
   parent
 }
@@ -1638,7 +1650,8 @@ export const PackageComponentFragmentFragmentDoc = gql`
   _id
   name
   schema
-  defaultValue
+  defaultPropValue
+  defaultLayoutValue
   icon
   componentType
 }

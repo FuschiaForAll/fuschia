@@ -12,8 +12,12 @@ const ObjectEditor = function ObjectEditor(props: ObjectEditorProps) {
     value: ValueType | undefined,
     isValid: boolean
   ) {
-    props.initialValue[property] = value
-    props.updateValue(props.initialValue as any, true)
+    let newValue = {} as any
+    if (props.initialValue) {
+      newValue = { ...props.initialValue }
+    }
+    newValue[property] = value
+    props.updateValue(newValue, true)
   }
   if (!props.schema || !props.schema.properties) {
     return null

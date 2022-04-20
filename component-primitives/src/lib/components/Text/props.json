@@ -7,26 +7,32 @@
   "width": 160,
   "height": 35,
   "properties": {
-    "text": {
-      "type": "string",
-      "title": "Display value",
-      "description": "The value to display",
-      "default": "Lorem Ipsum"
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "text": {
+          "type": "string",
+          "title": "Display value",
+          "description": "The value to display",
+          "default": "Lorem Ipsum"
+        }
+      }
     },
     "style": {
       "type": "object",
-      "title": "Component Styling",
+      "title": "Styles",
       "description": "The style for the component",
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 24
+          "type": "string",
+          "default": "24px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 160
+          "type": "string",
+          "default": "160px"
         },
         "color": {
           "title": "Text Color",
@@ -34,46 +40,34 @@
           "format": "color",
           "default": "#000000"
         },
-        "fontSize": {
-          "title": "Font Size",
-          "type": "number",
-          "default": 12
-        },
-        "fontStyle": {
-          "title": "Font Style",
+        "font": {
+          "title": "Font",
+          "type": "font"
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "title": "Component Layout",
+      "properties": {
+        "display": {
+          "title": "Display",
           "type": "string",
-          "enum": ["normal", "italic"],
-          "default": "normal"
+          "default": "inline"
         },
-        "fontWeight": {
-          "title": "Font Weight",
+        "position": {
+          "title": "Position",
           "type": "string",
-          "enum": [
-            "normal",
-            "bold",
-            "100",
-            "200",
-            "300",
-            "400",
-            "500",
-            "600",
-            "700",
-            "800",
-            "900"
-          ],
-          "default": "normal"
+          "default": "initial"
         },
-        "textAlign": {
-          "title": "Text Align",
-          "type": "string",
-          "enum": ["auto", "left", "right", "center", "justify"],
-          "default": "auto"
+        "alignSelf": {
+          "title": "Align Self",
+          "type": "string"
         },
-        "textTransform": {
-          "title": "Text Transform",
+        "flex": {
+          "title": "Flex",
           "type": "string",
-          "enum": ["none", "uppercase", "lowercase", "capitalize"],
-          "default": "none"
+          "default": "1"
         }
       }
     }

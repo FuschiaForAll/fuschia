@@ -7,11 +7,17 @@
   "width": 160,
   "height": 35,
   "properties": {
-    "source": {
-      "type": "string",
-      "title": "Image URL",
-      "description": "The value to display",
-      "default": "Lorem Ipsum"
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "source": {
+          "type": "string",
+          "title": "Image URL",
+          "description": "The value to display",
+          "default": "Lorem Ipsum"
+        }
+      }
     },
     "style": {
       "type": "object",
@@ -30,11 +36,17 @@
         }
       }
     },
-    "onPress": {
-      "title": "onPress",
-      "type": "function",
-      "arguments": [],
-      "returnType": "null"
+    "actions": {
+      "type": "object",
+      "title": "Actions",
+      "properties": {
+        "onPress": {
+          "title": "onPress",
+          "type": "function",
+          "arguments": [],
+          "returnType": "null"
+        }
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 {
-  "type": "ui-component",
+  "type": "layout-component",
   "title": "Container",
   "icon": "AutoAwesomeMosaic",
   "componentType": "Container",
@@ -22,61 +22,72 @@
           "type": "string",
           "default": "150px"
         },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "string",
+          "default": "5px"
+        },
         "backgroundColor": {
           "title": "Background Color",
           "type": "string",
           "default": "#303030",
           "format": "color"
         },
-        "borderRadius": {
-          "title": "Border Radius",
-          "type": "string",
-          "default": "5px"
-        },
+        "backgroundImage": {
+          "type": "object",
+          "title": "Background Image",
+          "properties": {
+            "source": {
+              "title": "Image URL",
+              "type": "string"
+            },
+            "resizeMode": {
+              "title": "Resize Mode",
+              "type": "string"
+            },
+            "style": {
+              "type": "object",
+              "title": "Style",
+              "properties": {
+                "justifyContent": {
+                  "title": "Justify Content",
+                  "type": "string"
+                },
+                "flex": {
+                  "title": "Flex",
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "layout": {
+      "type": "object",
+      "title": "Component Layout",
+      "properties": {
         "display": {
           "title": "Display",
           "type": "string",
           "default": "flex"
         },
-        "marginLeft": {
-          "title": "Margin left",
+        "position": {
+          "title": "Position",
           "type": "string",
-          "default": "5 px"
+          "default": "initial"
         },
-        "marginRight": {
-          "title": "Margin right",
-          "type": "string",
-          "default": "5 px"
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
         },
-        "marginTop": {
-          "title": "Margin top",
-          "type": "string",
-          "default": "5 px"
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
         },
-        "marginBottm": {
-          "title": "Margin bottom",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingLeft": {
-          "title": "Padding left",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingRight": {
-          "title": "Padding right",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingTop": {
-          "title": "Padding top",
-          "type": "string",
-          "default": "5 px"
-        },
-        "paddingBottm": {
-          "title": "Padding bottom",
-          "type": "string",
-          "default": "5 px"
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
         },
         "flex": {
           "title": "Flex",

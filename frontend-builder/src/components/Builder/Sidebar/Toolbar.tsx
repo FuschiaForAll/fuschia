@@ -158,7 +158,8 @@ const Toolbar: React.FC = function Toolbar() {
                   package: _package.packageName,
                   _id: '',
                   type: component.name,
-                  props: component.defaultValue,
+                  props: component.defaultPropValue,
+                  layout: component.defaultLayoutValue,
                   data: component.schema.data,
                 }}
               >

@@ -12,8 +12,10 @@ function getDefaultProps(schema, acc) {
   if (
     schema.type === "object" ||
     schema.type === "ui-component" ||
+    schema.type === "layout-component" ||
     schema.type === "array"
   ) {
+    console.log(schema);
     return Object.keys(schema.properties).reduce((obj, key) => {
       obj[key] = getDefaultProps(schema.properties[key], { [key]: {} });
       return obj;
@@ -58,7 +60,7 @@ function getPackage() {
   package.components = [];
   package.components = componentProps.map((component) => ({
     schema: component,
-    defaultValue: getDefaultProps(component, {}),
+    defaultPropValue: getDefaultProps(component, {}),
     name: component.title || "",
     icon: component.icon || "",
     componentType: component.componentType,

@@ -10,7 +10,7 @@ import {
   useGetProjectQuery,
   useUpdateAppConfigMutation,
 } from '../../../generated/graphql'
-import { Schema } from '@fuchsia/types'
+import { ObjectSchema, Schema } from '@fuchsia/types'
 import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
@@ -29,6 +29,17 @@ import {
   StructuredComponent,
 } from '../../../utils/hooks/useProjectComponents'
 import { NavMenu } from '../../Shared/CascadingMenu'
+import { FunctionWrapper, ActionWrapper } from './Editors/FunctionEditor'
+import { OutlinedButton } from '../../Shared/primitives/Button'
+
+const TabHeader = styled.span`
+  font-weight: 600;
+  border-width: 2px;
+  border-style: solid;
+  padding: 2px 5px;
+  border-radius: 5px;
+  cursor: pointer;
+`
 
 const Wrapper = styled.div`
   position: fixed;
@@ -59,7 +70,26 @@ const cardStyles = {
   overflowX: 'hidden',
 }
 
-function AddMenu({ parentId }: { parentId?: string }) {
+const HeaderTypes = [
+  {
+    label: 'Properties',
+    value: 'properties',
+  },
+  {
+    label: 'Layout',
+    value: 'layout',
+  },
+  {
+    label: 'Styles',
+    value: 'style',
+  },
+  {
+    label: 'Actions',
+    value: 'actions',
+  },
+]
+
+function AddMenu({ parentId }: { parentId: string }) {
   const { data: packageData } = useGetPackagesQuery()
   const createComponent = useInsertComponent()
 
@@ -76,7 +106,8 @@ function AddMenu({ parentId }: { parentId?: string }) {
                   package: _package.packageName,
                   type: component.name,
                   parent: parentId,
-                  props: component.defaultValue,
+                  props: component.defaultPropValue,
+                  layout: component.defaultLayoutValue,
                   x: 0,
                   y: 0,
                 })
@@ -98,9 +129,9 @@ function LayerChildren({
   const { setSelection } = useSelection()
   const [addMenuOpened, setAddMenuOpened] = useState(false)
   return (
-    <ul>
+    <FunctionWrapper>
       {childComponents.map(_c => (
-        <li
+        <ActionWrapper
           onClick={e => {
             e.stopPropagation()
             setSelection([_c._id])
@@ -109,23 +140,25 @@ function LayerChildren({
           <span>
             {_c.name}
             {_c.componentType !== PackageComponentType.Element ? (
-              <button
+              <OutlinedButton
                 onClick={e => {
                   e.stopPropagation()
                   setAddMenuOpened(o => !o)
                 }}
               >
                 Add
-              </button>
+              </OutlinedButton>
             ) : (
               <></>
             )}
           </span>
-          {_c.children && <LayerChildren childComponents={_c.children} />}
+          {_c.children && _c.children.length > 0 && (
+            <LayerChildren childComponents={_c.children} />
+          )}
           {addMenuOpened && <AddMenu parentId={_c._id} />}
-        </li>
+        </ActionWrapper>
       ))}
-    </ul>
+    </FunctionWrapper>
   )
 }
 
@@ -158,20 +191,23 @@ function Layers({ componentId }: { componentId: string }) {
     }
     return false
   })
-
-  return (
-    <div>
-      {component && (component as StructuredComponent).children ? (
-        <LayerChildren
-          childComponents={(component as StructuredComponent).children!}
-        />
-      ) : (
-        <div>No Children</div>
-      )}
-      <button onClick={() => setAddMenuOpened(o => !o)}>Add</button>
-      {addMenuOpened && <AddMenu />}
-    </div>
-  )
+  if (component) {
+    const structuredComponent = component as StructuredComponent
+    return (
+      <div>
+        {structuredComponent.children ? (
+          <LayerChildren childComponents={structuredComponent.children!} />
+        ) : (
+          <div>No Children</div>
+        )}
+        <OutlinedButton onClick={() => setAddMenuOpened(o => !o)}>
+          Add
+        </OutlinedButton>
+        {addMenuOpened && <AddMenu parentId={structuredComponent._id} />}
+      </div>
+    )
+  }
+  return null
 }
 
 function Properties({
@@ -236,40 +272,45 @@ function Properties({
           }
         }}
       />
-      <LabeledTextInput
-        label="x"
-        value={component.x}
-        onChange={e => {
-          const x = parseInt(e.target.value)
+      {(component.componetType === PackageComponentType.Screen ||
+        component.componetType === PackageComponentType.Stack) && (
+        <>
+          <LabeledTextInput
+            label="x"
+            value={component.x}
+            onChange={e => {
+              const x = parseInt(e.target.value)
 
-          updateComponent(
-            elementId,
-            {
-              x,
-            },
-            {
-              x: component.x,
-            }
-          )
-        }}
-      />
-      <LabeledTextInput
-        label="y"
-        value={component.y}
-        onChange={e => {
-          const y = parseInt(e.target.value)
+              updateComponent(
+                elementId,
+                {
+                  x,
+                },
+                {
+                  x: component.x,
+                }
+              )
+            }}
+          />
+          <LabeledTextInput
+            label="y"
+            value={component.y}
+            onChange={e => {
+              const y = parseInt(e.target.value)
 
-          updateComponent(
-            elementId,
-            {
-              y,
-            },
-            {
-              y: component.y,
-            }
-          )
-        }}
-      />
+              updateComponent(
+                elementId,
+                {
+                  y,
+                },
+                {
+                  y: component.y,
+                }
+              )
+            }}
+          />
+        </>
+      )}
       {component.componentType === PackageComponentType.Screen && (
         <LabeledCheckbox
           label="Welcome Screen?"
@@ -291,74 +332,90 @@ function Properties({
           }}
         />
       )}
-      <div style={{ marginTop: '10px', marginBottom: '10px' }}>
-        <span
-          onClick={() => setValue(0)}
-          style={{
-            fontWeight: 600,
-            color: value === 0 ? 'var(--accent)' : '#808080',
-            borderWidth: '2px',
-            borderStyle: 'solid',
-            padding: '2px 5px',
-            borderRadius: '5px',
-            borderColor: value === 0 ? 'var(--accent)' : 'transparent',
-            cursor: 'pointer',
-          }}
-        >
-          Properties
-        </span>
-        {component.componentType === 'Screen' && (
-          <>
-            <span
-              onClick={() => setValue(1)}
-              style={{
-                fontWeight: 600,
-                color: value === 1 ? 'var(--accent)' : '#808080',
-                borderWidth: '2px',
-                borderStyle: 'solid',
-                padding: '2px 5px',
-                borderRadius: '5px',
-                borderColor: value === 1 ? 'var(--accent)' : 'transparent',
-                cursor: 'pointer',
-              }}
-            >
-              Data
-            </span>
-          </>
-        )}
+      <div
+        style={{
+          marginTop: '10px',
+          marginBottom: '10px',
+          display: 'flex',
+          flexWrap: 'wrap',
+        }}
+      >
+        {HeaderTypes.map((header, index) => {
+          if ((schema as ObjectSchema).properties[header.value]) {
+            return (
+              <TabHeader
+                key={index}
+                onClick={() => setValue(index)}
+                style={{
+                  color: value === index ? 'var(--accent)' : '#808080',
+                  borderColor:
+                    value === index ? 'var(--accent)' : 'transparent',
+                }}
+              >
+                {header.label}
+              </TabHeader>
+            )
+          } else {
+            return null
+          }
+        })}
         {component.componentType !== 'Element' && (
-          <span
-            onClick={() => setValue(2)}
+          <TabHeader
+            onClick={() => setValue(4)}
             style={{
-              fontWeight: 600,
-              color: value === 2 ? 'var(--accent)' : '#808080',
-              borderWidth: '2px',
-              borderStyle: 'solid',
-              padding: '2px 5px',
-              borderRadius: '5px',
-              borderColor: value === 2 ? 'var(--accent)' : 'transparent',
-              cursor: 'pointer',
+              color: value === 4 ? 'var(--accent)' : '#808080',
+              borderColor: value === 4 ? 'var(--accent)' : 'transparent',
             }}
           >
             Layers
-          </span>
+          </TabHeader>
+        )}
+        {component.componentType === 'Screen' && (
+          <>
+            <TabHeader
+              onClick={() => setValue(5)}
+              style={{
+                color: value === 5 ? 'var(--accent)' : '#808080',
+                borderColor: value === 5 ? 'var(--accent)' : 'transparent',
+              }}
+            >
+              Data
+            </TabHeader>
+          </>
         )}
       </div>
-      <TabPanel value={value} index={0}>
-        <Editor
-          componentId={elementId}
-          initialValue={JSON.parse(JSON.stringify(component.props))}
-          updateValue={(value, isValid) => {
-            if (value) {
-              updateComponentProps(elementId, value, component.props)
-            }
-          }}
-          getReference={getReference}
-          required={true}
-          schema={schema}
-        />
-      </TabPanel>
-      <TabPanel value={value} index={1}>
+      {HeaderTypes.map((header, index) => {
+        if ((schema as ObjectSchema).properties[header.value]) {
+          return (
+            <TabPanel value={value} index={index} key={index}>
+              <Editor
+                componentId={elementId}
+                initialValue={JSON.parse(
+                  JSON.stringify(component.props[header.value] || {})
+                )}
+                updateValue={(value, isValid) => {
+                  if (value) {
+                    updateComponentProps(
+                      elementId,
+                      {
+                        ...component.props,
+                        [header.value]: value,
+                      },
+                      component.props
+                    )
+                  }
+                }}
+                getReference={getReference}
+                required={true}
+                schema={(schema as ObjectSchema).properties[header.value]}
+              />
+            </TabPanel>
+          )
+        } else {
+          return null
+        }
+      })}
+      <TabPanel value={value} index={5}>
         <DataSources
           models={projectData?.getProject.appConfig.apiConfig.models || []}
           componentId={elementId}
@@ -366,7 +423,7 @@ function Properties({
         />
       </TabPanel>
 
-      <TabPanel value={value} index={2}>
+      <TabPanel value={value} index={4}>
         <Layers componentId={elementId} />
       </TabPanel>
     </>

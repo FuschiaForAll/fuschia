@@ -50,6 +50,9 @@ export class ComponentInput implements Partial<Component> {
   props?: Object;
 
   @Field((type) => Object, { nullable: true })
+  layout?: Object;
+
+  @Field((type) => Object, { nullable: true })
   data?: Object;
 
   @Field((type) => PackageComponentType, { nullable: true })

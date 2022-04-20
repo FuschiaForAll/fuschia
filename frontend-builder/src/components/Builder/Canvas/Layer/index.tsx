@@ -81,8 +81,14 @@ const ContainerLayer: React.FC<FrameProps> = ({
       onDrop: () => {},
     },
   })
+  const styles: React.CSSProperties = {
+    flex: layer.props?.flex,
+  }
+  if (selected) {
+    styles.boxShadow = BOX_SHADOW
+  }
   return (
-    <div onClick={onClick} id={layer._id} ref={ref}>
+    <div onClick={onClick} id={layer._id} ref={ref} style={styles}>
       {children}
     </div>
   )
@@ -141,6 +147,7 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
       styles.border = '#ccc dashed 1px'
       break
     case PackageComponentType.Screen:
+      styles.contain = 'content'
       styles.border = '#ccc solid 1px'
       break
   }
@@ -288,8 +295,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   }
 
   const convertedProps = convertDraftJSBindings({ ...layer.props })
-  console.log(`convertedProps`)
-  console.log(convertedProps)
   if (layer.data) {
     Object.keys(layer.data).forEach(key => {
       convertedProps[key] = {
@@ -399,14 +404,8 @@ const Layer: React.FC<LayerProps> = function Layer({ layer }) {
     [selection, setSelection]
   )
 
-  const style = {
-    left: layer.x || 0,
-    top: layer.y || 0,
-  }
   return (
-    <FrameWrapper style={style}>
-      <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
-    </FrameWrapper>
+    <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
   )
 }
 

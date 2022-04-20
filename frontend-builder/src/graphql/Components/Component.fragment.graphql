@@ -20,6 +20,7 @@ fragment ComponentFragment on Component {
     variables
   }
   props
+  layout
   data
   parent
 }

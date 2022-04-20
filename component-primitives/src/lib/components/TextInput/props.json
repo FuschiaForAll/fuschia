@@ -7,6 +7,12 @@
   "width": 160,
   "height": 35,
   "properties": {
+    "text": {
+      "type": "string",
+      "title": "Text Value",
+      "description": "The value of the text",
+      "dataBound": true
+    },
     "placeholder": {
       "type": "string",
       "title": "Placeholder",
@@ -20,18 +26,19 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 24
+          "type": "string",
+          "default": "24px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 160
+          "type": "string",
+          "default": "160px"
         },
         "color": {
           "title": "Text Color",
           "type": "string",
-          "format": "color"
+          "format": "color",
+          "default": "#000"
         },
         "borderColor": {
           "title": "Border Color",
@@ -68,8 +75,5 @@
         }
       }
     }
-  },
-  "data": {
-    "text": "string"
   }
 }

@@ -14,7 +14,10 @@ export class PackageComponentInput implements Partial<PackageComponent> {
   schema!: Object;
 
   @Field((type) => Object)
-  defaultValue!: Object;
+  defaultPropValue!: Object;
+
+  @Field((type) => Object, { nullable: true })
+  defaultLayoutValue!: Object;
 
   @Field((type) => PackageComponentType)
   componentType!: PackageComponentType;

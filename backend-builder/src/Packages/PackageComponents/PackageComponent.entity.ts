@@ -23,7 +23,11 @@ export class PackageComponent {
 
   @Field((type) => Object, { nullable: true })
   @Property()
-  defaultValue!: Object;
+  defaultPropValue!: Object;
+
+  @Field((type) => Object, { nullable: true })
+  @Property()
+  defaultLayoutValue!: Object;
 
   @Field()
   @Property({ required: true })

@@ -24,6 +24,7 @@ export interface StructuredComponent {
     _id: string
   }> | null
   props?: { [key: string]: any } | null
+  layout?: { [key: string]: any } | null
   children?: StructuredComponent[]
   parentId?: string
   fetched?: Array<{
@@ -53,9 +54,7 @@ export const useProjectComponents = (
     if (componentData) {
       const components = componentData.getComponents
 
-      const rootElements = components.filter(
-        c => c.componentType === PackageComponentType.Stack
-      )
+      const rootElements = components.filter(c => !c.parent)
       const remappedEntities = rootElements.map(root => {
         const recursiveChildren = (
           component: Component

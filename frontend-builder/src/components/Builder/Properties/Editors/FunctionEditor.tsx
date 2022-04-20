@@ -154,14 +154,14 @@ export type ActionProps =
   | SwitchProps
   | EmailProps
 
-const FunctionWrapper = styled.div`
+export const FunctionWrapper = styled.div`
   background: var(--canvasBg);
   border: 1px dotted var(--text);
   border-radius: 0.5em;
   padding: 0.5em;
 `
 
-const ActionWrapper = styled.div`
+export const ActionWrapper = styled.div`
   &:not(:last-child) {
     border-bottom: dashed 1px black;
     padding-bottom: 0.5em;
