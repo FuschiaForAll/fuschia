@@ -1,17 +1,5 @@
-import React, { useEffect, useState } from 'react'
 import { Props, FlexContainerSchema } from '@fuchsia/types'
-import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
-import { Color, SketchPicker } from 'react-color'
-import Box from '@mui/material/Box'
-import Popper from '@mui/material/Popper'
 import TextInputBinding from '../../../Shared/TextInputBinding'
-import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
-import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft'
-import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter'
-import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight'
-import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify'
-import ToggleButton from '@mui/material/ToggleButton'
-import ToggleButtonGroup from '@mui/material/ToggleButtonGroup'
 
 export type FlexContainerEditorProps = Props<FlexContainerSchema, any>
 

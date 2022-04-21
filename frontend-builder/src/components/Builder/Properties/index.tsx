@@ -38,7 +38,7 @@ import {
   Draggable,
   DraggableProvided,
 } from 'react-beautiful-dnd'
-import { DragIndicator, Email } from '@mui/icons-material'
+import { DragIndicator } from '@mui/icons-material'
 import { LexoRankHelper } from '../../../utils/lexoRankHelper'
 
 const TabHeader = styled.span`
@@ -213,9 +213,7 @@ function LayerChildren({
 }
 
 function Layers({ componentId }: { componentId: string }) {
-  const { projectId } = useParams<{ projectId: string }>()
   const { structuredComponents: components } = useProjectComponents()
-  const { setSelection } = useSelection()
   const [addMenuOpened, setAddMenuOpened] = useState(false)
   // find the component in the structure
   let component: StructuredComponent | undefined = undefined
@@ -310,7 +308,7 @@ function Properties({
     if (!componentData?.getComponents) {
       return
     }
-    const { destination, source, type } = e
+    const { destination, source } = e
     if (!destination) {
       return
     }

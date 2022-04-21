@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import Modal from '@mui/material/Modal'
 import {
-  Badge,
   Button,
   Dialog,
   DialogActions,
@@ -17,15 +16,12 @@ import {
   MenuItem,
   Paper,
   TextField,
-  Typography,
 } from '@mui/material'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import {
-  Mutation,
   OnAssetChangeDocument,
   OnAssetChangeSubscriptionResult,
   useCreateAssetFolderMutation,
-  useGetProjectQuery,
   useListAssetFolderQuery,
   useUploadAssetMutation,
 } from '../../../generated/graphql'
@@ -140,7 +136,6 @@ const ImageLibrary = function ImageLibrary() {
         }
       }, folderData as FolderStructure | null)
     if (currentFolderObject) {
-      const currentPath = currentFolderPath.slice(0, -1).join('/')
       setCurrentFolderContents(
         Object.keys(currentFolderObject).map(key => ({
           title: key,

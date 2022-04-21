@@ -54,7 +54,7 @@ const ContainerLayer: React.FC<FrameProps> = ({
   selected,
   onClick,
 }) => {
-  const { x, y, props } = layer
+  const { props } = layer
   const [updateComponent] = useUpdateComponentMutation()
   const { ref } = useDragDrop(layer._id, {
     draggable: {

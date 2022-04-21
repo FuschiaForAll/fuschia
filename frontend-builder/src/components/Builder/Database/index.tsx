@@ -1,4 +1,4 @@
-import { Paper, Tab, Tabs, Typography } from '@mui/material'
+import { Paper } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -15,7 +15,6 @@ import {
 } from '../../../generated/graphql'
 import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
-import GraphQLDesigner from './GraphQLDesigner'
 import { GetProjectDocument } from '../../../generated/graphql'
 import {
   AccordionDetails,
@@ -28,17 +27,10 @@ import Modal from '@mui/material/Modal'
 import PlayCircleIcon from '@mui/icons-material/PlayCircle'
 import RestartAltIcon from '@mui/icons-material/RestartAlt'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
-import { Checkbox } from '../../Shared/primitives/Checkbox'
 import { variableNameRegex } from '../../../utils/regexp'
 import { MainTabHeader, TabWrapper } from '../../Shared/Tabs'
 import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
 import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
-
-interface TabPanelProps {
-  children?: React.ReactNode
-  index: number
-  value: number
-}
 
 const Accordion = styled((props: AccordionProps) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -47,25 +39,6 @@ const Accordion = styled((props: AccordionProps) => (
     display: 'none',
   },
 }))
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && (
-        <div>
-          <span>{children}</span>
-        </div>
-      )}
-    </div>
-  )
-}
 
 function StatusChip({
   label,

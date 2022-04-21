@@ -1,6 +1,5 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import Menu from '@mui/material/Menu'
 
 export const NavMenu = styled.ul`
   list-style-type: none;

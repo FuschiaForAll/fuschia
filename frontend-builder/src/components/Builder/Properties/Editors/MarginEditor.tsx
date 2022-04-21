@@ -1,11 +1,5 @@
-import React, { useEffect, useState } from 'react'
 import { Props, MarginSchema } from '@fuchsia/types'
-import { LabeledTextInput } from '../../../Shared/primitives/LabeledTextInput'
-import { Color, SketchPicker } from 'react-color'
-import Box from '@mui/material/Box'
-import Popper from '@mui/material/Popper'
 import TextInputBinding from '../../../Shared/TextInputBinding'
-import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
 export type MarginEditorProps = Props<MarginSchema, any>
 
 const MarginEditor = function StringEditor(props: MarginEditorProps) {

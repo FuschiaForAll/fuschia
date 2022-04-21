@@ -6,10 +6,7 @@ import Layer from './Layer'
 import KeyboardEvents from './KeyboardEvents'
 import { scaleFactorVar } from '../../../apolloClient'
 import { useScale } from '../../../utils/hooks/useScale'
-import {
-  ProjectComponentProvider,
-  useProjectComponents,
-} from '../../../utils/hooks/useProjectComponents'
+import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
 
 const Wrapper = styled.div`
   position: fixed;

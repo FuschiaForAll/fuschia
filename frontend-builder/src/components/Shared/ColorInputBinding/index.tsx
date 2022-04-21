@@ -149,11 +149,10 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
   }: TextInputBindingProps) {
     const [editorFocused, setEditorFocused] = useState(false)
     const ref = useRef<Editor>(null)
-    const [keys, setKeys] = useState<string[]>([])
     let { projectId } = useParams<{ projectId: string }>()
 
     const [folderData, setFolderData] = useState<FolderStructure>({})
-    const { subscribeToMore, data: FilesData } = useListAssetFolderQuery({
+    const { data: FilesData } = useListAssetFolderQuery({
       variables: {
         projectId,
       },
@@ -161,7 +160,6 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
     useEffect(() => {
       if (FilesData) {
         const keyArray = FilesData.listAssetFolder.map(file => file.key)
-        setKeys(keyArray)
         setFolderData(buildNestedStructure(keyArray))
       }
     }, [FilesData])

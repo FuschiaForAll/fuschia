@@ -32,7 +32,7 @@ import {
   DragDropContext,
   DropResult,
 } from 'react-beautiful-dnd'
-import { DragIndicator, Email } from '@mui/icons-material'
+import { DragIndicator } from '@mui/icons-material'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -944,7 +944,6 @@ const NavigateEditor = ({
   params: NavigateProps
   onUpdate: (newValue: NavigateProps) => void
 }) => {
-  const { projectId } = useParams<{ projectId: string }>()
   const { structuredComponents: components } = useProjectComponents()
   const [navTargets, setNagTargets] = useState<
     Array<{

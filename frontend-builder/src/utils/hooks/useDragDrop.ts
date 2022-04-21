@@ -5,7 +5,6 @@ import { useParams } from 'react-router-dom'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
-import { gql, useQuery } from '@apollo/client'
 import { LexoRankHelper } from '../lexoRankHelper'
 
 interface DragResponse {
@@ -52,12 +51,6 @@ function getDataAttributes(target: Element) {
 function getPosition(target: Element) {
   return [parseFloat(target.style.left) || 0, parseFloat(target.style.top) || 0]
 }
-
-const stackFilterQuery = gql`
-  query {
-    stackFilter @client
-  }
-`
 
 export const useDragDrop = (
   id: string,
