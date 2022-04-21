@@ -2,11 +2,15 @@ import React from "react";
 import { View, ImageBackground } from "react-native";
 
 export function Container(props) {
-  console.log(props);
-  const { style, layout, children } = props;
-
+  const { style, layout, children, editor } = props;
   return (
     <View
+      onClick={(e) => {
+        if (editor?.inEditMode) {
+          editor?.onSelect(editor?.id);
+        }
+      }}
+      ref={editor?.ref}
       style={{
         height: style?.height,
         width: style?.width,

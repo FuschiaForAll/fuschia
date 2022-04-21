@@ -337,7 +337,6 @@ function Properties({
           layerSort: sortOrder,
         }
       )
-      console.log(sortOrder)
     }
   }
 

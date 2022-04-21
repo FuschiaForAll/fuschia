@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { PropsWithChildren, useCallback, useRef } from 'react'
 import styled from '@emotion/styled'
 
 import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
@@ -135,29 +135,16 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
     left: x || 0,
     top: y || 0,
     zIndex: 10,
+    border: '#ccc dashed 1px',
   }
 
   if (selected) {
     styles.boxShadow = BOX_SHADOW
   }
   const classNames = ['droppable', 'root-element']
-  switch (layer.componentType) {
-    case PackageComponentType.Stack:
-      styles.border = '#ccc dashed 1px'
-      break
-    case PackageComponentType.Screen:
-      styles.contain = 'content'
-      styles.border = '#ccc solid 1px'
-      break
-  }
   return (
     <FrameWrapper
-      name={
-        layer.componentType === PackageComponentType.Screen ||
-        layer.componentType === PackageComponentType.Stack
-          ? layer.name
-          : ''
-      }
+      name={layer.name}
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}
@@ -168,6 +155,40 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
       data-parentid={layer.parentId}
     >
       {children}
+    </FrameWrapper>
+  )
+}
+
+function ScreenLayer({
+  layer,
+  children,
+  onClick,
+}: PropsWithChildren<FrameProps>) {
+  const classNames = ['droppable', 'root-element']
+  const { x, y, props } = layer
+
+  const styles: React.CSSProperties = {
+    width: props?.style?.width || 50,
+    height: props?.style?.height || 50,
+    pointerEvents: 'all',
+    left: x || 0,
+    top: y || 0,
+    zIndex: 10,
+    border: '#ccc solid 1px',
+  }
+
+  return (
+    <FrameWrapper
+      name={layer.name}
+      id={layer._id}
+      style={styles}
+      className={classNames.join(' ')}
+      onClick={onClick}
+      data-package={layer.package}
+      data-type={layer.type}
+      data-parentid={layer.parentId}
+    >
+      <div style={{ contain: 'content' }}>{children}</div>
     </FrameWrapper>
   )
 }
@@ -301,8 +322,10 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   let WrapperType: React.FC<any>
   switch (layer.componentType) {
     case PackageComponentType.Stack:
-    case PackageComponentType.Screen:
       WrapperType = StackLayer
+      break
+    case PackageComponentType.Screen:
+      WrapperType = ScreenLayer
       break
     case PackageComponentType.Container:
       WrapperType = ContainerLayer
@@ -336,9 +359,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
       case 'boolean':
         if (schema.dataBound) {
           // update the property
-          console.log('FOUND DATABOUND ITEM')
-          console.log(keys)
-          console.log(schema)
           let root = convertedProps
           keys.forEach(key => {
             if (!convertedProps[key]) {
@@ -347,8 +367,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
             root = convertedProps[key]
           })
           root.value = 'here'
-          console.log(root)
-          console.log(convertedProps)
         }
         break
     }
@@ -366,15 +384,6 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
 
   return (
     <>
-      {selected && (
-        <Portal id="property-window">
-          <PropertyWindow
-            elementId={layer._id}
-            schema={JSON.parse(JSON.stringify(schema))}
-            properties={JSON.parse(JSON.stringify(convertedProps))}
-          />
-        </Portal>
-      )}
       <WrapperType layer={layer} selected={selected} onClick={onSelect}>
         {layer.componentType !== PackageComponentType.Element ? (
           schema.type === 'array' ? (
@@ -448,25 +457,101 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   )
 }
 
-// A layer is a root level object
-const Layer: React.FC<LayerProps> = function Layer({ layer }) {
+const AbsolutePositionedRootElement = styled.div`
+  position: absolute;
+  & > div:hover: {
+    display: none;
+  }
+  pointer-events: all;
+`
+
+const Layer = React.memo(function Layer({
+  layer,
+}: {
+  layer: StructuredComponent
+}) {
+  const { data: packageData } = useGetPackagesQuery()
   const { selection, setSelection } = useSelection()
+  const { projectId } = useParams<{ projectId: string }>()
+  const selected = !!selection?.includes(layer._id)
+  const ref = useRef<HTMLDivElement>()
 
-  const handleSelect = useCallback<ClickHandler>(
-    e => {
-      e.stopPropagation()
-      if (e.shiftKey) {
-        setSelection(arrayXor(selection, e.currentTarget.id))
-      } else if (!selection?.includes(e.currentTarget.id)) {
-        setSelection([e.currentTarget.id])
-      }
+  // @ts-ignore
+  if (!window[layer.package]) {
+    return <div>Missing Package</div>
+  }
+  if (!packageData) {
+    return null
+  }
+  if (ref.current) {
+    if (selected) {
+      ref.current.style.boxShadow = BOX_SHADOW
+    } else {
+      ref.current.style.boxShadow = ''
+    }
+  }
+  const schema = getComponentSchema(packageData, layer) as
+    | ObjectSchema
+    | ArraySchema
+
+  let WrapperType: React.FC<any>
+  switch (layer.componentType) {
+    case PackageComponentType.Stack:
+      WrapperType = StackLayer
+      break
+    case PackageComponentType.Screen:
+      WrapperType = ScreenLayer
+      break
+    case PackageComponentType.Container:
+    case PackageComponentType.Element:
+      WrapperType = ({ children }: PropsWithChildren<{}>) => <>{children}</>
+      break
+  }
+  // @ts-ignore
+  const LayerComponent = window[layer.package][layer.type]
+  const convertedProps = convertDraftJSBindings({ ...layer.props }, projectId)
+  const editor = {
+    inEditMode: true,
+    onSelect: (e: string) => {
+      setSelection([e])
     },
-    [selection, setSelection]
-  )
-
+    ref,
+    id: `${layer._id}`,
+  }
   return (
-    <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
+    <>
+      {selected && (
+        <Portal id="property-window">
+          <PropertyWindow
+            elementId={layer._id}
+            schema={JSON.parse(JSON.stringify(schema))}
+            properties={JSON.parse(JSON.stringify(convertedProps))}
+          />
+        </Portal>
+      )}
+      <WrapperType layer={layer}>
+        {layer.componentType === PackageComponentType.Element ? (
+          <LayerComponent editor={editor} {...convertedProps} />
+        ) : (
+          <LayerComponent {...convertedProps} editor={editor}>
+            {layer.children?.map(child => (
+              <Layer layer={child} />
+            ))}
+          </LayerComponent>
+        )}
+      </WrapperType>
+    </>
+  )
+})
+
+export function RootElement({ layer }: { layer: StructuredComponent }) {
+  return (
+    <AbsolutePositionedRootElement
+      style={{ top: `${layer.y}px`, left: `${layer.x}px` }}
+    >
+      <Layer layer={layer} />
+    </AbsolutePositionedRootElement>
   )
 }
 
-export default Layer
+export default RootElement

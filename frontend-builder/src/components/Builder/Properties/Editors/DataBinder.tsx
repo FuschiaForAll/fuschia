@@ -74,7 +74,6 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
             menu={props.entry}
             dataStructure={props.dataStructure}
             onSelect={(entityType, value) => {
-              console.log(value)
               handleSelect(entityType, value)
             }}
           />
