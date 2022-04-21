@@ -7,6 +7,8 @@ import KeyboardEvents from './KeyboardEvents'
 import { scaleFactorVar } from '../../../apolloClient'
 import { useScale } from '../../../utils/hooks/useScale'
 import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+import Portal from '../../Shared/Portal'
+import PropertyWindow from '../Properties'
 
 const Wrapper = styled.div`
   position: fixed;
@@ -41,7 +43,7 @@ const Canvas: React.FC = function Canvas() {
   const { projectId } = useParams()
   const objectCollectionRef = useRef<HTMLDivElement>(null)
   const { structuredComponents: components } = useProjectComponents()
-  const { setSelection } = useSelection()
+  const { selection, setSelection } = useSelection()
   const { ref } = useDragDrop('main-canvas', {
     droppable: {
       dropClass: '.droppable',
@@ -145,6 +147,11 @@ const Canvas: React.FC = function Canvas() {
           ))}
         </div>
       </Objects>
+      {selection && selection.length > 0 && (
+        <Portal id="property-window">
+          <PropertyWindow elementId={selection[0]} />
+        </Portal>
+      )}
     </Wrapper>
   )
 }

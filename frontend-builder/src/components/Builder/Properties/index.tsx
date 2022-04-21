@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Editor from './Editors/Editor'
 import {
+  GetPackagesQuery,
   GetProjectDocument,
   PackageComponentType,
   useGetComponentQuery,
@@ -11,7 +12,7 @@ import {
   useGetProjectQuery,
   useUpdateAppConfigMutation,
 } from '../../../generated/graphql'
-import { ObjectSchema, Schema } from '@fuchsia/types'
+import { ArraySchema, ObjectSchema, Schema } from '@fuchsia/types'
 import TabPanel from '../../Shared/TabPanel'
 import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
@@ -526,9 +527,26 @@ function Properties({
 }
 
 interface PropertyWindowProps {
-  schema: Schema
-  properties: any
   elementId: string
+}
+
+function getComponentSchema(
+  packageData: GetPackagesQuery,
+  packageName: string,
+  componentType: string
+): Schema {
+  const componentPackage = packageData.getPackages.find(
+    p => p.packageName === packageName
+  )
+  if (componentPackage) {
+    const component = componentPackage.components.find(
+      component => component.name === componentType
+    )
+    if (component) {
+      return component.schema
+    }
+  }
+  throw new Error('Schema not found')
 }
 
 const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
@@ -539,8 +557,20 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
       componentId: props.elementId,
     },
   })
+  const { data: packageData } = useGetPackagesQuery()
 
-  if (componentData && componentData.getComponent) {
+  if (
+    componentData &&
+    componentData.getComponent &&
+    packageData &&
+    packageData.getPackages
+  ) {
+    const component = componentData.getComponent
+    const schema = getComponentSchema(
+      packageData,
+      component.package,
+      component.type
+    ) as ObjectSchema | ArraySchema
     return (
       <Wrapper
         onClick={e => e.stopPropagation()}
@@ -549,11 +579,11 @@ const PropertyWindow: React.FC<PropertyWindowProps> = function PropertyWindow(
       >
         <Inner>
           <Paper elevation={12} sx={cardStyles}>
-            <span>{props.schema.title}</span>
+            <span>{schema.title}</span>
             <Properties
-              component={componentData.getComponent}
-              elementId={props.elementId}
-              schema={props.schema}
+              component={component}
+              elementId={component._id}
+              schema={schema}
             />
           </Paper>
         </Inner>

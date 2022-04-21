@@ -5,28 +5,30 @@ export function Screen(props) {
   const { children, properties, layout, style, actions } = props;
   return (
     <View
+      onClick={(e) => {
+        if (editor?.inEditMode) {
+          editor?.onSelect(editor?.id);
+        }
+      }}
+      ref={editor?.ref}
       style={{
         height: style?.height,
         width: style?.width,
         backgroundColor: style?.backgroundColor,
         borderRadius: style?.borderRadius,
         display: style?.display,
-        marginLeft: layout?.margin?.left,
-        marginRight: layout?.margin?.right,
-        marginTop: layout?.margin?.top,
-        marginBottom: layout?.margin?.bottom,
-        paddingLeft: layout?.padding?.left,
-        paddingRight: layout?.padding?.right,
-        paddingTop: layout?.padding?.top,
-        paddingBottom: layout?.padding?.bottom,
-        flexDirection: layout?.flexContainer?.flexDirection,
-        alignItems: layout?.flexContainer?.alignItems,
-        alignContent: layout?.flexContainer?.alignContent,
-        justifyContent: layout?.flexContainer?.justifyContent,
-        justifyItems: layout?.flexContainer?.justifyItems,
-        flexWrap: layout?.flexContainer?.flexWrap,
-        gap: layout?.flexContainer?.gap,
-        flex: layout?.flex,
+        paddingLeft: style?.padding?.left,
+        paddingRight: style?.padding?.right,
+        paddingTop: style?.padding?.top,
+        paddingBottom: style?.padding?.bottom,
+        flexDirection: style?.flexContainer?.flexDirection,
+        alignItems: style?.flexContainer?.alignItems,
+        alignContent: style?.flexContainer?.alignContent,
+        justifyContent: style?.flexContainer?.justifyContent,
+        justifyItems: style?.flexContainer?.justifyItems,
+        flexWrap: style?.flexContainer?.flexWrap,
+        gap: style?.flexContainer?.gap,
+        flex: style?.flex,
       }}
     >
       {children}

@@ -22,16 +22,7 @@
     "layout": {
       "type": "object",
       "title": "Layout",
-      "properties": {
-        "padding": {
-          "title": "Padding",
-          "type": "padding"
-        },
-        "flexContainer": {
-          "title": "Flex",
-          "type": "flexContainer"
-        }
-      }
+      "properties": {}
     },
     "style": {
       "type": "object",
@@ -47,6 +38,14 @@
           "title": "Width",
           "type": "number",
           "default": 350
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
         },
         "backgroundColor": {
           "title": "Background Color",

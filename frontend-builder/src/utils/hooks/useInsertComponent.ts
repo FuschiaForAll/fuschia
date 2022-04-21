@@ -21,9 +21,9 @@ export const useInsertComponent = (): InsertFunc => {
           componentInput,
         },
       })
-      if (newComponent.data) {
-        setSelection([newComponent.data.createComponent._id])
-      }
+      // if (newComponent.data) {
+      //   setSelection([newComponent.data.createComponent._id])
+      // }
     },
     [createComponent, projectId, setSelection]
   )

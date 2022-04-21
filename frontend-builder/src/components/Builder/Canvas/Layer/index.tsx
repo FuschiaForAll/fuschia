@@ -520,15 +520,6 @@ const Layer = React.memo(function Layer({
   }
   return (
     <>
-      {selected && (
-        <Portal id="property-window">
-          <PropertyWindow
-            elementId={layer._id}
-            schema={JSON.parse(JSON.stringify(schema))}
-            properties={JSON.parse(JSON.stringify(convertedProps))}
-          />
-        </Portal>
-      )}
       <WrapperType layer={layer}>
         {layer.componentType === PackageComponentType.Element ? (
           <LayerComponent editor={editor} {...convertedProps} />
