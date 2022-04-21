@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import Menu from '@mui/material/Menu'
 
 export const NavMenu = styled.ul`
   list-style-type: none;
@@ -45,7 +46,7 @@ export const NavMenu = styled.ul`
     display: none;
     position: absolute;
     top: 0px;
-    left: 100%;
+    right: 100%;
   }
   li:hover > ul {
     display: block;
@@ -77,6 +78,20 @@ export interface MenuStructure {
 
 type RootMenu = MenuStructure[]
 
+export type SourceType =
+  | 'LOCAL_DATA'
+  | 'SERVER_DATA'
+  | 'INPUT'
+  | 'PRIMITIVE'
+  | 'ASSET'
+  | 'VARIABLE'
+
+export interface BoundItem {
+  value: string
+  label: string
+  type: SourceType
+}
+
 export function CascadingMenu({
   menu,
   dataStructure,
@@ -84,18 +99,7 @@ export function CascadingMenu({
 }: {
   dataStructure: { [key: string]: DataStructure }
   menu: RootMenu
-  onSelect: (
-    entityId: string,
-    value: string,
-    label: string,
-    type:
-      | 'LOCAL_DATA'
-      | 'SERVER_DATA'
-      | 'INPUT'
-      | 'PRIMITIVE'
-      | 'ASSET'
-      | 'VARIABLE'
-  ) => void
+  onSelect: (entityId: string, path: BoundItem[]) => void
 }) {
   return (
     <NavMenu>
@@ -104,12 +108,13 @@ export function CascadingMenu({
           key={element.source}
           onClick={e => {
             e.stopPropagation()
-            onSelect(
-              element.entity,
-              element.source,
-              element.label,
-              element.type
-            )
+            onSelect(element.entity, [
+              {
+                value: element.source,
+                label: element.label,
+                type: element.type,
+              },
+            ])
           }}
         >
           <div
@@ -126,13 +131,15 @@ export function CascadingMenu({
             <CascadingMenu
               menu={dataStructure[element.entity].fields}
               dataStructure={dataStructure}
-              onSelect={(entity, value, label) =>
-                onSelect(
-                  entity,
-                  `${element.source}.${value}`,
-                  `${element.label}.${label}`,
-                  element.type
-                )
+              onSelect={(entity, value) =>
+                onSelect(entity, [
+                  {
+                    value: element.source,
+                    label: element.label,
+                    type: element.type,
+                  },
+                  ...value,
+                ])
               }
             />
           )}

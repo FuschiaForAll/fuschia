@@ -15,6 +15,7 @@ import {
 import { ArraySchema, ObjectSchema, Schema } from '@fuchsia/types'
 import Portal from '../../../Shared/Portal'
 import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
+import { useParams } from 'react-router-dom'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
@@ -81,9 +82,7 @@ const ContainerLayer: React.FC<FrameProps> = ({
       onDrop: () => {},
     },
   })
-  const styles: React.CSSProperties = {
-    flex: layer.props?.flex,
-  }
+  const styles: React.CSSProperties = {}
   if (selected) {
     styles.boxShadow = BOX_SHADOW
   }
@@ -230,14 +229,32 @@ export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
   )
 }
 
-function convertDraftJSBindings(value: any) {
+function convertDraftJSBindings(value: any, projectId?: string) {
+  if (!value) {
+    return ``
+  }
   if (typeof value === 'object') {
     if (value.blocks) {
       // draftjs
+      if (value.entityMap) {
+        for (const key in value.entityMap) {
+          if (value.entityMap[key].data) {
+            if (value.entityMap[key].data[0]) {
+              if (value.entityMap[key].data[0].type === 'ASSET') {
+                const arr = [...value.entityMap[key].data]
+                arr.shift()
+                return `https://localhost:4003/project-files/${projectId}/${arr
+                  .map(a => a.value)
+                  .join('/')}`
+              }
+            }
+          }
+        }
+      }
       return value.blocks.map((block: any) => block.text).join('\n')
     }
     return Object.keys(value).reduce((acc, key) => {
-      acc[key] = convertDraftJSBindings(value[key])
+      acc[key] = convertDraftJSBindings(value[key], projectId)
       return acc
     }, {} as any)
   } else {
@@ -268,6 +285,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
   selection,
   onSelect,
 }) {
+  const { projectId } = useParams<{ projectId: string }>()
   const { data: packageData } = useGetPackagesQuery()
   const selected = !!selection?.includes(layer._id)
   // @ts-ignore
@@ -301,7 +319,7 @@ const LayerSub: React.FC<LayerProps> = function LayerSub({
     | ObjectSchema
     | ArraySchema
 
-  const convertedProps = convertDraftJSBindings({ ...layer.props })
+  const convertedProps = convertDraftJSBindings({ ...layer.props }, projectId)
   // find all data items
   const findDataBound = (schema: Schema, properties: any, keys: string[]) => {
     switch (schema.type) {

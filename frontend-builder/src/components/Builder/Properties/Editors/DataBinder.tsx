@@ -1,7 +1,7 @@
 import { IconButton } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import LanIcon from '@mui/icons-material/Lan'
-import { CascadingMenu } from '../../../Shared/CascadingMenu'
+import { BoundItem, CascadingMenu } from '../../../Shared/CascadingMenu'
 
 export type ComponentId = string
 export type EntityId = string
@@ -30,18 +30,7 @@ interface DataBinderProps {
   targetType?: string
   entry: MenuStructure[]
   dataStructure: { [key: string]: DataStructure }
-  onSelect: (
-    entityType: string,
-    entityPath: string,
-    labelPath: string,
-    type:
-      | 'LOCAL_DATA'
-      | 'SERVER_DATA'
-      | 'INPUT'
-      | 'PRIMITIVE'
-      | 'ASSET'
-      | 'VARIABLE'
-  ) => void
+  onSelect: (entityType: string, entityPath: BoundItem[]) => void
 }
 
 const DataBinder: React.FC<DataBinderProps> = function DataBinder(
@@ -70,19 +59,8 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
     setOpen(false)
   }
 
-  const handleSelect = (
-    entityType: string,
-    entityPath: string,
-    labelPath: string,
-    type:
-      | 'LOCAL_DATA'
-      | 'SERVER_DATA'
-      | 'INPUT'
-      | 'PRIMITIVE'
-      | 'ASSET'
-      | 'VARIABLE'
-  ) => {
-    props.onSelect(entityType, `${entityPath}`, `${labelPath}`, type)
+  const handleSelect = (entityType: string, entityPath: BoundItem[]) => {
+    props.onSelect(entityType, entityPath)
     handleClose()
   }
   return (
@@ -95,9 +73,10 @@ const DataBinder: React.FC<DataBinderProps> = function DataBinder(
           <CascadingMenu
             menu={props.entry}
             dataStructure={props.dataStructure}
-            onSelect={(entityType, value, label, type) =>
-              handleSelect(entityType, value, label, type)
-            }
+            onSelect={(entityType, value) => {
+              console.log(value)
+              handleSelect(entityType, value)
+            }}
           />
         </div>
       )}

@@ -23,6 +23,9 @@ import {
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql'
 import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+import PaletteIcon from '@mui/icons-material/Palette'
+import { Box, IconButton, Popper } from '@mui/material'
+import { Color, SketchPicker } from 'react-color'
 
 interface FolderStructure {
   [key: string]: null | FolderStructure
@@ -138,8 +141,8 @@ export interface Component {
   children?: Array<Component> | null
 }
 
-const TextInputBinding: React.FC<TextInputBindingProps> =
-  function TextInputBinding({
+const ColorInputBinding: React.FC<TextInputBindingProps> =
+  function ColorInputBinding({
     componentId,
     initialValue,
     onChange,
@@ -390,40 +393,80 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       components,
       folderData,
     ])
+    const [color, setColor] = useState<Color>('#555555')
+    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
+    const open = Boolean(anchorEl)
+    const id = open ? 'simple-popper' : undefined
     return (
-      <EditorWrapper
-        style={{
-          borderColor: editorFocused ? 'var(--accent)' : 'var(--black)',
-          display: 'grid',
-          gridTemplateColumns: '1fr auto',
-          alignItems: 'center',
-          wordBreak: 'break-word',
-        }}
-      >
-        <Editor
-          onFocus={e => setEditorFocused(true)}
-          onBlur={e => {
-            setEditorFocused(false)
+      <>
+        <EditorWrapper
+          style={{
+            borderColor: editorFocused ? 'var(--accent)' : 'var(--black)',
+            display: 'grid',
+            gridTemplateColumns: '1fr auto auto',
+            alignItems: 'center',
+            wordBreak: 'break-word',
           }}
-          editorState={editorState}
-          onChange={e => {
-            onChange(convertToRaw(editorState.getCurrentContent()))
-            setEditorState(e)
-          }}
-          ref={ref}
-        />
-
-        <DataBinder
-          onSelect={(entity, value) => {
-            if (value.length > 0) {
-              const last = value[value.length - 1]
-              insertPlaceholder(last.label, value)
-            }
-          }}
-          entry={dataStructure}
-          dataStructure={modelStructures}
-        />
-      </EditorWrapper>
+        >
+          <Editor
+            onFocus={e => setEditorFocused(true)}
+            onBlur={e => {
+              setEditorFocused(false)
+            }}
+            editorState={editorState}
+            onChange={e => {
+              onChange(convertToRaw(editorState.getCurrentContent()))
+              setEditorState(e)
+            }}
+            ref={ref}
+          />
+          <IconButton
+            onClick={e => {
+              setAnchorEl(anchorEl ? null : e.currentTarget)
+            }}
+          >
+            <PaletteIcon />
+          </IconButton>
+          <DataBinder
+            onSelect={(entity, value) => {
+              if (value.length > 0) {
+                const last = value[value.length - 1]
+                insertPlaceholder(last.label, value)
+              }
+            }}
+            entry={dataStructure}
+            dataStructure={modelStructures}
+          />
+        </EditorWrapper>
+        <Popper id={id} open={open} anchorEl={anchorEl} placement="right">
+          <Box sx={{ marginLeft: '0.5em' }}>
+            <div
+              style={{
+                position: 'fixed',
+                top: '0px',
+                right: '0px',
+                bottom: '0px',
+                left: '0px',
+              }}
+              onClick={() => setAnchorEl(null)}
+            />
+            <SketchPicker
+              color={color}
+              onChange={color => {
+                debugger
+                const editorState = EditorState.createWithContent(
+                  convertFromRaw(convertInitialContent(color.hex)),
+                  decorator
+                )
+                onChange(convertToRaw(editorState.getCurrentContent()))
+                setEditorState(editorState)
+                setColor(color.hex)
+                // onChange(color.hex)
+              }}
+            />
+          </Box>
+        </Popper>
+      </>
     )
   }
 
@@ -441,4 +484,4 @@ const styles = {
   },
 }
 
-export default TextInputBinding
+export default ColorInputBinding

@@ -1,10 +1,14 @@
-import React, { useEffect } from "react";
-import { View, ImageBackground } from "react-native";
+import React from "react";
+import { View, ImageBackground as RNImageBackground } from "react-native";
 
-export function Screen(props) {
-  const { children, properties, layout, style, actions } = props;
+export function ImageBackground(props) {
+  console.log(props);
+  const { style, layout, children } = props;
+
   return (
-    <View
+    <RNImageBackground
+      source={style?.backgroundImage?.source}
+      resizeMode={style?.backgroundImage?.resizeMode}
       style={{
         height: style?.height,
         width: style?.width,
@@ -19,6 +23,7 @@ export function Screen(props) {
         paddingRight: layout?.padding?.right,
         paddingTop: layout?.padding?.top,
         paddingBottom: layout?.padding?.bottom,
+        position: layout?.position,
         flexDirection: layout?.flexContainer?.flexDirection,
         alignItems: layout?.flexContainer?.alignItems,
         alignContent: layout?.flexContainer?.alignContent,
@@ -30,6 +35,6 @@ export function Screen(props) {
       }}
     >
       {children}
-    </View>
+    </RNImageBackground>
   );
 }

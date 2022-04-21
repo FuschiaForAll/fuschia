@@ -32,14 +32,17 @@ export function Container(props) {
         flex: layout?.flex,
       }}
     >
-      {style?.backgroundImage?.source && (
+      {style?.backgroundImage?.source ? (
         <ImageBackground
           source={style?.backgroundImage?.source}
           resizeMode={style?.backgroundImage?.resizeMode}
           style={style?.backgroundImage?.style}
-        />
+        >
+          {children}
+        </ImageBackground>
+      ) : (
+        <>{children}</>
       )}
-      {children}
     </View>
   );
 }

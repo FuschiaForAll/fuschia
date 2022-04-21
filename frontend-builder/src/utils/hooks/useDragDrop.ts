@@ -21,7 +21,7 @@ interface DragDropOptions {
   resizable?: {
     onResizeEnd: (
       id: string,
-      size: { width: number; height: number },
+      size: { width: string; height: string },
       position: { x: number; y: number }
     ) => void
   }
@@ -166,8 +166,8 @@ export const useDragDrop = (
               resizable.onResizeEnd(
                 id,
                 {
-                  width: parseFloat(target.style.width),
-                  height: parseFloat(target.style.height),
+                  width: target.style.width,
+                  height: target.style.height,
                 },
                 { x: x + left, y: y + top }
               )

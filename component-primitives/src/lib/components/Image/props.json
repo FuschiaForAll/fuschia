@@ -26,13 +26,13 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 35
+          "type": "string",
+          "default": "35px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 175
+          "type": "string",
+          "default": "175px"
         }
       }
     },

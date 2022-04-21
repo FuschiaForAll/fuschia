@@ -2,7 +2,7 @@
   "type": "ui-component",
   "title": "Button",
   "icon": "SmartButton",
-  "componentType": "Element",
+  "componentType": "Container",
   "description": "A plain old text field",
   "width": 160,
   "height": 35,
@@ -26,16 +26,16 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 35
+          "type": "string",
+          "default": "35px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 175
+          "type": "string",
+          "default": "175px"
         },
-        "color": {
-          "title": "Text Color",
+        "backgroundColor": {
+          "title": "Background Color",
           "type": "string",
           "format": "color",
           "default": "#000000"

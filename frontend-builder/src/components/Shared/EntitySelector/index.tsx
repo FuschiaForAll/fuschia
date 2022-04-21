@@ -5,7 +5,7 @@ import {
   useGetDataContextQuery,
 } from '../../../generated/graphql'
 import DataBinder from '../../Builder/Properties/Editors/DataBinder'
-import { DataStructure, MenuStructure } from '../CascadingMenu'
+import { BoundItem, DataStructure, MenuStructure } from '../CascadingMenu'
 
 export function EntitySelector({
   additionalEntities,
@@ -19,7 +19,7 @@ export function EntitySelector({
   entityId?: string
   componentId: string
   selectedLabel?: string
-  onSelect: (entity: string, path: string, label: string) => void
+  onSelect: (entity: string, path: BoundItem[]) => void
   isList?: boolean
 }) {
   const { projectId } = useParams<{ projectId: string }>()

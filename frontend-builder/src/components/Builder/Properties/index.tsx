@@ -53,7 +53,7 @@ const TabHeader = styled.span`
 const Wrapper = styled.div`
   position: fixed;
   top: 0;
-  left: 2rem;
+  right: 2rem;
   height: 100%;
   pointer-events: none;
   display: flex;
@@ -158,33 +158,49 @@ function LayerChildren({
                     setSelection([_c._id])
                   }}
                 >
-                  <div {...provided.dragHandleProps}>
-                    <DragIndicator />
-                  </div>
-                  <span>
-                    {_c.name}
-                    {_c._id}
-                    {_c.layerSort}
-                    {_c.componentType !== PackageComponentType.Element ? (
-                      <OutlinedButton
-                        onClick={e => {
-                          e.stopPropagation()
-                          setAddMenuOpened(o => !o)
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'auto 1fr',
+                      gap: '0.5em',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <div {...provided.dragHandleProps}>
+                      <DragIndicator />
+                    </div>
+                    <div>
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto',
+                          gap: '0.5em',
+                          alignItems: 'center',
                         }}
                       >
-                        Add
-                      </OutlinedButton>
-                    ) : (
-                      <></>
-                    )}
-                  </span>
-                  {_c.children && _c.children.length > 0 && (
-                    <LayerChildren
-                      parentId={_c._id}
-                      childComponents={_c.children}
-                    />
-                  )}
-                  {addMenuOpened && <AddMenu parentId={_c._id} />}
+                        <span>{_c.name}</span>
+                        {_c.componentType !== PackageComponentType.Element ? (
+                          <OutlinedButton
+                            onClick={e => {
+                              e.stopPropagation()
+                              setAddMenuOpened(o => !o)
+                            }}
+                          >
+                            Add
+                          </OutlinedButton>
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+                      {_c.children && _c.children.length > 0 && (
+                        <LayerChildren
+                          parentId={_c._id}
+                          childComponents={_c.children}
+                        />
+                      )}
+                      {addMenuOpened && <AddMenu parentId={_c._id} />}
+                    </div>
+                  </div>
                 </ActionWrapper>
               )}
             </Draggable>
@@ -213,8 +229,9 @@ function Layers({ componentId }: { componentId: string }) {
         if (ch.children) {
           return search(ch.children)
         }
+        return false
       })
-      return true
+      return false
     }
     if (c._id === componentId) {
       component = c

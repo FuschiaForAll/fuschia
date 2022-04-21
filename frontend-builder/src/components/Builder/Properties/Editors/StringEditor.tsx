@@ -6,32 +6,40 @@ import Box from '@mui/material/Box'
 import Popper from '@mui/material/Popper'
 import TextInputBinding from '../../../Shared/TextInputBinding'
 import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
+import ColorInputBinding from '../../../Shared/ColorInputBinding'
 export type StringEditorProps = Props<StringSchema, string>
 
 const ColorPicker = ({
   title,
   defaultValue,
   onChange,
+  componentId,
 }: {
   title: string
+  componentId: string
   defaultValue: string
   onChange: (value: string) => void
 }) => {
   const [color, setColor] = useState<Color>(defaultValue)
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
-  const handleClick = (event: React.FocusEvent<HTMLElement>) => {
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(anchorEl ? null : event.currentTarget)
   }
   const open = Boolean(anchorEl)
   const id = open ? 'simple-popper' : undefined
   return (
     <>
-      <LabeledTextInput
-        label={title}
-        value={color?.toString()}
-        onFocus={handleClick}
-      />
-
+      <div>
+        <div style={{ fontSize: '0.75rem' }}>{title}</div>
+        <TextInputBinding
+          componentId={componentId}
+          initialValue={color?.toString() as any}
+          onChange={value => {
+            onChange(value)
+          }}
+        />
+      </div>
+      <button onClick={handleClick}>Color</button>
       <Popper id={id} open={open} anchorEl={anchorEl} placement="right">
         <Box sx={{ marginLeft: '0.5em' }}>
           <div
@@ -76,11 +84,16 @@ const StringEditor = function StringEditor(props: StringEditorProps) {
       return <textarea />
     case 'color':
       return (
-        <ColorPicker
-          defaultValue={props.initialValue as string}
-          title={props.schema.title || 'undefined'}
-          onChange={e => props.updateValue(e, true)}
-        />
+        <div>
+          <div style={{ fontSize: '0.75rem' }}>{props.schema.title}</div>
+          <ColorInputBinding
+            componentId={props.componentId}
+            initialValue={props.initialValue as any}
+            onChange={value => {
+              props.updateValue(value, true)
+            }}
+          />
+        </div>
       )
     case 'ipv4':
       return (

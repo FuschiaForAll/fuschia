@@ -7,3 +7,4 @@ export { List } from "./components/List";
 export { Checkbox } from "./components/Checkbox";
 export { Stack } from "./components/Stack";
 export { Image } from "./components/Image";
+export { ImageBackground } from "./components/ImageBackground";

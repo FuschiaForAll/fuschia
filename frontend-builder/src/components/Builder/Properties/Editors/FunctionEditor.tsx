@@ -729,26 +729,27 @@ const UpdateEditor = (props: {
       <EntitySelector
         componentId={props.componentId}
         selectedLabel={props.params.updateElement?.label}
-        onSelect={(entity, path, label) => {
-          const newParams = { ...props.params }
-          newParams.updateElement = {
-            entity: entity,
-            label: label,
-            path: path,
-          }
-          const model = models.find(model => model._id === entity)
-          if (model) {
-            newParams.fields = model.fields.reduce(
-              (acc, f) => {
-                acc[f._id] = ''
-                return acc
-              },
-              {} as {
-                [key: string]: string
-              }
-            )
-            props.onUpdate(newParams)
-          }
+        onSelect={(entity, value) => {
+          throw new Error('THIS NEEDS FIXING')
+          // const newParams = { ...props.params }
+          // newParams.updateElement = {
+          //   entity: entity,
+          //   label: label,
+          //   path: path,
+          // }
+          // const model = models.find(model => model._id === entity)
+          // if (model) {
+          //   newParams.fields = model.fields.reduce(
+          //     (acc, f) => {
+          //       acc[f._id] = ''
+          //       return acc
+          //     },
+          //     {} as {
+          //       [key: string]: string
+          //     }
+          //   )
+          //   props.onUpdate(newParams)
+          // }
         }}
       />
       {props.params &&
@@ -920,13 +921,14 @@ const DeleteEditor = (props: {
         componentId={props.componentId}
         selectedLabel={props.params.deleteElement?.label}
         onSelect={(path, label) => {
-          props.onUpdate({
-            ...props.params,
-            deleteElement: {
-              label,
-              path,
-            },
-          })
+          throw new Error('THIS NEEDS FIXING')
+          // props.onUpdate({
+          //   ...props.params,
+          //   deleteElement: {
+          //     label,
+          //     path,
+          //   },
+          // })
         }}
       />
     </div>
@@ -965,17 +967,18 @@ const NavigateEditor = ({
             entityId={p.entityType}
             componentId={componentId}
             selectedLabel={params.parameters && params.parameters[p._id]?.label}
-            onSelect={(entityId, label) => {
-              onUpdate({
-                ...params,
-                parameters: {
-                  ...params.parameters,
-                  [p._id]: {
-                    path: entityId,
-                    label,
-                  },
-                },
-              })
+            onSelect={(entityId, value) => {
+              throw new Error('THIS NEEDS FIXING')
+              // onUpdate({
+              //   ...params,
+              //   parameters: {
+              //     ...params.parameters,
+              //     [p._id]: {
+              //       path: entityId,
+              //       label,
+              //     },
+              //   },
+              // })
             }}
           />
         ))
