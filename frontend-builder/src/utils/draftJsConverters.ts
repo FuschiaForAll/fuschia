@@ -86,22 +86,18 @@ export function DraftJSPreviewerConverter(
                       inputState[entityData[entityData.length - 1].value]
                     break
                   case 'LOCAL_DATA':
-                    {
-                      // const path = entityData.entityPath?.split('.').pop()
-                      // if (path) {
-                      //   replacementText = localState[path]
-                      // }
-                    }
+                    // const path = entityData.entityPath?.split('.').pop()
+                    // if (path) {
+                    //   replacementText = localState[path]
+                    // }
                     break
                   case 'SERVER_DATA':
-                    {
-                      // const path = entityData.entityPath?.split('.').pop()
-                      // if (path) {
-                      //   if (dataContext[path]) {
-                      //     replacementText = dataContext[path]
-                      //   }
-                      // }
-                    }
+                    // const path = entityData.entityPath?.split('.').pop()
+                    // if (path) {
+                    //   if (dataContext[path]) {
+                    //     replacementText = dataContext[path]
+                    //   }
+                    // }
                     break
                 }
               }

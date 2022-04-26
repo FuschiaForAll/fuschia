@@ -16,6 +16,7 @@ import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
 import { useGetProjectQuery } from '../../generated/graphql'
 import ImageLibrary from './ImageLibrary'
 import { ProjectComponentProvider } from '../../utils/hooks/useProjectComponents'
+import Publish from './Publish'
 
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
@@ -51,6 +52,7 @@ const Builder: React.FC = function Builder() {
         <Routes>
           <Route path="database" element={<Database />} />
           <Route path="previewer" element={<Previewer />} />
+          <Route path="publish" element={<Publish />} />
           <Route path="app-settings" element={<Settings />} />
           <Route path="label-library" element={<LabelLibrary />} />
           <Route path="asset-library/*" element={<ImageLibrary />} />

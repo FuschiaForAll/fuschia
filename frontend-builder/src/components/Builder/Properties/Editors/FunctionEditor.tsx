@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom'
 import {
   PackageComponentType,
   useGetBindingTreeQuery,
-  useGetComponentQuery,
   useGetComponentsQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
@@ -26,7 +25,6 @@ import {
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
-import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
 import {
   Droppable,
   Draggable,

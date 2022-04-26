@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useCallback, useRef } from 'react'
+import React, { PropsWithChildren, useRef } from 'react'
 import styled from '@emotion/styled'
 
 import { useSelection, useDragDrop } from '../../../../utils/hooks'
@@ -6,11 +6,7 @@ import {
   PackageComponentType,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
-import {
-  GetPackagesQuery,
-  useGetPackagesQuery,
-} from '../../../../generated/graphql'
-import { ArraySchema, ObjectSchema, Schema } from '@fuchsia/types'
+import { useGetPackagesQuery } from '../../../../generated/graphql'
 import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
 import { useParams } from 'react-router-dom'
 import { DraftJSEditorConverter } from '../../../../utils/draftJsConverters'
@@ -143,24 +139,6 @@ function ScreenLayer({
   )
 }
 
-function getComponentSchema(
-  packageData: GetPackagesQuery,
-  layer: StructuredComponent
-): Schema {
-  const componentPackage = packageData.getPackages.find(
-    p => p.packageName === layer.package
-  )
-  if (componentPackage) {
-    const component = componentPackage.components.find(
-      component => component.name === layer.type
-    )
-    if (component) {
-      return component.schema
-    }
-  }
-  throw new Error('Schema not found')
-}
-
 const AbsolutePositionedRootElement = styled.div`
   position: absolute;
   & > div:hover: {
@@ -194,10 +172,6 @@ const Layer = React.memo(function Layer({
       ref.current.style.boxShadow = ''
     }
   }
-  const schema = getComponentSchema(packageData, layer) as
-    | ObjectSchema
-    | ArraySchema
-
   let WrapperType: React.FC<any>
   switch (layer.componentType) {
     case PackageComponentType.Stack:

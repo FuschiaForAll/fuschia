@@ -16,10 +16,7 @@ import styled from '@emotion/styled'
 import { ActionProps } from '../Builder/Properties/Editors/FunctionEditor'
 import { executeAction } from './executeAction'
 import { Schema } from '../../../../types/src/properties'
-import {
-  StructuredComponent,
-  useProjectComponents,
-} from '../../utils/hooks/useProjectComponents'
+import { StructuredComponent } from '../../utils/hooks/useProjectComponents'
 import { DraftJSPreviewerConverter } from '../../utils/draftJsConverters'
 
 const FrameWrapper = styled.div`
@@ -371,7 +368,6 @@ const Previewer: React.FC = function Previewer() {
       projectId,
     },
   })
-  const { structuredComponents: components } = useProjectComponents()
   const { data: PreviewerData } = useGetPreviewerDataQuery({
     variables: {
       projectId,

@@ -58,6 +58,20 @@ function findNestedComponent(
   }
 }
 
+export type SourceType =
+  | 'LOCAL_DATA'
+  | 'SERVER_DATA'
+  | 'INPUT'
+  | 'PRIMITIVE'
+  | 'ASSET'
+  | 'VARIABLE'
+
+export interface EntityData {
+  value: string
+  label: string
+  type: SourceType
+}
+
 export const draftJsStuff = (
   value: any,
   project: Component[],
@@ -72,90 +86,93 @@ export const draftJsStuff = (
     if (value.blocks) {
       let textParts = [] as string[]
       const draft = value as RawDraftContentState
+      console.log(draft.blocks)
       draft.blocks.forEach(block => {
         let currentText = block.text
         ;[...block.entityRanges].reverse().forEach(range => {
           let replacementText = ''
           if (draft.entityMap && draft.entityMap[range.key]) {
-            switch (draft.entityMap[range.key].data.type) {
-              case 'INPUT':
-                const [parts, dataPath] = draft.entityMap[
-                  range.key
-                ].data.entityPath.split('+') as string[]
-                const bits = parts.split('.')
-                let currentComponent: Component | null = null
-                bits.forEach(bit => {
-                  if (!currentComponent) {
-                    const comp = project.find(p => p._id.toString() === bit)
-                    if (comp) {
-                      currentComponent = comp
-                    }
-                  } else {
-                    if (currentComponent.children) {
-                      const comp = currentComponent.children.find(
-                        p => p._id.toString() === bit
-                      )
+            if (draft.entityMap[range.key].data) {
+              const entityData = draft.entityMap[range.key].data as EntityData[]
+              switch (entityData[0].type) {
+                case 'INPUT':
+                  const [parts, dataPath] = entityData[
+                    entityData.length - 1
+                  ].value.split('+') as string[]
+                  const bits = parts.split('.')
+                  let currentComponent: Component | null = null
+                  bits.forEach(bit => {
+                    if (!currentComponent) {
+                      const comp = project.find(p => p._id.toString() === bit)
                       if (comp) {
                         currentComponent = comp
                       }
+                    } else {
+                      if (currentComponent.children) {
+                        const comp = currentComponent.children.find(
+                          p => p._id.toString() === bit
+                        )
+                        if (comp) {
+                          currentComponent = comp
+                        }
+                      }
                     }
+                  })
+                  if (currentComponent !== null) {
+                    replacementText = `\${${
+                      (currentComponent as Component).name
+                    }${dataPath ? dataPath : ''}}`
                   }
-                })
-                if (currentComponent !== null) {
-                  replacementText = `\${${
-                    (currentComponent as Component).name
-                  }${dataPath ? dataPath : ''}}`
-                }
-                break
-              case 'LOCAL_DATA':
-                if (
-                  draft.entityMap[range.key].data.entityPath === 'CurrentUser'
-                ) {
-                  replacementText = `\${meData?.me?._id}`
-                }
-                break
-              case 'SERVER_DATA':
-                replacementText = draft.entityMap[range.key].data.entityPath
-                const entityParts = draft.entityMap[
-                  range.key
-                ].data.entityPath.split('.') as string[]
-                const component = findNestedComponent(entityParts[0], project)
-                if (component) {
-                  // we are targeting a component, lets find it's type
-                  const componentPackage = packages.find(
-                    p => p.packageName === component.package
-                  )
-                  if (componentPackage) {
-                    const componentElement = componentPackage.components.find(
-                      c => c.name === component.type
+                  break
+                case 'LOCAL_DATA':
+                  if (entityData[0].value === 'CurrentUser') {
+                    replacementText = `\${meData?.me?._id}`
+                  }
+                  break
+                case 'SERVER_DATA':
+                  replacementText = entityData[0].value
+                  const entityParts = draft.entityMap[
+                    range.key
+                  ].data.entityPath.split('.') as string[]
+                  const component = findNestedComponent(entityParts[0], project)
+                  if (component) {
+                    // we are targeting a component, lets find it's type
+                    const componentPackage = packages.find(
+                      p => p.packageName === component.package
                     )
+                    if (componentPackage) {
+                      const componentElement = componentPackage.components.find(
+                        c => c.name === component.type
+                      )
 
-                    if (componentElement) {
-                      if (componentElement.schema.type === 'array') {
-                        // we need to find the field name targeted and prefix with item
+                      if (componentElement) {
+                        if (componentElement.schema.type === 'array') {
+                          // we need to find the field name targeted and prefix with item
 
-                        if (component.fetched) {
-                          component.fetched.forEach(fetched => {
-                            const fetchedModel =
-                              projectInfo.appConfig.apiConfig.models.find(
-                                m => m._id.toString() === fetched.entityType
-                              )
-                            if (fetchedModel) {
-                              // this only works 1 level down
-                              const targetField = fetchedModel.fields.find(
-                                field => field._id.toString() === entityParts[1]
-                              )
-                              if (targetField) {
-                                replacementText = `\${item.${targetField.fieldName}}`
+                          if (component.fetched) {
+                            component.fetched.forEach(fetched => {
+                              const fetchedModel =
+                                projectInfo.appConfig.apiConfig.models.find(
+                                  m => m._id.toString() === fetched.entityType
+                                )
+                              if (fetchedModel) {
+                                // this only works 1 level down
+                                const targetField = fetchedModel.fields.find(
+                                  field =>
+                                    field._id.toString() === entityParts[1]
+                                )
+                                if (targetField) {
+                                  replacementText = `\${item.${targetField.fieldName}}`
+                                }
                               }
-                            }
-                          })
+                            })
+                          }
                         }
                       }
                     }
                   }
-                }
-                break
+                  break
+              }
             }
           }
           currentText = `${currentText.slice(
@@ -215,7 +232,7 @@ export function convertHooks(hooks: Hooks) {
     if (hooks[key].hook.type === 'multiple') {
       ;(hooks[key].hook.value as MultipleHookVariable[]).forEach(v => {
         const hookBuilder = [] as string[]
-        hookBuilder.push(`const `)
+        hookBuilder.push(`   const `)
         hookBuilder.push(buildUpHook(v))
         hookBuilder.push(` = ${key}(`)
         if (hooks[key].parameters) {
@@ -231,7 +248,7 @@ export function convertHooks(hooks: Hooks) {
       })
     } else {
       const hookBuilder = [] as string[]
-      hookBuilder.push(`const `)
+      hookBuilder.push(`   const `)
       hookBuilder.push(buildUpHook(hooks[key].hook))
       hookBuilder.push(` = ${key}(`)
       if (hooks[key].parameters) {
@@ -478,4 +495,442 @@ mutation Update${m.name}($input: Update${m.name}Input!, $condition: Model${
       )
     })
   )
+}
+
+export function functionBuilder(
+  action: ActionProps,
+  importsBuilder: {
+    [x: string]: {
+      [componentName: string]: 'default' | 'single'
+    }
+  },
+  hooksBuilder: Hooks,
+  rootComponents: Component[],
+  propsBuilder: string[],
+  projectInfo: Project,
+  packages: Package[]
+) {
+  switch (action.type) {
+    case 'NAVIGATE':
+      importsBuilder['@react-navigation/native'] = {
+        useNavigation: 'single',
+      }
+      if (!hooksBuilder['useNavigation<any>']) {
+        hooksBuilder['useNavigation<any>'] = {
+          hook: {
+            type: 'variable',
+            value: 'navigate',
+          },
+        }
+      }
+      const targetScreen = rootComponents.find(
+        c => c._id.toString() === action.destination
+      )
+      if (targetScreen) {
+        propsBuilder.push(`navigate.navigate('${targetScreen.name}', {`)
+        if (action.parameters) {
+          if (targetScreen.parameters) {
+            targetScreen.parameters.forEach(p => {
+              const actionParam = action.parameters![p._id.toString()]
+              const targetEntity = projectInfo.appConfig.apiConfig.models.find(
+                m => m._id.toString() === p.entityType.toString()
+              )
+              if (actionParam) {
+                // this only works for ARRAY param props
+                propsBuilder.push(`${targetEntity?.name}Id: item._id`)
+              }
+            })
+          }
+        }
+        propsBuilder.push(`});`)
+      }
+      break
+    case 'ALERT':
+      if (!importsBuilder['react-native']) {
+        importsBuilder['react-native'] = {}
+      }
+      importsBuilder['react-native'].Alert = 'single'
+      propsBuilder.push(
+        `Alert.alert("${draftJsStuff(
+          action.message,
+          rootComponents,
+          projectInfo,
+          packages
+        )}");`
+      )
+      break
+    case 'LOGIN':
+      if (!importsBuilder['./generated/graphql']) {
+        importsBuilder['./generated/graphql'] = {}
+      }
+      importsBuilder['./generated/graphql'].useLoginMutation = 'single'
+      if (!hooksBuilder.useLoginMutation) {
+        hooksBuilder.useLoginMutation = {
+          hook: {
+            type: 'array',
+            value: [],
+          },
+        }
+      }
+      ;(hooksBuilder.useLoginMutation.hook as ArrayHookVariable).value.push({
+        type: 'variable',
+        value: 'login',
+      })
+      propsBuilder.push(
+        `const success = await login({ variables: { username: \`${draftJsStuff(
+          action.username,
+          rootComponents,
+          projectInfo,
+          packages
+        )}\`, password: \`${draftJsStuff(
+          action.password,
+          rootComponents,
+          projectInfo,
+          packages
+        )}\`}});`
+      )
+      if (action.onSucess) {
+        propsBuilder.push(`if (success.data) {`)
+        if (!importsBuilder['@react-native-async-storage/async-storage']) {
+          importsBuilder['@react-native-async-storage/async-storage'] = {}
+        }
+        importsBuilder[
+          '@react-native-async-storage/async-storage'
+        ].AsyncStorage = 'default'
+        propsBuilder.push(
+          `await AsyncStorage.setItem('authToken', success.data.login);`
+        )
+        action.onSucess.forEach(action =>
+          functionBuilder(
+            action,
+            importsBuilder,
+            hooksBuilder,
+            rootComponents,
+            propsBuilder,
+            projectInfo,
+            packages
+          )
+        )
+        propsBuilder.push(`}`)
+      }
+      if (action.onFail) {
+        propsBuilder.push(`if (success.errors) {`)
+        action.onFail.forEach(action =>
+          functionBuilder(
+            action,
+            importsBuilder,
+            hooksBuilder,
+            rootComponents,
+            propsBuilder,
+            projectInfo,
+            packages
+          )
+        )
+        propsBuilder.push(`}`)
+      }
+      break
+    case 'REGISTER':
+      if (!importsBuilder['./generated/graphql']) {
+        importsBuilder['./generated/graphql'] = {}
+      }
+      importsBuilder['./generated/graphql'].useRegisterMutation = 'single'
+      if (!hooksBuilder.useRegisterMutation) {
+        hooksBuilder.useRegisterMutation = {
+          hook: {
+            type: 'array',
+            value: [],
+          },
+        }
+      }
+      ;(hooksBuilder.useRegisterMutation.hook as ArrayHookVariable).value.push({
+        type: 'variable',
+        value: 'register',
+      })
+
+      const authModel = projectInfo.appConfig.apiConfig.models.find(
+        m =>
+          m._id.toString() ===
+          projectInfo.appConfig.authConfig.tableId.toString()
+      )
+      if (authModel) {
+        const authPartBuilder = [] as string[]
+        authPartBuilder.push(`{ variables: { userData: { `)
+        const authFieldsBuilder = [] as string[]
+        Object.keys(action.fields).forEach(f => {
+          const value = draftJsStuff(
+            action.fields[f],
+            rootComponents,
+            projectInfo,
+            packages
+          )
+          const field = authModel.fields.find(
+            field => field._id.toString() === f
+          )
+          if (field) {
+            authFieldsBuilder.push(` ${field.fieldName}: \`${value}\``)
+          }
+        })
+        authPartBuilder.push(authFieldsBuilder.join(','))
+        authPartBuilder.push(`} } }`)
+        console.log(authPartBuilder.join(''))
+        propsBuilder.push(
+          `const success = await register(${authPartBuilder.join('')});`
+        )
+        if (action.onSucess) {
+          propsBuilder.push(`if (success.data) {`)
+
+          if (!importsBuilder['@react-native-async-storage/async-storage']) {
+            importsBuilder['@react-native-async-storage/async-storage'] = {}
+          }
+          importsBuilder[
+            '@react-native-async-storage/async-storage'
+          ].AsyncStorage = 'default'
+          propsBuilder.push(
+            `await AsyncStorage.setItem('authToken', success.data.register);`
+          )
+          action.onSucess.forEach(action =>
+            functionBuilder(
+              action,
+              importsBuilder,
+              hooksBuilder,
+              rootComponents,
+              propsBuilder,
+              projectInfo,
+              packages
+            )
+          )
+          propsBuilder.push(`}`)
+        }
+        if (action.onFail) {
+          propsBuilder.push(`if (success.errors) {`)
+          action.onFail.forEach(action =>
+            functionBuilder(
+              action,
+              importsBuilder,
+              hooksBuilder,
+              rootComponents,
+              propsBuilder,
+              projectInfo,
+              packages
+            )
+          )
+          propsBuilder.push(`}`)
+        }
+      }
+      break
+    case 'CREATE':
+      // generate graphql file if needed
+      if (action.dataType && action.fields) {
+        const actionFields = action.fields
+        const model = projectInfo.appConfig.apiConfig.models.find(
+          m => m._id.toString() === action.dataType
+        )
+        if (model) {
+          if (!importsBuilder['./generated/graphql']) {
+            importsBuilder['./generated/graphql'] = {}
+          }
+          importsBuilder['./generated/graphql'][
+            `useCreate${model.name}Mutation`
+          ] = 'single'
+          if (!hooksBuilder[`useCreate${model.name}Mutation`]) {
+            hooksBuilder[`useCreate${model.name}Mutation`] = {
+              hook: {
+                type: 'array',
+                value: [],
+              },
+            }
+          }
+          ;(
+            hooksBuilder[`useCreate${model.name}Mutation`]
+              .hook as ArrayHookVariable
+          ).value.push({
+            type: 'variable',
+            value: `create${model.name}`,
+          })
+          const createPartBuilder = [] as string[]
+          createPartBuilder.push(`{ variables: { input: { `)
+          const createFieldsBuilder = [] as string[]
+          Object.keys(actionFields).forEach(f => {
+            const value = draftJsStuff(
+              actionFields[f],
+              rootComponents,
+              projectInfo,
+              packages
+            )
+            const field = model.fields.find(field => field._id.toString() === f)
+            if (field) {
+              // need value cohersion
+              switch (field.dataType) {
+                case 'Boolean':
+                  createFieldsBuilder.push(` ${field.fieldName}: ${value}`)
+                  break
+                default:
+                  createFieldsBuilder.push(` ${field.fieldName}: \`${value}\``)
+                  break
+              }
+            }
+          })
+          createPartBuilder.push(createFieldsBuilder.join(','))
+          createPartBuilder.push(`} } }`)
+          console.log(createPartBuilder.join(''))
+          propsBuilder.push(
+            `const success = await create${model.name}(${createPartBuilder.join(
+              ''
+            )});`
+          )
+        }
+      }
+      break
+    case 'DELETE':
+      if (action.deleteElement) {
+        // const actionFields = action.fields
+        // const model =
+        //   projectInfo.appConfig.apiConfig.models.find(
+        //     m =>
+        //       m._id.toString() === action.updateElement?.entity
+        //   )
+        // if (model) {
+        //   if (!importsBuilder['./generated/graphql']) {
+        //     importsBuilder['./generated/graphql'] = {}
+        //   }
+        //   importsBuilder['./generated/graphql'][
+        //     `useUpdate${model.name}Mutation`
+        //   ] = 'single'
+        //   if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
+        //     hooksBuilder[`useUpdate${model.name}Mutation`] = {
+        //       hook: {
+        //         type: 'array',
+        //         value: [],
+        //       },
+        //     }
+        //   }
+        //   ;(
+        //     hooksBuilder[`useUpdate${model.name}Mutation`]
+        //       .hook as ArrayHookVariable
+        //   ).value.push({
+        //     type: 'variable',
+        //     value: `update${model.name}`,
+        //   })
+        //   const updatePartBuilder = [] as string[]
+        //   updatePartBuilder.push(`{ variables: { input: { `)
+        //   const createFieldsBuilder = [] as string[]
+        //   Object.keys(actionFields).forEach(f => {
+        //     const value = draftJsStuff(
+        //       actionFields[f],
+        //       rootComponents,
+        //       projectInfo,
+        //       packages
+        //     )
+        //     const field = model.fields.find(
+        //       field => field._id.toString() === f
+        //     )
+        //     if (field) {
+        //       // need value cohersion
+        //       switch (field.dataType) {
+        //         case 'Boolean':
+        //           if (value) {
+        //             createFieldsBuilder.push(
+        //               ` ${field.fieldName}: !!${value}`
+        //             )
+        //           }
+        //           break
+        //         default:
+        //           if (value) {
+        //             createFieldsBuilder.push(
+        //               ` ${field.fieldName}: \`${value}\``
+        //             )
+        //           }
+        //           break
+        //       }
+        //     }
+        //   })
+        //   updatePartBuilder.push(createFieldsBuilder.join(','))
+        //   updatePartBuilder.push(`}, `)
+        //   updatePartBuilder.push(`condition: {`)
+        //   // TODO: This is the wrong assumption
+        //   updatePartBuilder.push(`_id: item._id`)
+        //   updatePartBuilder.push(`} } }`)
+        //   console.log(updatePartBuilder.join(''))
+        //   propsBuilder.push(
+        //     `const success = await update${
+        //       model.name
+        //     }(${updatePartBuilder.join('')});`
+        //   )
+        // }
+      }
+      break
+
+    case 'UPDATE':
+      if (action.updateElement && action.fields) {
+        const actionFields = action.fields
+        const model = projectInfo.appConfig.apiConfig.models.find(
+          m => m._id.toString() === action.updateElement?.entity
+        )
+        if (model) {
+          if (!importsBuilder['./generated/graphql']) {
+            importsBuilder['./generated/graphql'] = {}
+          }
+          importsBuilder['./generated/graphql'][
+            `useUpdate${model.name}Mutation`
+          ] = 'single'
+          if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
+            hooksBuilder[`useUpdate${model.name}Mutation`] = {
+              hook: {
+                type: 'array',
+                value: [],
+              },
+            }
+          }
+          ;(
+            hooksBuilder[`useUpdate${model.name}Mutation`]
+              .hook as ArrayHookVariable
+          ).value.push({
+            type: 'variable',
+            value: `update${model.name}`,
+          })
+          const updatePartBuilder = [] as string[]
+          updatePartBuilder.push(`{ variables: { input: { `)
+          const createFieldsBuilder = [] as string[]
+          Object.keys(actionFields).forEach(f => {
+            const value = draftJsStuff(
+              actionFields[f],
+              rootComponents,
+              projectInfo,
+              packages
+            )
+            const field = model.fields.find(field => field._id.toString() === f)
+            if (field) {
+              // need value cohersion
+              switch (field.dataType) {
+                case 'Boolean':
+                  if (value) {
+                    createFieldsBuilder.push(` ${field.fieldName}: !!${value}`)
+                  }
+                  break
+                default:
+                  if (value) {
+                    createFieldsBuilder.push(
+                      ` ${field.fieldName}: \`${value}\``
+                    )
+                  }
+                  break
+              }
+            }
+          })
+          updatePartBuilder.push(createFieldsBuilder.join(','))
+          updatePartBuilder.push(`}, `)
+          updatePartBuilder.push(`condition: {`)
+          // TODO: This is the wrong assumption
+          updatePartBuilder.push(`_id: item._id`)
+          updatePartBuilder.push(`} } }`)
+          console.log(updatePartBuilder.join(''))
+          propsBuilder.push(
+            `const success = await update${model.name}(${updatePartBuilder.join(
+              ''
+            )});`
+          )
+        }
+      }
+      break
+  }
 }

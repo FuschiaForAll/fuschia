@@ -17,6 +17,7 @@ import Icon from '../../Shared/Icon'
 import LabelIcon from '@mui/icons-material/Label'
 import FolderSpecialIcon from '@mui/icons-material/FolderSpecial'
 import SBItem from '../Sidebar/Item'
+import PublishIcon from '@mui/icons-material/Publish'
 interface TopbarProps {
   projectName: string
 }
@@ -130,6 +131,9 @@ const Topbar: React.FC<TopbarProps> = function Topbar({
           </Item>
           <Item title="Analytics">
             <Icon icon="analytics" />
+          </Item>
+          <Item title="Publish" onClick={() => navigate('publish')}>
+            <PublishIcon />
           </Item>
         </Paper>
       </Box>

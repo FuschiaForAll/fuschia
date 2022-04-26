@@ -1,5 +1,4 @@
 import { useCallback } from 'react'
-import { useSelection } from '../hooks/useSelection'
 import { useParams } from 'react-router-dom'
 import {
   ComponentInput,
@@ -11,11 +10,10 @@ type InsertFunc = (value: ComponentInput) => void
 export const useInsertComponent = (): InsertFunc => {
   const { projectId } = useParams()
   const [createComponent] = useCreateComponentMutation()
-  const { setSelection } = useSelection()
 
   const insertFunc = useCallback<InsertFunc>(
     async componentInput => {
-      const newComponent = await createComponent({
+      await createComponent({
         variables: {
           projectId,
           componentInput,
@@ -25,7 +23,7 @@ export const useInsertComponent = (): InsertFunc => {
       //   setSelection([newComponent.data.createComponent._id])
       // }
     },
-    [createComponent, projectId, setSelection]
+    [createComponent, projectId]
   )
 
   return insertFunc
