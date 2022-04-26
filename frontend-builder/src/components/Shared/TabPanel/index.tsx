@@ -1,5 +1,4 @@
 import React from 'react'
-import Typography from '@mui/material/Typography'
 import Box from '@mui/material/Box'
 interface TabPanelProps {
   children?: React.ReactNode
@@ -21,7 +20,7 @@ const TabPanel: React.FC<TabPanelProps> = function TabPanel(
     >
       {value === index && (
         <Box sx={{ p: 0 }}>
-          <Typography>{children}</Typography>
+          <Box>{children}</Box>
         </Box>
       )}
     </div>

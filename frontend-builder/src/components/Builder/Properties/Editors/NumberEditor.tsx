@@ -11,13 +11,15 @@ const NumberEditor = function NumberEditor(props: NumberEditorProps) {
       return <div>Unsupported</div>
     default:
       return (
-        <LabeledTextInput
-          type="number"
-          step={props.schema.step || 1}
-          defaultValue={props.initialValue}
-          label={props.schema.title || 'undefined'}
-          onChange={e => props.updateValue(+e.target.value, true)}
-        />
+        <>
+          <LabeledTextInput
+            type="number"
+            step={props.schema.step || 1}
+            defaultValue={props.initialValue}
+            label={props.schema.title || 'undefined'}
+            onChange={e => props.updateValue(+e.target.value, true)}
+          />
+        </>
       )
   }
 }

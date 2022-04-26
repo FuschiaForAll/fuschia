@@ -1,0 +1,28 @@
+{
+  "type": "ui-component",
+  "title": "Stack",
+  "icon": "FilterNone",
+  "componentType": "Stack",
+  "description": "A plain old text field",
+  "width": 2000,
+  "height": 1000,
+  "properties": {
+    "style": {
+      "type": "object",
+      "title": "Styles",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "number",
+          "default": 1000
+        },
+        "width": {
+          "title": "Width",
+          "type": "number",
+          "default": 2000
+        }
+      }
+    }
+  }
+}

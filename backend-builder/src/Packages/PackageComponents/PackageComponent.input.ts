@@ -3,6 +3,7 @@ import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../utils/object-id.scalar";
 import { prop as Property } from "@typegoose/typegoose";
 import { PackageComponent } from "./PackageComponent.entity";
+import { PackageComponentType } from "./PackageComponentType.enum";
 
 @InputType()
 export class PackageComponentInput implements Partial<PackageComponent> {
@@ -10,18 +11,16 @@ export class PackageComponentInput implements Partial<PackageComponent> {
   name!: String;
 
   @Field((type) => Object)
-  @Property({ required: true })
   schema!: Object;
 
   @Field((type) => Object)
-  @Property({ required: true })
-  defaultValue!: Object;
+  defaultPropValue!: Object;
 
-  @Field()
-  isRootElement!: boolean;
+  @Field((type) => Object, { nullable: true })
+  defaultLayoutValue!: Object;
 
-  @Field()
-  isContainer!: boolean;
+  @Field((type) => PackageComponentType)
+  componentType!: PackageComponentType;
 
   @Field()
   icon!: String;

@@ -130,8 +130,6 @@ const KeyboardEvents: React.FC = function KeyboardEvents() {
         case ESCAPE:
           handleClearSelection()
           break
-        default:
-          console.log(key)
       }
     },
     [

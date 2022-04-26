@@ -1,5 +1,4 @@
 import React from 'react'
-import { useQuery, gql } from '@apollo/client'
 import { Route, Routes, useNavigate, useParams } from 'react-router-dom'
 import Settings from '../App/Settings'
 
@@ -14,26 +13,21 @@ import Previewer from '../Previewer'
 import { Modal, Paper } from '@mui/material'
 import Dashboard from '../Dashboard'
 import { DesignerHistoryProvider } from '../../utils/hooks/useDesignerHistory'
-
-const GET_PROJECT = gql`
-  query GetBuilderProject($projectId: ObjectId!) {
-    project: getProject(projectId: $projectId) {
-      _id
-      appId
-      projectName
-      body
-    }
-  }
-`
+import { useGetProjectQuery } from '../../generated/graphql'
+import ImageLibrary from './ImageLibrary'
+import { ProjectComponentProvider } from '../../utils/hooks/useProjectComponents'
+import Publish from './Publish'
 
 const Builder: React.FC = function Builder() {
   const { projectId } = useParams()
   const navigate = useNavigate()
-  const { data, loading } = useQuery(GET_PROJECT, { variables: { projectId } })
+  const { data, loading } = useGetProjectQuery({
+    variables: {
+      projectId,
+    },
+  })
 
-  const project = data?.project
-
-  if (!data && loading) {
+  if (!data?.getProject && loading) {
     return <FullScreenLoader />
   } else if (!data) {
     return (
@@ -42,43 +36,50 @@ const Builder: React.FC = function Builder() {
       </div>
     )
   }
-
+  if (!projectId) {
+    return null
+  }
+  const project = data.getProject
   return (
     <DesignerHistoryProvider>
-      <div>
-        <Canvas />
-        <Topbar projectName={project.projectName} />
-        <Sidebar />
-        <Scalebar />
-      </div>
-      <Routes>
-        <Route path="database" element={<Database />} />
-        <Route path="previewer" element={<Previewer />} />
-        <Route path="app-settings" element={<Settings />} />
-        <Route path="label-library" element={<LabelLibrary />} />
-        <Route
-          path="dashboard"
-          element={
-            <Modal
-              open={true}
-              onClose={() => navigate('./')}
-              sx={{ padding: '5rem' }}
-            >
-              <Paper
-                sx={{
-                  height: '100%',
-                  width: '100%',
-                  padding: '1rem',
-                  display: 'grid',
-                  gridTemplateRows: 'auto 1fr',
-                }}
+      <ProjectComponentProvider projectId={projectId}>
+        <div>
+          <Canvas />
+          <Topbar projectName={project.projectName} />
+          <Sidebar />
+          <Scalebar />
+        </div>
+        <Routes>
+          <Route path="database" element={<Database />} />
+          <Route path="previewer" element={<Previewer />} />
+          <Route path="publish" element={<Publish />} />
+          <Route path="app-settings" element={<Settings />} />
+          <Route path="label-library" element={<LabelLibrary />} />
+          <Route path="asset-library/*" element={<ImageLibrary />} />
+          <Route
+            path="dashboard"
+            element={
+              <Modal
+                open={true}
+                onClose={() => navigate('./')}
+                sx={{ padding: '5rem' }}
               >
-                <Dashboard />
-              </Paper>
-            </Modal>
-          }
-        />
-      </Routes>
+                <Paper
+                  sx={{
+                    height: '100%',
+                    width: '100%',
+                    padding: '1rem',
+                    display: 'grid',
+                    gridTemplateRows: 'auto 1fr',
+                  }}
+                >
+                  <Dashboard />
+                </Paper>
+              </Modal>
+            }
+          />
+        </Routes>
+      </ProjectComponentProvider>
     </DesignerHistoryProvider>
   )
 }

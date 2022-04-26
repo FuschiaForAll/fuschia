@@ -64,7 +64,6 @@ export class ProjectResolver {
       projectName: project.projectName,
       organization,
       appConfig: new AppConfig(),
-      body: '{"objects": []}',
     }).save();
 
     await OrganizationModel.findByIdAndUpdate(project.organizationId, {
@@ -86,7 +85,6 @@ export class ProjectResolver {
 
     const projectModel = await ProjectModel.findByIdAndUpdate(projectId, {
       projectName: project.projectName,
-      body: project.body,
     });
 
     return { _id: projectId, ...project };

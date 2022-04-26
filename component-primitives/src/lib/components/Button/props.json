@@ -2,17 +2,22 @@
   "type": "ui-component",
   "title": "Button",
   "icon": "SmartButton",
-  "isRootElement": false,
-  "isContainer": false,
+  "componentType": "Container",
   "description": "A plain old text field",
   "width": 160,
   "height": 35,
   "properties": {
-    "title": {
-      "type": "string",
-      "title": "Display value",
-      "description": "The value to display",
-      "default": "Lorem Ipsum"
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "title": {
+          "type": "string",
+          "title": "Display value",
+          "description": "The value to display",
+          "default": "Lorem Ipsum"
+        }
+      }
     },
     "style": {
       "type": "object",
@@ -21,27 +26,73 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 35
+          "type": "string",
+          "default": "35px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 175
+          "type": "string",
+          "default": "175px"
         },
-        "color": {
-          "title": "Text Color",
+        "backgroundColor": {
+          "title": "Background Color",
           "type": "string",
           "format": "color",
           "default": "#000000"
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "string",
+          "default": "5px"
+        },
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "position": {
+          "title": "Position",
+          "type": "string",
+          "default": "initial"
+        },
+        "placement": {
+          "title": "Position",
+          "type": "position",
+          "default": "initial"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string"
+        },
+        "alignSelf": {
+          "title": "Align Self",
+          "type": "string"
         }
       }
     },
-    "onPress": {
-      "title": "onPress",
-      "type": "function",
-      "arguments": [],
-      "returnType": "null"
+    "actions": {
+      "type": "object",
+      "title": "Actions",
+      "properties": {
+        "onPress": {
+          "title": "onPress",
+          "type": "function",
+          "arguments": [],
+          "returnType": "null"
+        }
+      }
     }
   }
 }

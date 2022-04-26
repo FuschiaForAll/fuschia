@@ -1,0 +1,10 @@
+#import "./Component.fragment.graphql"
+subscription OnComponentChange($projectId: ObjectId!) {
+  onComponentChange(projectId: $projectId) {
+    type
+    _ids
+    components {
+      ...ComponentFragment
+    }
+  }
+}

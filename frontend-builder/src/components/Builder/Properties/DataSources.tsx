@@ -379,14 +379,14 @@ function ContainerParameterEditor({
       <EntitySelector
         componentId={componentId}
         isList={true}
-        onSelect={(entity, path, label) => {
-          alert(`entity: ${entity}\npath: ${path}\nlabel: ${label}`)
-          const source = {
-            label,
-            entity,
-            path,
-          }
-          setNewDataSource(source)
+        onSelect={(entity, value) => {
+          throw new Error('THIS IS BROKEN')
+          // const source = {
+          //   label,
+          //   entity,
+          //   path,
+          // }
+          // setNewDataSource(source)
         }}
         additionalEntities={models.map(modelType => ({
           entity: modelType._id,
@@ -522,14 +522,14 @@ function RootParameterEditor({
       <EntitySelector
         componentId={componentId}
         isList={false}
-        onSelect={(entity, path, label) => {
-          alert(`entity: ${entity}\npath: ${path}\nlabel: ${label}`)
-          const source = {
-            label,
-            entity,
-            path,
-          }
-          setNewDataSource(source)
+        onSelect={(entity, value) => {
+          throw new Error('THIS IS BROKEN')
+          // const source = {
+          //   label,
+          //   entity,
+          //   path,
+          // }
+          // setNewDataSource(source)
         }}
         additionalEntities={models.map(modelType => ({
           entity: modelType._id,

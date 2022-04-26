@@ -1,0 +1,3 @@
+mutation deleteInvitation($organizationId: ObjectId!, $email: String!) {
+  deleteInvitation(organizationId: $organizationId, email: $email)
+}

@@ -1,0 +1,11 @@
+subscription OnAssetChange($projectId: ObjectId!) {
+  onAssetChange(projectId: $projectId) {
+    type
+    _ids
+    assets {
+      _id
+      key
+      name
+    }
+  }
+}

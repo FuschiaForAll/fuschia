@@ -11,6 +11,11 @@ import {
   AnySchema,
   NullSchema,
   FunctionSchema,
+  PaddingSchema,
+  MarginSchema,
+  FontSchema,
+  FlexContainerSchema,
+  PositionSchema,
 } from '@fuchsia/types'
 import BooleanEditor from './BooleanEditor'
 import StringEditor from './StringEditor'
@@ -20,6 +25,11 @@ import NumberEditor from './NumberEditor'
 import AnyEditor from './AnyEditor'
 import NullEditor from './NullEditor'
 import FunctionEditor from './FunctionEditor'
+import PaddingEditor from './PaddingEditor'
+import MarginEditor from './MarginEditor'
+import FontEditor from './FontEditor'
+import FlexContainerEditor from './FlexContainerEditor'
+import PositionEditor from './PositionEditor'
 
 export type EditorProps = Props<Schema, ValueType>
 
@@ -45,11 +55,24 @@ const Editor = function Editor(props: EditorProps) {
     case 'function':
       return <FunctionEditor {...(props as Props<FunctionSchema, any>)} />
     case 'ui-component':
+    case 'layout-component':
     case 'object':
       return (
         <ObjectEditor
           {...(props as Props<ObjectSchema, { [name: string]: ValueType }>)}
         />
+      )
+    case 'padding':
+      return <PaddingEditor {...(props as Props<PaddingSchema, any>)} />
+    case 'margin':
+      return <MarginEditor {...(props as Props<MarginSchema, any>)} />
+    case 'position':
+      return <PositionEditor {...(props as Props<PositionSchema, any>)} />
+    case 'font':
+      return <FontEditor {...(props as Props<FontSchema, any>)} />
+    case 'flexContainer':
+      return (
+        <FlexContainerEditor {...(props as Props<FlexContainerSchema, any>)} />
       )
     case undefined:
       return <AnyEditor {...(props as Props<AnySchema, any>)} />

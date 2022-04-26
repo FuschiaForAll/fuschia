@@ -1,9 +1,8 @@
 {
-  "type": "ui-component",
+  "type": "layout-component",
   "title": "Screen",
   "icon": "Crop32",
-  "isRootElement": true,
-  "isContainer": true,
+  "componentType": "Screen",
   "description": "A plain old text field",
   "width": 350,
   "height": 667,
@@ -20,6 +19,11 @@
         }
       }
     },
+    "layout": {
+      "type": "object",
+      "title": "Layout",
+      "properties": {}
+    },
     "style": {
       "type": "object",
       "title": "Styles",
@@ -35,6 +39,14 @@
           "type": "number",
           "default": 350
         },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
         "backgroundColor": {
           "title": "Background Color",
           "type": "string",
@@ -43,11 +55,17 @@
         }
       }
     },
-    "onLoad": {
-      "type": "function",
-      "title": "onLoad",
-      "arguments": [],
-      "returnType": "null"
+    "actions": {
+      "type": "object",
+      "title": "Actions",
+      "properties": {
+        "onLoad": {
+          "type": "function",
+          "title": "onLoad",
+          "arguments": [],
+          "returnType": "null"
+        }
+      }
     }
   }
 }

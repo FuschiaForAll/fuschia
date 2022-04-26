@@ -2,21 +2,27 @@
   "type": "ui-component",
   "title": "Checkbox",
   "icon": "CheckBox",
-  "isRootElement": false,
-  "isContainer": false,
+  "componentType": "Element",
   "description": "A plain old checkbox",
   "width": 15,
   "height": 15,
   "properties": {
-    "disabled": {
-      "title": "Disabled",
-      "type": "boolean",
-      "default": false
-    },
-    "value": {
-      "title": "Value",
-      "type": "boolean",
-      "default": true
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "disabled": {
+          "title": "Disabled",
+          "type": "boolean",
+          "default": false
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean",
+          "default": true,
+          "dataBound": true
+        }
+      }
     },
     "style": {
       "type": "object",
@@ -40,20 +46,6 @@
           "default": "#000000"
         }
       }
-    },
-    "onValueChange": {
-      "title": "onValueChange",
-      "type": "function",
-      "arguments": [
-        {
-          "title": "New Value",
-          "type": "boolean"
-        }
-      ],
-      "returnType": "null"
     }
-  },
-  "data": {
-    "checked": "boolean"
   }
 }

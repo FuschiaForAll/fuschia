@@ -1,12 +1,16 @@
 import React, { useState, useCallback } from 'react'
 import Paper from '@mui/material/Paper'
 import Item from './Item'
-import { useGetPackagesQuery } from '../../../generated/graphql-packages'
-import { Component } from '../../../generated/graphql'
+import {
+  PackageComponentType,
+  useGetPackagesQuery,
+} from '../../../generated/graphql'
 import * as MaterialIcons from '@mui/icons-material'
 import { useDragDrop } from '../../../utils/hooks'
+import { StructuredComponent } from '../../../utils/hooks/useProjectComponents'
+import { LexoRankHelper } from '../../../utils/lexoRankHelper'
 interface ToolProps {
-  defaultLayer: Component & { isRootElement: boolean }
+  defaultLayer: StructuredComponent
 }
 
 interface DragEvent {
@@ -15,7 +19,7 @@ interface DragEvent {
 
 interface DragItemProps {
   drag: DragEvent
-  layer: Component & { isRootElement: boolean }
+  layer: StructuredComponent
   onDrag: (evt: MouseEvent) => void
   onDragEnd: () => void
 }
@@ -27,6 +31,7 @@ const cardStyles = {
   flexDirection: 'column',
   alignItems: 'center',
   pointerEvents: 'all',
+  gap: '1em',
 }
 
 const DragItem: React.FC<DragItemProps> = function DragItem({
@@ -48,30 +53,35 @@ const DragItem: React.FC<DragItemProps> = function DragItem({
     position: 'fixed',
     zIndex: 1000,
   }
-  styles.width = layer.props.style?.width || 50
-  styles.height = layer.props.style?.height || 50
+  styles.width = layer.props?.style?.width || 50
+  styles.height = layer.props?.style?.height || 50
   styles.left = `${
-    drag.position[0] - parseFloat(layer.props.style?.width || '0') / 2
+    drag.position[0] - parseFloat(layer.props?.style?.width || '0') / 2
   }px`
   styles.top = `${
-    drag.position[1] - parseFloat(layer.props.style?.height || '0') / 2
+    drag.position[1] - parseFloat(layer.props?.style?.height || '0') / 2
   }px`
 
   const props = { ...layer.props }
   // @ts-ignore
-  const InlineComponent = window[layer.package].components[layer.type]
-  if (layer.data) {
-    if (layer.data) {
-      Object.keys(layer.data).forEach(key => {
-        props[key] = {
-          onChange: (e: any) => {},
-        }
-      })
-    }
-  }
+  const InlineComponent = window[layer.package][layer.type]
+  // if (layer.data) {
+  //   if (layer.data) {
+  //     Object.keys(layer.data).forEach(key => {
+  //       props[key] = {
+  //         onChange: (e: any) => {},
+  //       }
+  //     })
+  //   }
+  // }
   return (
     <div
-      className={`droppable ${layer.isRootElement ? 'root-element' : ''}`}
+      className={`droppable ${
+        layer.componentType === PackageComponentType.Stack ||
+        layer.componentType === PackageComponentType.Screen
+          ? 'root-element'
+          : ''
+      }`}
       id="new-element"
       data-parent="toolbar"
       ref={ref}
@@ -134,11 +144,7 @@ const Tool: React.FC<ToolProps> = function Tool({ defaultLayer, children }) {
 }
 
 const Toolbar: React.FC = function Toolbar() {
-  const { data: packageData } = useGetPackagesQuery({
-    context: {
-      clientName: 'package-manager',
-    },
-  })
+  const { data: packageData } = useGetPackagesQuery()
   return (
     <Paper elevation={12} sx={cardStyles} id="toolbar">
       {packageData &&
@@ -149,13 +155,13 @@ const Toolbar: React.FC = function Toolbar() {
                 key={component._id}
                 defaultLayer={{
                   name: component.name,
-                  isContainer: component.isContainer,
-                  isRootElement: component.isRootElement,
+                  componentType: component.componentType,
                   package: _package.packageName,
                   _id: '',
                   type: component.name,
-                  props: component.defaultValue,
-                  data: component.schema.data,
+                  props: component.defaultPropValue,
+                  layout: component.defaultLayoutValue,
+                  layerSort: LexoRankHelper.generateNewLexoRanking(),
                 }}
               >
                 {/* @ts-ignore */}

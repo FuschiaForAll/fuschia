@@ -51,7 +51,7 @@ body {
 }
 
 .drop-target {
-  border: var(--accent) solid 1px;
+  border: var(--accent) solid 1px !important;
 }
 
 /** Remove default select */

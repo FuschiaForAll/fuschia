@@ -1,0 +1,14 @@
+#import "./InvitationFragment.graphql"
+mutation inviteMember(
+  $organizationId: ObjectId!
+  $email: String!
+  $sendInvite: Boolean
+) {
+  inviteMember(
+    organizationId: $organizationId
+    email: $email
+    sendInvite: $sendInvite
+  ) {
+    ...InvitationFragment
+  }
+}

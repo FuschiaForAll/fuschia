@@ -10,8 +10,9 @@ const BooleanEditor = function BooleanEditor(props: BooleanEditorProps) {
       <div style={{ fontSize: '0.75rem' }}>{props.schema.title}</div>
       <EntitySelector
         componentId={props.componentId}
-        onSelect={(entity, path, label) => {
-          props.updateValue(path, true)
+        onSelect={(entity, path) => {
+          throw new Error('THIS NEEDS FIXING')
+          //props.updateValue(path, true)
         }}
         additionalEntities={[
           {

@@ -53,7 +53,7 @@ export function AuthConfig({ projectId }: { projectId: string }) {
     return <div>Error</div>
   }
   if (!authConfigData?.getAuth || loading) {
-    return <div>Loading...</div>
+    return <div>Loading Auth...</div>
   }
   return (
     <div>
@@ -250,7 +250,17 @@ export function AuthConfig({ projectId }: { projectId: string }) {
                     })
                   ) || []),
                 ]}
-                onChange={onChangeHandler}
+                onChange={e => {
+                  const value = e.target.value
+                  updateAuthData({
+                    variables: {
+                      projectId,
+                      input: {
+                        tableId: value,
+                      },
+                    },
+                  })
+                }}
               />
             </div>
             <div>

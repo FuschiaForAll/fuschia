@@ -17,6 +17,7 @@ export class EntityModelResolver {
   async createEntityModel(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Arg("name") name: string,
+    @Arg("isLocal") isLocal: boolean,
     @Ctx() ctx: Context
   ) {
     if (
@@ -32,6 +33,7 @@ export class EntityModelResolver {
     if (project) {
       const entityModel = new EntityModel();
       entityModel.name = name;
+      entityModel.isLocal = isLocal
       project.appConfig.apiConfig.models.push(entityModel);
       project.save();
       return project.appConfig.apiConfig.models.at(-1);

@@ -1,8 +1,6 @@
 import { useCallback } from 'react'
-import { useParams } from 'react-router-dom'
 import {
   ComponentInput,
-  GetComponentsDocument,
   useUpdateComponentMutation,
   useUpdateComponentPropsMutation,
 } from '../../generated/graphql'
@@ -22,14 +20,9 @@ interface useUpdateComponentProps {
 }
 
 export const useUpdateComponent = (): useUpdateComponentProps => {
-  const { projectId } = useParams()
   const { performAction } = useDesignerHistory()
   const [updateComponentProps] = useUpdateComponentPropsMutation()
-  const [updateComponent] = useUpdateComponentMutation({
-    refetchQueries: [
-      { query: GetComponentsDocument, variables: { projectId } },
-    ],
-  })
+  const [updateComponent] = useUpdateComponentMutation()
 
   const updatePropFunc = useCallback<UpdateFunc>(
     (id, newvalue, oldvalue) => {

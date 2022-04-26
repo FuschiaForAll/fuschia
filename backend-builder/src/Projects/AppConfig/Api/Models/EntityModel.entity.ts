@@ -16,6 +16,10 @@ export class EntityModel {
     @Property({ required: true })
     name!: string;
 
+    @Field()
+    @Property({ required: true })
+    isLocal!: boolean;
+
     @Field(type => [Key])
     @Property({ type: () => Key, default: [] })
     keys!: Key[]

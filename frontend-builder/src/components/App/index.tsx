@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useGetPackagesQuery } from '../../generated/graphql-packages'
+import { useGetPackagesQuery } from '../../generated/graphql'
 import { Login, Register } from '../Authentication'
 import Builder from '../Builder'
 import Dashboard from '../Dashboard'
@@ -18,13 +18,17 @@ const App: React.FC = function App() {
   })
   useEffect(() => {
     if (packageData) {
-      // eslint-disable-next-line no-eval
-      packageData.getPackages.forEach(_package => eval(_package.bundle))
+      try {
+        // eslint-disable-next-line no-eval
+        packageData.getPackages.forEach(_package => eval(_package.bundle))
+      } catch (e) {
+        console.error(e)
+      }
       setLoaded(true)
     }
   }, [packageData])
   if (!loaded) {
-    return <div>Loading</div>
+    return <div>Loading Packages</div>
   }
   return (
     <BrowserRouter>

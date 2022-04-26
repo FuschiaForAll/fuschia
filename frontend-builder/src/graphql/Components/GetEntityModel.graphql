@@ -2,6 +2,7 @@ query GetEntityModel($projectId: ObjectId!, $entityModelId: ObjectId!) {
   getEntityModel(projectId: $projectId, entityModelId: $entityModelId) {
     _id
     name
+    isLocal
     fields {
       _id
       fieldName

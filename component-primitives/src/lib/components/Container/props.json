@@ -1,9 +1,8 @@
 {
-  "type": "ui-component",
+  "type": "layout-component",
   "title": "Container",
   "icon": "AutoAwesomeMosaic",
-  "isRootElement": false,
-  "isContainer": true,
+  "componentType": "Container",
   "description": "A plain old text field",
   "width": 160,
   "height": 35,
@@ -15,13 +14,18 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 150
+          "type": "string",
+          "default": "150px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 150
+          "type": "string",
+          "default": "150px"
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "string",
+          "default": "5px"
         },
         "backgroundColor": {
           "title": "Background Color",
@@ -29,10 +33,32 @@
           "default": "#303030",
           "format": "color"
         },
-        "borderRadius": {
-          "title": "Border Radius",
-          "type": "number",
-          "default": 5
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "position": {
+          "title": "Position",
+          "type": "string",
+          "default": "initial"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string",
+          "default": "1"
         }
       }
     }

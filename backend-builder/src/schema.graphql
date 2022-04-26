@@ -10,6 +10,13 @@ type Api {
   queries: [String!]!
   sandboxEndpoint: String
   subscriptions: [String!]!
+  variables: [ApiVariable!]!
+}
+
+type ApiVariable {
+  _id: ObjectId!
+  name: String!
+  type: String!
 }
 
 type AppConfig {
@@ -20,6 +27,23 @@ type AppConfig {
 
 input AppConfigInput {
   appEntryComponentId: ObjectId
+}
+
+type Asset {
+  _id: ObjectId!
+  key: String!
+  name: String!
+}
+
+type AssetLibrary {
+  _id: ObjectId!
+  assets: [Asset!]!
+}
+
+type AssetSubscriptionPayload {
+  _ids: [ObjectId!]!
+  assets: [Asset!]!
+  type: String!
 }
 
 type Auth {
@@ -76,15 +100,15 @@ type BindingContext {
 
 type Component {
   _id: ObjectId!
-  children: [Component!]
+  componentType: PackageComponentType!
   data: JSONObject
   fetched: [DataSource!]
-  isContainer: Boolean!
-  isRootElement: Boolean!
+  layerSort: String!
+  layout: JSONObject
   name: String!
   package: String!
   parameters: [RequiredParameter!]
-  parent: Component
+  parent: ObjectId
   props: JSONObject
   requiresAuth: Boolean
   type: String!
@@ -93,11 +117,11 @@ type Component {
 }
 
 input ComponentInput {
-  children: [ObjectId!]
+  componentType: PackageComponentType
   data: JSONObject
   fetched: [DataSourceInput!]
-  isContainer: Boolean
-  isRootElement: Boolean
+  layerSort: String
+  layout: JSONObject
   name: String
   package: String
   parameters: [RequiredParameterInput!]
@@ -107,6 +131,12 @@ input ComponentInput {
   type: String
   x: Float
   y: Float
+}
+
+type ComponentSubscriptionPayload {
+  _ids: [ObjectId!]!
+  components: [Component!]!
+  type: String!
 }
 
 type DataAuth {
@@ -177,6 +207,7 @@ type EntityModel {
   _id: ObjectId!
   auth: [DataAuth!]!
   fields: [DataField!]!
+  isLocal: Boolean!
   keys: [Key!]!
   name: String!
 }
@@ -184,6 +215,13 @@ type EntityModel {
 type FieldError {
   field: String!
   message: String!
+}
+
+type Invitation {
+  _id: ObjectId!
+  acceptedDate: DateTime
+  organizationId: ObjectId!
+  userEmail: String!
 }
 
 """
@@ -228,11 +266,14 @@ type MenuStructure {
 }
 
 type Mutation {
+  acceptInvitaion(invitationId: ObjectId!): Boolean!
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
+  createApiVariable(name: String!, projectId: ObjectId!, type: String!): ApiVariable!
+  createAssetFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
-  createEntityModel(name: String!, projectId: ObjectId!): EntityModel
+  createEntityModel(isLocal: Boolean!, name: String!, projectId: ObjectId!): EntityModel
   createLabelTag(numberOfStates: Int!, projectId: ObjectId!, tagName: String!): Project!
   createLanguage(languageCode: String!, languageName: String!, projectId: ObjectId!): Project!
   createMutation: Boolean
@@ -244,9 +285,12 @@ type Mutation {
   createSubscription: Boolean
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
+  deleteApiVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
+  deleteAsset(imageId: ObjectId!, projectId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
+  deleteInvitation(email: String!, organizationId: ObjectId!): Boolean!
   deleteMutations: Boolean
   deleteOrganization(organizationId: ObjectId!): ObjectId!
   deleteProject(projectId: ObjectId!): ObjectId!
@@ -255,6 +299,7 @@ type Mutation {
   deleteSubscription: Boolean
   duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
   forgotPassword(email: String!): Boolean!
+  inviteMember(email: String!, organizationId: ObjectId!, sendInvite: Boolean): Invitation!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
@@ -263,10 +308,13 @@ type Mutation {
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
   resetPassword(newPassword: String!, token: String!): Boolean!
   updateAppConfig(appConfig: AppConfigInput!, projectId: ObjectId!): Boolean!
+  updateAssetMetaData(projectId: ObjectId!): Boolean!
   updateAuth(input: AuthInput!, projectId: ObjectId!): Auth
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
-  updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component!
+  updateComponentLayout(componentId: ObjectId!, layout: JSONObject!): Component
+  updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component
   updateEntityModel: Boolean
+  updateImageMetaData(projectId: ObjectId!): Boolean!
   updateMe(userInput: UserInput!): User!
   updateMutation: Boolean
   updateParameter(componentId: ObjectId!, parameterId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
@@ -276,6 +324,7 @@ type Mutation {
   updateRelationship: Boolean
   updateSubscription: Boolean
   updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
+  uploadAsset(file: Upload!, folder: String!, projectId: ObjectId!): Boolean!
 }
 
 """Mongo object id scalar type"""
@@ -306,21 +355,31 @@ type Package {
 
 type PackageComponent {
   _id: ObjectId!
-  defaultValue: JSONObject!
+  componentType: PackageComponentType!
+  defaultLayoutValue: JSONObject
+  defaultPropValue: JSONObject
   icon: String!
-  isContainer: Boolean!
-  isRootElement: Boolean!
   name: String!
   schema: JSONObject!
 }
 
 input PackageComponentInput {
-  defaultValue: JSONObject!
+  componentType: PackageComponentType!
+  defaultLayoutValue: JSONObject
+  defaultPropValue: JSONObject!
   icon: String!
-  isContainer: Boolean!
-  isRootElement: Boolean!
   name: String!
   schema: JSONObject!
+}
+
+"""
+The type of component, dictates where it can be dropped or if things can be dropped on it
+"""
+enum PackageComponentType {
+  Container
+  Element
+  Screen
+  Stack
 }
 
 input PackageInput {
@@ -352,15 +411,13 @@ type Project {
   _id: ObjectId!
   appConfig: AppConfig!
   appId: String!
-  body: String
-  components: [Component!]!
+  assetLibrary: AssetLibrary
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
 }
 
 input ProjectInput {
-  body: String
   organizationId: ObjectId!
   projectName: String!
 }
@@ -379,6 +436,8 @@ type Query {
   getPreviewerData(projectId: ObjectId!): Previewer!
   getProject(projectId: ObjectId!): Project!
   getServerStatus(projectId: ObjectId!, sandbox: Boolean!): Boolean!
+  invitation(invitationId: ObjectId!): Invitation!
+  listAssetFolder(projectId: ObjectId!): [Asset!]!
   listEntityModel: Boolean
   listMutations: Boolean
   listOrganizations: [Organization!]!
@@ -406,20 +465,28 @@ input RequiredParameterInput {
   path: String!
 }
 
+type Subscription {
+  onAssetChange(projectId: ObjectId!): AssetSubscriptionPayload!
+  onComponentChange(projectId: ObjectId!): ComponentSubscriptionPayload!
+}
+
 type Translation {
   tag: ObjectId!
   value: [String!]!
 }
 
 input UpdateProjectInput {
-  body: String!
   projectName: String
 }
+
+"""The `Upload` scalar type represents a file upload."""
+scalar Upload
 
 type User {
   _id: ObjectId!
   email: String!
   fullName: String
+  invitations: [Invitation!]!
   lastLogin: DateTime
   organizations: [Organization!]!
   status: String!

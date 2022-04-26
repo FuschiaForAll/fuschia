@@ -1,41 +1,32 @@
-import React, { useCallback } from 'react'
+import React, { PropsWithChildren, useRef } from 'react'
 import styled from '@emotion/styled'
 
-import { useSelection, Selection, useDragDrop } from '../../../../utils/hooks'
-import { arrayXor } from '../../../../utils/arrays'
+import { useSelection, useDragDrop } from '../../../../utils/hooks'
 import {
-  Component,
+  PackageComponentType,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
-import PropertyWindow from '../../Properties'
-import {
-  GetPackagesQuery,
-  useGetPackagesQuery,
-} from '../../../../generated/graphql-packages'
-import { Schema } from '@fuchsia/types'
-import Portal from '../../../Shared/Portal'
+import { useGetPackagesQuery } from '../../../../generated/graphql'
+import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
+import { useParams } from 'react-router-dom'
+import { DraftJSEditorConverter } from '../../../../utils/draftJsConverters'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
-interface LayerProps {
-  layer: Component
-  selection?: Selection
-  onSelect?: ClickHandler
-}
-
 interface InlineProps {
-  layer: Component
+  layer: StructuredComponent
   selected: boolean
   onClick?: ClickHandler
 }
 
 interface FrameProps extends InlineProps {
-  layer: Component
+  layer: StructuredComponent
 }
 
 const BOX_SHADOW = '0 0 0 2px var(--primary)'
 
-const FrameWrapper = styled.div<{ name?: string }>`
+const FrameWrapper = styled.div<{ name?: string; root?: boolean }>`
+  position: ${p => (p.root ? 'absolute' : 'initial')};
   &:before {
     content: '${p => p.name}';
     position: absolute;
@@ -43,10 +34,9 @@ const FrameWrapper = styled.div<{ name?: string }>`
     color: var(--attention);
   }
   pointer-events: all;
-  position: absolute;
 `
 
-const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
+const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   layer,
   children,
   selected,
@@ -82,29 +72,24 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
   })
 
   const styles: React.CSSProperties = {
-    width: props.style?.width || 50,
-    height: props.style?.height || 50,
+    width: props?.style?.width || 50,
+    height: 'auto',
+    minHeight: '100px',
+    pointerEvents: 'all',
     left: x || 0,
     top: y || 0,
-    pointerEvents: 'all',
-    position: 'absolute',
     zIndex: 10,
+    border: '#ccc dashed 1px',
   }
 
   if (selected) {
-    styles.boxShadow = BOX_SHADOW
+    styles.border = 'var(--primary) dashed 1px'
   }
-
-  if (layer.isRootElement) {
-    styles.border = '#ccc solid 1px'
-  }
-  const classNames = ['droppable']
-  if (layer.isRootElement) {
-    classNames.push('root-element')
-  }
+  const classNames = ['droppable', 'root-element']
   return (
     <FrameWrapper
-      name={layer.isRootElement ? layer.name : ''}
+      name={layer.name}
+      root={!!layer.parentId}
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}
@@ -112,237 +97,130 @@ const FrameLayer: React.FC<FrameProps> = function AbsoluteLayer({
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
-      data-parentid={layer.parent?._id}
+      data-parentid={layer.parentId}
     >
       {children}
     </FrameWrapper>
   )
 }
 
-export const InlineLayer: React.FC<InlineProps> = function InlineLayer({
+function ScreenLayer({
   layer,
   children,
-  selected,
   onClick,
-}) {
-  const [updateComponent] = useUpdateComponentMutation()
-  const { ref } = useDragDrop(layer._id, {
-    draggable: {
-      onDragEnd: id => {},
-    },
-    resizable: {
-      onResizeEnd: (id, { width, height }, { x, y }) => {
-        updateComponent({
-          variables: {
-            componentId: id,
-            componentInput: {
-              x,
-              y,
-              props: {
-                ...props,
-                style: { width, height },
-              },
-            },
-          },
-        })
-      },
-    },
-  })
+}: PropsWithChildren<FrameProps>) {
+  const classNames = ['droppable', 'root-element']
   const { x, y, props } = layer
 
   const styles: React.CSSProperties = {
-    width: props.style?.width || 50,
-    height: props.style?.height || 50,
+    width: props?.style?.width || 50,
+    height: props?.style?.height || 50,
     pointerEvents: 'all',
-    zIndex: 1000,
-    position: 'absolute',
-    left: `${x}px`,
-    top: `${y}px`,
+    left: x || 0,
+    top: y || 0,
+    zIndex: 10,
+    border: '#ccc solid 1px',
   }
-  if (selected) {
-    styles.boxShadow = BOX_SHADOW
-  }
+
   return (
-    <div
-      className="droppable"
+    <FrameWrapper
+      name={layer.name}
       id={layer._id}
-      ref={ref}
+      root={!!layer.parentId}
       style={styles}
+      className={classNames.join(' ')}
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
+      data-parentid={layer.parentId}
     >
-      {children}
-    </div>
+      <div style={{ contain: 'content' }}>{children}</div>
+    </FrameWrapper>
   )
 }
 
-function convertDraftJSBindings(value: any) {
-  try {
-    if (value.blocks) {
-      return value.blocks.map((block: any) => block.text).join('\n')
-    }
-  } catch {}
-  return value
-}
-
-function getComponentSchema(
-  packageData: GetPackagesQuery,
-  layer: Component
-): Schema {
-  const componentPackage = packageData.getPackages.find(
-    p => p.packageName === layer.package
-  )
-  if (componentPackage) {
-    const component = componentPackage.components.find(
-      component => component.name === layer.type
-    )
-    if (component) {
-      return component.schema
-    }
+const AbsolutePositionedRootElement = styled.div`
+  position: absolute;
+  & > div:hover: {
+    display: none;
   }
-  throw new Error('Schema not found')
-}
+  pointer-events: all;
+`
 
-const LayerSub: React.FC<LayerProps> = function LayerSub({
+const Layer = React.memo(function Layer({
   layer,
-  selection,
-  onSelect,
+}: {
+  layer: StructuredComponent
 }) {
   const { data: packageData } = useGetPackagesQuery()
+  const { selection, setSelection } = useSelection()
+  const { projectId } = useParams<{ projectId: string }>()
   const selected = !!selection?.includes(layer._id)
+  const ref = useRef<HTMLDivElement>()
 
   // @ts-ignore
   if (!window[layer.package]) {
-    return (
-      <InlineLayer layer={layer} selected={selected} onClick={onSelect}>
-        <div>Missing Package</div>
-      </InlineLayer>
-    )
+    return <div>Missing Package</div>
+  }
+  if (!packageData) {
+    return null
+  }
+  if (ref.current) {
+    if (selected) {
+      ref.current.style.boxShadow = BOX_SHADOW
+    } else {
+      ref.current.style.boxShadow = ''
+    }
+  }
+  let WrapperType: React.FC<any>
+  switch (layer.componentType) {
+    case PackageComponentType.Stack:
+      WrapperType = StackLayer
+      break
+    case PackageComponentType.Screen:
+      WrapperType = ScreenLayer
+      break
+    case PackageComponentType.Container:
+    case PackageComponentType.Element:
+      WrapperType = ({ children }: PropsWithChildren<{}>) => <>{children}</>
+      break
   }
   // @ts-ignore
-  const InlineComponent = window[layer.package].components[layer.type]
-  const WrapperType = layer.isContainer ? FrameLayer : InlineLayer
-  const props = { ...layer.props }
-  Object.keys(props).forEach(
-    key => (props[key] = convertDraftJSBindings(props[key]))
-  )
-  if (layer.data) {
-    Object.keys(layer.data).forEach(key => {
-      props[key] = {
-        onChange: (e: any) => {},
-      }
-    })
+  const LayerComponent = window[layer.package][layer.type]
+  const convertedProps = DraftJSEditorConverter({ ...layer.props }, projectId)
+  const editor = {
+    inEditMode: true,
+    onSelect: (e: string) => {
+      setSelection([e])
+    },
+    ref,
+    id: `${layer._id}`,
   }
-  if (!packageData?.getPackages) {
-    return <div>loading...</div>
-  }
-  const schema = getComponentSchema(packageData, layer)
   return (
     <>
-      {selected && (
-        <Portal id="property-window">
-          <PropertyWindow
-            elementId={layer._id}
-            schema={JSON.parse(JSON.stringify(schema))}
-            properties={JSON.parse(JSON.stringify(props))}
-          />
-        </Portal>
-      )}
-      <WrapperType layer={layer} selected={selected} onClick={onSelect}>
-        {layer.isContainer ? (
-          schema.type === 'array' ? (
-            [0, 1, 2].map(item => (
-              <InlineComponent
-                id={`component=${layer._id}-${item}`}
-                {...props}
-                style={{
-                  ...props.style,
-                  width: '100%',
-                  height: '100%',
-                  opacity: item ? 0.2 : 1,
-                }}
-              >
-                {layer.children?.map(child => (
-                  <LayerSub
-                    layer={child}
-                    selection={selection}
-                    onSelect={onSelect}
-                  />
-                ))}
-              </InlineComponent>
-            ))
-          ) : (
-            <InlineComponent
-              id={`component=${layer._id}`}
-              {...props}
-              style={{
-                ...props.style,
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-              }}
-            >
-              {layer.children?.map(child => (
-                <LayerSub
-                  layer={child}
-                  selection={selection}
-                  onSelect={onSelect}
-                />
-              ))}
-            </InlineComponent>
-          )
+      <WrapperType layer={layer}>
+        {layer.componentType === PackageComponentType.Element ? (
+          <LayerComponent editor={editor} {...convertedProps} />
         ) : (
-          <div>
-            <div
-              style={{
-                width: '100%',
-                height: '100%',
-                position: 'absolute',
-              }}
-            >
-              <InlineComponent
-                id={`component=${layer._id}`}
-                {...props}
-                style={{
-                  ...props.style,
-                  width: '100%',
-                  height: '100%',
-                  position: 'absolute',
-                }}
-              />
-            </div>
-            <div
-              style={{
-                position: 'absolute',
-                width: '100%',
-                height: '100%',
-              }}
-            />
-          </div>
+          <LayerComponent {...convertedProps} editor={editor}>
+            {layer.children?.map(child => (
+              <Layer layer={child} key={child._id} />
+            ))}
+          </LayerComponent>
         )}
       </WrapperType>
     </>
   )
-}
+})
 
-const Layer: React.FC<LayerProps> = function Layer({ layer }) {
-  const { selection, setSelection } = useSelection()
-
-  const handleSelect = useCallback<ClickHandler>(
-    e => {
-      e.stopPropagation()
-      if (e.shiftKey) {
-        setSelection(arrayXor(selection, e.currentTarget.id))
-      } else if (!selection?.includes(e.currentTarget.id)) {
-        setSelection([e.currentTarget.id])
-      }
-    },
-    [selection, setSelection]
-  )
+export function RootElement({ layer }: { layer: StructuredComponent }) {
   return (
-    <LayerSub layer={layer} selection={selection} onSelect={handleSelect} />
+    <AbsolutePositionedRootElement
+      style={{ top: `${layer.y}px`, left: `${layer.x}px` }}
+    >
+      <Layer layer={layer} />
+    </AbsolutePositionedRootElement>
   )
 }
 
-export default Layer
+export default RootElement

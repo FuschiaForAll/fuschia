@@ -1,0 +1,52 @@
+{
+  "type": "ui-component",
+  "title": "Image",
+  "icon": "Image",
+  "componentType": "Element",
+  "description": "A plain old text field",
+  "width": 160,
+  "height": 35,
+  "properties": {
+    "properties": {
+      "type": "object",
+      "title": "Properties",
+      "properties": {
+        "source": {
+          "type": "string",
+          "title": "Image URL",
+          "description": "The value to display",
+          "default": "Lorem Ipsum"
+        }
+      }
+    },
+    "style": {
+      "type": "object",
+      "title": "Component Styling",
+      "description": "The style for the component",
+      "properties": {
+        "height": {
+          "title": "Height",
+          "type": "string",
+          "default": "35px"
+        },
+        "width": {
+          "title": "Width",
+          "type": "string",
+          "default": "175px"
+        }
+      }
+    },
+    "actions": {
+      "type": "object",
+      "title": "Actions",
+      "properties": {
+        "onPress": {
+          "title": "onPress",
+          "type": "function",
+          "arguments": [],
+          "returnType": "null"
+        }
+      }
+    }
+  }
+}

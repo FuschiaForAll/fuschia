@@ -27,10 +27,59 @@ export type AnySchema = CommonSchema & {
   type: undefined
 }
 
+export type FlexContainerSchema = CommonSchema & {
+  type: 'flexContainer'
+  size: string
+  style: string
+  weight: string
+  textAlign: string
+  textTransform: string
+  lineHeight: string
+}
+
+export type FontSchema = CommonSchema & {
+  type: 'font'
+  size: string
+  style: string
+  weight: string
+  textAlign: string
+  textTransform: string
+  lineHeight: string
+}
+
+export type MarginSchema = CommonSchema & {
+  type: 'margin'
+  marginLeft: string
+  marginRight: string
+  marginTop: string
+  marginBottom: string
+}
+
+export type PositionSchema = CommonSchema & {
+  type: 'position'
+  left: string
+  right: string
+  top: string
+  bottom: string
+}
+
+export type PaddingSchema = CommonSchema & {
+  type: 'padding'
+  paddingLeft: string
+  paddingRight: string
+  paddingTop: string
+  paddingBottom: string
+}
+
 export type UIComponentSchema = Omit<ObjectSchema, 'type'> & {
   type: 'ui-component'
   isRootElement: boolean
   isContainer: boolean
+}
+
+export type LayoutComponentSchema = Omit<ObjectSchema, 'type'> & {
+  type: 'layout-component'
+  layout: ObjectSchema
 }
 
 export type FunctionSchema = CommonSchema & {
@@ -51,6 +100,7 @@ export type ObjectSchema = CommonSchema & {
 export type ArraySchema = CommonSchema & {
   type: 'array'
   items: Schema
+  properties: { [name: string]: Schema }
   minItems?: number
   uniqueItems?: boolean
   collapsed?: boolean
@@ -70,6 +120,7 @@ export type NumberSchema = CommonSchema & {
   enumTitles?: string[]
   format?: 'select' | 'radiobox'
   step?: number | 'any'
+  dataBound: boolean
 }
 
 export type StringSchema = CommonSchema & {
@@ -101,11 +152,13 @@ export type StringSchema = CommonSchema & {
   pattern?: string
   enumTitles?: string[]
   step?: number | 'any'
+  dataBound: boolean
 }
 
 export type BooleanSchema = CommonSchema & {
   type: 'boolean'
   format?: 'checkbox' | 'select'
+  dataBound: boolean
 }
 
 export type NullSchema = CommonSchema & {
@@ -122,6 +175,12 @@ export type Schema =
   | AnySchema
   | FunctionSchema
   | UIComponentSchema
+  | PaddingSchema
+  | MarginSchema
+  | LayoutComponentSchema
+  | FontSchema
+  | FlexContainerSchema
+  | PositionSchema
 
 export type ValueType =
   | { [name: string]: any }

@@ -5,6 +5,7 @@ import { useParams } from 'react-router-dom'
 import { useDeleteComponents } from './useDeleteComponents'
 import { useUpdateComponent } from './useUpdateComponent'
 import { useInsertComponent } from './useInsertComponent'
+import { LexoRankHelper } from '../lexoRankHelper'
 
 interface DragResponse {
   ref: React.RefObject<HTMLDivElement>
@@ -19,7 +20,7 @@ interface DragDropOptions {
   resizable?: {
     onResizeEnd: (
       id: string,
-      size: { width: number; height: number },
+      size: { width: string; height: string },
       position: { x: number; y: number }
     ) => void
   }
@@ -158,8 +159,8 @@ export const useDragDrop = (
               resizable.onResizeEnd(
                 id,
                 {
-                  width: parseFloat(target.style.width),
-                  height: parseFloat(target.style.height),
+                  width: target.style.width,
+                  height: target.style.height,
                 },
                 { x: x + left, y: y + top }
               )
@@ -252,13 +253,14 @@ export const useDragDrop = (
                     parentId === 'main-canvas' ? undefined : parentId
                   createComponent({
                     name: jsonLayer.type,
-                    isRootElement: jsonLayer.isRootElement,
-                    isContainer: jsonLayer.isContainer,
+                    componentType: jsonLayer.componentType,
                     package: jsonLayer.package,
                     type: jsonLayer.type,
                     parent: targetId,
                     props: jsonLayer.props,
+                    layout: jsonLayer.layout,
                     data: jsonLayer.data,
+                    layerSort: LexoRankHelper.generateNewLexoRanking(),
                     x: newX,
                     y: newY,
                   })

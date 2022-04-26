@@ -10,18 +10,12 @@ export class ProjectInput {
   @Field()
   projectName!: string;
 
-  @Field(type => ObjectIdScalar)
+  @Field((type) => ObjectIdScalar)
   organizationId!: ObjectId;
-
-  @Field(type => String, { nullable: true })
-  body?: string;
 }
 
 @InputType()
 export class UpdateProjectInput {
   @Field({ nullable: true })
   projectName?: string;
-
-  @Field()
-  body?: string;
 }

@@ -3,6 +3,13 @@ query GetProject($projectId: ObjectId!) {
     _id
     appId
     projectName
+    assetLibrary {
+      assets {
+        _id
+        key
+        name
+      }
+    }
     appConfig {
       appEntryComponentId
       apiConfig {
@@ -11,6 +18,7 @@ query GetProject($projectId: ObjectId!) {
         models {
           _id
           name
+          isLocal
           keys {
             name
             fieldNames
@@ -53,6 +61,11 @@ query GetProject($projectId: ObjectId!) {
         queries
         mutations
         subscriptions
+        variables {
+          _id
+          name
+          type
+        }
       }
       authConfig {
         requiresAuth

@@ -12,14 +12,16 @@ function getDefaultProps(schema, acc) {
   if (
     schema.type === "object" ||
     schema.type === "ui-component" ||
+    schema.type === "layout-component" ||
     schema.type === "array"
   ) {
+    console.log(schema);
     return Object.keys(schema.properties).reduce((obj, key) => {
       obj[key] = getDefaultProps(schema.properties[key], { [key]: {} });
       return obj;
     }, {});
   }
-  return schema.default;
+  return schema.default || {};
 }
 
 function recursiveSearch(folder, filename, files, output) {
@@ -58,17 +60,17 @@ function getPackage() {
   package.components = [];
   package.components = componentProps.map((component) => ({
     schema: component,
-    defaultValue: getDefaultProps(component, {}),
+    defaultPropValue: getDefaultProps(component, {}),
     name: component.title || "",
     icon: component.icon || "",
-    isRootElement: !!component.isRootElement,
-    isContainer: !!component.isContainer,
+    componentType: component.componentType,
   }));
   return package;
 }
 
 (async () => {
   try {
+    console.log(getPackage());
     const response = await axios.post("http://localhost:4002/graphql", {
       operationName: "CreatePackage",
       query: `mutation CreatePackage($packageInput: PackageInput!) {
@@ -80,7 +82,10 @@ function getPackage() {
         packageInput: getPackage(),
       },
     });
+    console.log(response);
+    console.log(JSON.stringify(response.data, null, 2));
   } catch (e) {
+    console.log(e);
     throw e;
   }
 })()

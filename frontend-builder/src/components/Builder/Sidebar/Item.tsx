@@ -3,12 +3,9 @@ import IconButton from '@mui/material/IconButton'
 import { Tooltip } from '@mui/material'
 interface ItemProps {
   title: string
+  margin?: string
   onDrag?: React.MouseEventHandler<HTMLButtonElement>
   onClick?: React.MouseEventHandler<HTMLButtonElement>
-}
-
-const buttonStyles = {
-  margin: '0.5rem 0',
 }
 
 const Item: React.FC<ItemProps> = function Item({
@@ -19,12 +16,7 @@ const Item: React.FC<ItemProps> = function Item({
 }) {
   return (
     <Tooltip title={title}>
-      <IconButton
-        color="primary"
-        sx={buttonStyles}
-        onMouseDown={onDrag}
-        onClick={onClick}
-      >
+      <IconButton color="primary" onMouseDown={onDrag} onClick={onClick}>
         {children}
       </IconButton>
     </Tooltip>

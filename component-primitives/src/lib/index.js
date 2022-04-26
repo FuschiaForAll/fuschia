@@ -1,17 +1,10 @@
-import { Button } from "./components/Button";
-import { Text } from "./components/Text";
-import { TextInput } from "./components/TextInput";
-import { Screen } from "./components/Screen";
-import { Container } from "./components/Container";
-import { List } from "./components/List";
-import { Checkbox } from "./components/Checkbox";
-
-export const components = {
-  Button,
-  Text,
-  TextInput,
-  Screen,
-  Container,
-  List,
-  Checkbox,
-};
+export { Button } from "./components/Button";
+export { Text } from "./components/Text";
+export { TextInput } from "./components/TextInput";
+export { Screen } from "./components/Screen";
+export { Container } from "./components/Container";
+export { List } from "./components/List";
+export { Checkbox } from "./components/Checkbox";
+export { Stack } from "./components/Stack";
+export { Image } from "./components/Image";
+export { ImageBackground } from "./components/ImageBackground";

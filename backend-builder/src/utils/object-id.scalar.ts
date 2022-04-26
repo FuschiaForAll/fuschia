@@ -4,7 +4,10 @@ import { ObjectId } from "mongodb";
 export const ObjectIdScalar = new GraphQLScalarType({
   name: "ObjectId",
   description: "Mongo object id scalar type",
-  serialize(value: unknown): string {
+  serialize(value: unknown): string | null {
+    if (!value) {
+      return null;
+    }
     if (!(value instanceof ObjectId)) {
       throw new Error("ObjectIdScalar can only serialize ObjectId values");
     }

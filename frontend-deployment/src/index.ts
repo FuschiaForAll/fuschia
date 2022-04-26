@@ -8,6 +8,7 @@ import {
   convertImports,
   DestructedHookVariable,
   draftJsStuff,
+  functionBuilder,
   generateAuthGraphqlFiles,
   generateEntityModelGraphqlFiles,
   generateRootNavigator,
@@ -92,7 +93,7 @@ async function getProjectStructure(mongoDbUrl: string, project: Project) {
     // get root components
     const rootElements = await fuschiaDb
       .collection('components')
-      .find<Component>({ _id: { $in: project.components } })
+      .find<Component>({ projectId: project._id, parent: null })
       .toArray()
     // recursively build entiry tree structure
     return await Promise.all(
@@ -173,12 +174,12 @@ async function buildScreen(
                 propsBuilder.push(`${''.padStart(indentation, ' ')}{
                   ${fetchedModel.name}Data?.list${
                   fetchedModel.name
-                }?.items?.map(item => (
+                }?.items?.map((item, index) => (
                 `)
                 propsBuilder.push(
                   `${''.padStart(indentation, ' ')}<${
                     component.type
-                  } key={item._id}`
+                  } key={item._id} index={index}`
                 )
               }
             })
@@ -189,514 +190,186 @@ async function buildScreen(
           )
         }
         importsBuilder.react.useState = 'single'
-        // @ts-ignore
-        if (packageComponent.schema && packageComponent.schema.data) {
-          // @ts-ignore
-          Object.keys(packageComponent.schema.data).forEach(d => {
-            if (
-              // @ts-ignore
-              !hooksBuilder[`useState<${packageComponent.schema.data[d]}>`]
-            ) {
-              // @ts-ignore
-              hooksBuilder[`useState<${packageComponent.schema.data[d]}>`] = {
-                hook: {
-                  type: 'multiple',
-                  value: [],
-                },
+
+        const dataComponents = [] as Array<{
+          name: string
+          type: string
+        }>
+
+        // find all packages that emit data
+        const findDataBound = (schema: Schema, propKey: string) => {
+          switch (schema.type) {
+            case 'ui-component':
+            case 'layout-component':
+            case 'object':
+              if (!schema.properties) {
+                return
               }
-            }
-            ;(
-              hooksBuilder[
-                // @ts-ignore
-                `useState<${packageComponent.schema.data[d]}>`
-              ].hook as MultipleHookVariable
-            ).value.push({
-              type: 'array',
-              value: [
-                {
-                  type: 'variable',
-                  value: `${component.name}${d}`,
-                },
-                {
-                  type: 'variable',
-                  value: `set${component.name}${d}`,
-                },
-              ],
-            })
-            propsBuilder.push(
-              // @ts-ignore
-              `${d}={{ value: ${component.name}${d}, onChange: set${component.name}${d}}}`
-            )
-          })
+              Object.keys(schema.properties).forEach(key => {
+                findDataBound(schema.properties[key], key)
+              })
+              break
+            case 'string':
+            case 'number':
+            case 'boolean':
+              if (schema.dataBound) {
+                dataComponents.push({
+                  name: propKey,
+                  type: schema.type,
+                })
+              }
+              break
+          }
+          return false
         }
-        Object.keys(component.props).forEach(prop => {
-          // @ts-ignore
-          const structure = packageComponent.schema.properties[prop]
-          if (structure) {
-            switch (structure.type) {
-              case 'function':
-                // functions need to be converted to function rather than configuration strings
-                propsBuilder.push(`${prop}={async () => {`)
-                function actionBuilder(action: ActionProps) {
-                  switch (action.type) {
-                    case 'NAVIGATE':
-                      importsBuilder['@react-navigation/native'] = {
-                        useNavigation: 'single',
-                      }
-                      if (!hooksBuilder['useNavigation<any>']) {
-                        hooksBuilder['useNavigation<any>'] = {
-                          hook: {
-                            type: 'variable',
-                            value: 'navigate',
-                          },
-                        }
-                      }
-                      const targetScreen = rootComponents.find(
-                        c => c._id.toString() === action.destination
-                      )
-                      if (targetScreen) {
-                        propsBuilder.push(
-                          `navigate.navigate('${targetScreen.name}', {`
-                        )
-                        if (action.parameters) {
-                          if (targetScreen.parameters) {
-                            targetScreen.parameters.forEach(p => {
-                              const actionParam =
-                                action.parameters![p._id.toString()]
-                              const targetEntity =
-                                projectInfo.appConfig.apiConfig.models.find(
-                                  m =>
-                                    m._id.toString() === p.entityType.toString()
-                                )
-                              if (actionParam) {
-                                // this only works for ARRAY param props
-                                propsBuilder.push(
-                                  `${targetEntity?.name}Id: item._id`
-                                )
-                              }
-                            })
-                          }
-                        }
-                        propsBuilder.push(`});`)
-                      }
-                      break
-                    case 'ALERT':
-                      if (!importsBuilder['react-native']) {
-                        importsBuilder['react-native'] = {}
-                      }
-                      importsBuilder['react-native'].Alert = 'single'
-                      propsBuilder.push(
-                        `Alert.alert("${draftJsStuff(
-                          action.message,
-                          rootComponents,
-                          projectInfo,
-                          packages
-                        )}");`
-                      )
-                      break
-                    case 'LOGIN':
-                      if (!importsBuilder['./generated/graphql']) {
-                        importsBuilder['./generated/graphql'] = {}
-                      }
-                      importsBuilder['./generated/graphql'].useLoginMutation =
-                        'single'
-                      if (!hooksBuilder.useLoginMutation) {
-                        hooksBuilder.useLoginMutation = {
-                          hook: {
-                            type: 'array',
-                            value: [],
-                          },
-                        }
-                      }
-                      ;(
-                        hooksBuilder.useLoginMutation.hook as ArrayHookVariable
-                      ).value.push({
-                        type: 'variable',
-                        value: 'login',
-                      })
-                      propsBuilder.push(
-                        `const success = await login({ variables: { username: \`${draftJsStuff(
-                          action.username,
-                          rootComponents,
-                          projectInfo,
-                          packages
-                        )}\`, password: \`${draftJsStuff(
-                          action.password,
-                          rootComponents,
-                          projectInfo,
-                          packages
-                        )}\`}});`
-                      )
-                      if (action.onSucess) {
-                        propsBuilder.push(`if (success.data) {`)
-                        if (
-                          !importsBuilder[
-                            '@react-native-async-storage/async-storage'
-                          ]
-                        ) {
-                          importsBuilder[
-                            '@react-native-async-storage/async-storage'
-                          ] = {}
-                        }
-                        importsBuilder[
-                          '@react-native-async-storage/async-storage'
-                        ].AsyncStorage = 'default'
-                        propsBuilder.push(
-                          `await AsyncStorage.setItem('authToken', success.data.login);`
-                        )
-                        action.onSucess.forEach(action => actionBuilder(action))
-                        propsBuilder.push(`}`)
-                      }
-                      if (action.onFail) {
-                        propsBuilder.push(`if (success.errors) {`)
-                        action.onFail.forEach(action => actionBuilder(action))
-                        propsBuilder.push(`}`)
-                      }
-                      break
-                    case 'REGISTER':
-                      if (!importsBuilder['./generated/graphql']) {
-                        importsBuilder['./generated/graphql'] = {}
-                      }
-                      importsBuilder[
-                        './generated/graphql'
-                      ].useRegisterMutation = 'single'
-                      if (!hooksBuilder.useRegisterMutation) {
-                        hooksBuilder.useRegisterMutation = {
-                          hook: {
-                            type: 'array',
-                            value: [],
-                          },
-                        }
-                      }
-                      ;(
-                        hooksBuilder.useRegisterMutation
-                          .hook as ArrayHookVariable
-                      ).value.push({
-                        type: 'variable',
-                        value: 'register',
-                      })
 
-                      const authModel =
-                        projectInfo.appConfig.apiConfig.models.find(
-                          m =>
-                            m._id.toString() ===
-                            projectInfo.appConfig.authConfig.tableId.toString()
-                        )
-                      if (authModel) {
-                        const authPartBuilder = [] as string[]
-                        authPartBuilder.push(`{ variables: { userData: { `)
-                        const authFieldsBuilder = [] as string[]
-                        Object.keys(action.fields).forEach(f => {
-                          const value = draftJsStuff(
-                            action.fields[f],
-                            rootComponents,
-                            projectInfo,
-                            packages
-                          )
-                          const field = authModel.fields.find(
-                            field => field._id.toString() === f
-                          )
-                          if (field) {
-                            authFieldsBuilder.push(
-                              ` ${field.fieldName}: \`${value}\``
-                            )
-                          }
-                        })
-                        authPartBuilder.push(authFieldsBuilder.join(','))
-                        authPartBuilder.push(`} } }`)
-                        console.log(authPartBuilder.join(''))
-                        propsBuilder.push(
-                          `const success = await register(${authPartBuilder.join(
-                            ''
-                          )});`
-                        )
-                        if (action.onSucess) {
-                          propsBuilder.push(`if (success.data) {`)
+        findDataBound(packageComponent.schema, '')
 
-                          if (
-                            !importsBuilder[
-                              '@react-native-async-storage/async-storage'
-                            ]
-                          ) {
-                            importsBuilder[
-                              '@react-native-async-storage/async-storage'
-                            ] = {}
-                          }
-                          importsBuilder[
-                            '@react-native-async-storage/async-storage'
-                          ].AsyncStorage = 'default'
-                          propsBuilder.push(
-                            `await AsyncStorage.setItem('authToken', success.data.register);`
-                          )
-                          action.onSucess.forEach(action =>
-                            actionBuilder(action)
-                          )
-                          propsBuilder.push(`}`)
-                        }
-                        if (action.onFail) {
-                          propsBuilder.push(`if (success.errors) {`)
-                          action.onFail.forEach(action => actionBuilder(action))
-                          propsBuilder.push(`}`)
-                        }
-                      }
-                      break
-                    case 'CREATE':
-                      // generate graphql file if needed
-                      if (action.dataType && action.fields) {
-                        const actionFields = action.fields
-                        const model =
-                          projectInfo.appConfig.apiConfig.models.find(
-                            m => m._id.toString() === action.dataType
-                          )
-                        if (model) {
-                          if (!importsBuilder['./generated/graphql']) {
-                            importsBuilder['./generated/graphql'] = {}
-                          }
-                          importsBuilder['./generated/graphql'][
-                            `useCreate${model.name}Mutation`
-                          ] = 'single'
-                          if (!hooksBuilder[`useCreate${model.name}Mutation`]) {
-                            hooksBuilder[`useCreate${model.name}Mutation`] = {
-                              hook: {
-                                type: 'array',
-                                value: [],
-                              },
-                            }
-                          }
-                          ;(
-                            hooksBuilder[`useCreate${model.name}Mutation`]
-                              .hook as ArrayHookVariable
-                          ).value.push({
-                            type: 'variable',
-                            value: `create${model.name}`,
-                          })
-                          const createPartBuilder = [] as string[]
-                          createPartBuilder.push(`{ variables: { input: { `)
-                          const createFieldsBuilder = [] as string[]
-                          Object.keys(actionFields).forEach(f => {
-                            const value = draftJsStuff(
-                              actionFields[f],
-                              rootComponents,
-                              projectInfo,
-                              packages
-                            )
-                            const field = model.fields.find(
-                              field => field._id.toString() === f
-                            )
-                            if (field) {
-                              // need value cohersion
-                              switch (field.dataType) {
-                                case 'Boolean':
-                                  createFieldsBuilder.push(
-                                    ` ${field.fieldName}: ${value}`
-                                  )
-                                  break
-                                default:
-                                  createFieldsBuilder.push(
-                                    ` ${field.fieldName}: \`${value}\``
-                                  )
-                                  break
-                              }
-                            }
-                          })
-                          createPartBuilder.push(createFieldsBuilder.join(','))
-                          createPartBuilder.push(`} } }`)
-                          console.log(createPartBuilder.join(''))
-                          propsBuilder.push(
-                            `const success = await create${
-                              model.name
-                            }(${createPartBuilder.join('')});`
-                          )
-                        }
-                      }
-                      break
-                    case 'DELETE':
-                      if (action.deleteElement) {
-                        // const actionFields = action.fields
-                        // const model =
-                        //   projectInfo.appConfig.apiConfig.models.find(
-                        //     m =>
-                        //       m._id.toString() === action.updateElement?.entity
-                        //   )
-                        // if (model) {
-                        //   if (!importsBuilder['./generated/graphql']) {
-                        //     importsBuilder['./generated/graphql'] = {}
-                        //   }
-                        //   importsBuilder['./generated/graphql'][
-                        //     `useUpdate${model.name}Mutation`
-                        //   ] = 'single'
-                        //   if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
-                        //     hooksBuilder[`useUpdate${model.name}Mutation`] = {
-                        //       hook: {
-                        //         type: 'array',
-                        //         value: [],
-                        //       },
-                        //     }
-                        //   }
-                        //   ;(
-                        //     hooksBuilder[`useUpdate${model.name}Mutation`]
-                        //       .hook as ArrayHookVariable
-                        //   ).value.push({
-                        //     type: 'variable',
-                        //     value: `update${model.name}`,
-                        //   })
-                        //   const updatePartBuilder = [] as string[]
-                        //   updatePartBuilder.push(`{ variables: { input: { `)
-                        //   const createFieldsBuilder = [] as string[]
-                        //   Object.keys(actionFields).forEach(f => {
-                        //     const value = draftJsStuff(
-                        //       actionFields[f],
-                        //       rootComponents,
-                        //       projectInfo,
-                        //       packages
-                        //     )
-                        //     const field = model.fields.find(
-                        //       field => field._id.toString() === f
-                        //     )
-                        //     if (field) {
-                        //       // need value cohersion
-                        //       switch (field.dataType) {
-                        //         case 'Boolean':
-                        //           if (value) {
-                        //             createFieldsBuilder.push(
-                        //               ` ${field.fieldName}: !!${value}`
-                        //             )
-                        //           }
-                        //           break
-                        //         default:
-                        //           if (value) {
-                        //             createFieldsBuilder.push(
-                        //               ` ${field.fieldName}: \`${value}\``
-                        //             )
-                        //           }
-                        //           break
-                        //       }
-                        //     }
-                        //   })
-                        //   updatePartBuilder.push(createFieldsBuilder.join(','))
-                        //   updatePartBuilder.push(`}, `)
-                        //   updatePartBuilder.push(`condition: {`)
-                        //   // TODO: This is the wrong assumption
-                        //   updatePartBuilder.push(`_id: item._id`)
-                        //   updatePartBuilder.push(`} } }`)
-                        //   console.log(updatePartBuilder.join(''))
-                        //   propsBuilder.push(
-                        //     `const success = await update${
-                        //       model.name
-                        //     }(${updatePartBuilder.join('')});`
-                        //   )
-                        // }
-                      }
-                      break
-
-                    case 'UPDATE':
-                      if (action.updateElement && action.fields) {
-                        const actionFields = action.fields
-                        const model =
-                          projectInfo.appConfig.apiConfig.models.find(
-                            m =>
-                              m._id.toString() === action.updateElement?.entity
-                          )
-                        if (model) {
-                          if (!importsBuilder['./generated/graphql']) {
-                            importsBuilder['./generated/graphql'] = {}
-                          }
-                          importsBuilder['./generated/graphql'][
-                            `useUpdate${model.name}Mutation`
-                          ] = 'single'
-                          if (!hooksBuilder[`useUpdate${model.name}Mutation`]) {
-                            hooksBuilder[`useUpdate${model.name}Mutation`] = {
-                              hook: {
-                                type: 'array',
-                                value: [],
-                              },
-                            }
-                          }
-                          ;(
-                            hooksBuilder[`useUpdate${model.name}Mutation`]
-                              .hook as ArrayHookVariable
-                          ).value.push({
-                            type: 'variable',
-                            value: `update${model.name}`,
-                          })
-                          const updatePartBuilder = [] as string[]
-                          updatePartBuilder.push(`{ variables: { input: { `)
-                          const createFieldsBuilder = [] as string[]
-                          Object.keys(actionFields).forEach(f => {
-                            const value = draftJsStuff(
-                              actionFields[f],
-                              rootComponents,
-                              projectInfo,
-                              packages
-                            )
-                            const field = model.fields.find(
-                              field => field._id.toString() === f
-                            )
-                            if (field) {
-                              // need value cohersion
-                              switch (field.dataType) {
-                                case 'Boolean':
-                                  if (value) {
-                                    createFieldsBuilder.push(
-                                      ` ${field.fieldName}: !!${value}`
-                                    )
-                                  }
-                                  break
-                                default:
-                                  if (value) {
-                                    createFieldsBuilder.push(
-                                      ` ${field.fieldName}: \`${value}\``
-                                    )
-                                  }
-                                  break
-                              }
-                            }
-                          })
-                          updatePartBuilder.push(createFieldsBuilder.join(','))
-                          updatePartBuilder.push(`}, `)
-                          updatePartBuilder.push(`condition: {`)
-                          // TODO: This is the wrong assumption
-                          updatePartBuilder.push(`_id: item._id`)
-                          updatePartBuilder.push(`} } }`)
-                          console.log(updatePartBuilder.join(''))
-                          propsBuilder.push(
-                            `const success = await update${
-                              model.name
-                            }(${updatePartBuilder.join('')});`
-                          )
-                        }
-                      }
-                      break
-                  }
-                }
-                ;(component.props[prop] as ActionProps[]).forEach(action =>
-                  actionBuilder(action)
-                )
-                propsBuilder.push(`} }`)
-                break
-              case 'string':
-                propsBuilder.push(
-                  `${prop}={\`${draftJsStuff(
+        dataComponents.forEach(d => {
+          if (
+            // @ts-ignore
+            !hooksBuilder[`useState<${d.type}>`]
+          ) {
+            // @ts-ignore
+            hooksBuilder[`useState<${d.type}>`] = {
+              hook: {
+                type: 'multiple',
+                value: [],
+              },
+            }
+          }
+          ;(
+            hooksBuilder[
+              // @ts-ignore
+              `useState<${d.type}>`
+            ].hook as MultipleHookVariable
+          ).value.push({
+            type: 'array',
+            value: [
+              {
+                type: 'variable',
+                value: `${component.name}${d.name}`,
+              },
+              {
+                type: 'variable',
+                value: `set${component.name}${d.name}`,
+              },
+            ],
+          })
+          propsBuilder.push(
+            // @ts-ignore
+            `${d.name}={{ value: ${component.name}${d.name}, onChange: set${component.name}${d.name}}}`
+          )
+        })
+        function convertSchemaProps(
+          componentProps: {
+            [key: string]: any
+          },
+          schemaProps: any,
+          acc: any
+        ) {
+          Object.keys(componentProps).forEach(prop => {
+            const structure = schemaProps[prop]
+            if (structure) {
+              switch (structure.type) {
+                case 'function':
+                  acc[prop] = `${component.name}${prop}`
+                  functionsBuilder.push(
+                    `async function ${component.name}${prop}() {`
+                  )
+                  ;(componentProps[prop] as ActionProps[]).forEach(action => {
+                    functionBuilder(
+                      action,
+                      importsBuilder,
+                      hooksBuilder,
+                      rootComponents,
+                      functionsBuilder,
+                      projectInfo,
+                      packages
+                    )
+                  })
+                  functionsBuilder.push(`}`)
+                  break
+                case 'string':
+                  acc[prop] = draftJsStuff(
                     component.props[prop],
                     rootComponents,
                     projectInfo,
                     packages
-                  )}\`}`
-                )
-                break
-              case 'object':
-                propsBuilder.push(
-                  `${prop}={${JSON.stringify(component.props[prop])}}`
-                )
-                break
-              case 'array':
-                break
-              default:
-                // the rest need to be stripped of DraftJS if applicable
-                propsBuilder.push(`${prop}={${component.props[prop]}}`)
-                break
+                  )
+                  break
+                case 'object':
+                  acc[prop] = convertSchemaProps(
+                    componentProps[prop],
+                    structure.properties,
+                    {}
+                  )
+                  break
+                case 'array':
+                  break
+                default:
+                  acc[prop] = componentProps[prop]
+              }
             }
-          }
+          })
+          return acc
+        }
+        // @ts-ignore
+        const props = convertSchemaProps(
+          component.props,
+          // @ts-ignore
+          packageComponent.schema.properties,
+          {}
+        )
+        Object.keys(props).forEach(prop => {
+          propsBuilder.push(`${prop}={${JSON.stringify(props[prop])}}`)
+
+          // // @ts-ignore
+          // const structure = packageComponent.schema.properties[prop]
+          // if (structure) {
+          //   console.log(structure)
+          //   switch (structure.type) {
+          //     case 'function':
+          //       // functions need to be converted to function rather than configuration strings
+          //       propsBuilder.push(`${prop}={async () => {`)
+          //       ;(component.props[prop] as ActionProps[]).forEach(action => {
+          //         functionBuilder(
+          //           action,
+          //           importsBuilder,
+          //           hooksBuilder,
+          //           rootComponents,
+          //           propsBuilder,
+          //           projectInfo,
+          //           packages
+          //         )
+          //       })
+          //       propsBuilder.push(`} }`)
+          //       break
+          //     case 'string':
+          //       console.log(`STRING`)
+          //       console.log(component.props[prop])
+          //       propsBuilder.push(
+          //         `${prop}={\`${draftJsStuff(
+          //           component.props[prop],
+          //           rootComponents,
+          //           projectInfo,
+          //           packages
+          //         )}\`}`
+          //       )
+          //       break
+          //     case 'object':
+          //       propsBuilder.push(
+          //         `${prop}={${JSON.stringify(component.props[prop])}}`
+          //       )
+          //       break
+          //     case 'array':
+          //       break
+          //     default:
+          //       // the rest need to be stripped of DraftJS if applicable
+          //       propsBuilder.push(`${prop}={${component.props[prop]}}`)
+          //       break
+          //   }
+          // }
         })
         if (component.children && component.children.length > 0) {
           propsBuilder.push('>')
@@ -705,7 +378,7 @@ async function buildScreen(
             buildChild(child, indentation + 3)
           )
           bableBuilder.push(
-            `${''.padStart(indentation, ' ')}</${component.name}>`
+            `${''.padStart(indentation, ' ')}</${component.type}>`
           )
 
           if (packageComponent.schema.type === 'array') {

@@ -7,4 +7,5 @@ export const PRIMITIVE_DATA_TYPES = [
   'Int',
   'Float',
   'Boolean',
+  'FileUpload',
 ]

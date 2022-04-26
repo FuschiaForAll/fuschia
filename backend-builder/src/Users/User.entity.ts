@@ -5,6 +5,7 @@ import { prop as Property, getModelForClass } from "@typegoose/typegoose";
 import { Ref } from "../utils/ref-type";
 import { Organization } from "../Organizations/Organization.entity";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
+import { Invitation } from "../Invitations/Invitation.entity";
 
 @ObjectType()
 export class User {
@@ -37,4 +38,8 @@ export class User {
   @Field((type) => [Organization])
   @Property({ ref: () => Organization, default: [] })
   organizations?: Ref<Organization>[];
+
+  @Field((type) => [Invitation])
+  @Property({ ref: () => Invitation, default: [] })
+  invitations?: Ref<Invitation>[];
 }

@@ -8,6 +8,7 @@ import { ObjectIdScalar } from "../utils/object-id.scalar";
 import { v4 as uuid } from "uuid";
 import { Component } from "./AppConfig/Components/Component.entity";
 import { LabelLibrary } from "./AppConfig/Libraries/LabelLibrary/LabelLibrary.entity";
+import { AssetLibrary } from "./AppConfig/Libraries/ImageLibrary/AssetLibrary.entity";
 
 @ObjectType()
 export class Project {
@@ -30,15 +31,11 @@ export class Project {
   @Property({ type: () => AppConfig, required: true })
   appConfig!: AppConfig;
 
-  @Field((type) => String, { nullable: true })
-  @Property({ required: false, default: null })
-  body?: String;
-
-  @Field((type) => [Component])
-  @Property({ ref: () => Component, default: [] })
-  components!: Ref<Component>[];
-
   @Field((type) => LabelLibrary)
   @Property({ type: () => LabelLibrary })
   labelLibrary?: LabelLibrary;
+
+  @Field((type) => AssetLibrary, { nullable: true })
+  @Property({ type: () => AssetLibrary })
+  assetLibrary?: AssetLibrary;
 }

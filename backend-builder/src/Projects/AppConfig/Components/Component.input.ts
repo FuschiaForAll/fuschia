@@ -1,7 +1,9 @@
 import { ObjectType, Field, InputType } from "type-graphql";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
-import { DataSource } from "./Component.entity";
+import { Component, DataSource } from "./Component.entity";
+import { Matches } from "class-validator";
+import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
 
 @InputType()
 export class RequiredParameterInput {
@@ -27,7 +29,7 @@ export class DataSourceInput {
 }
 
 @InputType()
-export class ComponentInput {
+export class ComponentInput implements Partial<Component> {
   @Field({ nullable: true })
   type!: string;
 
@@ -35,6 +37,7 @@ export class ComponentInput {
   package!: string;
 
   @Field({ nullable: true })
+  @Matches("^[a-zA-Z_$][a-zA-Z_$0-9]*$")
   name?: string;
 
   @Field({ nullable: true })
@@ -47,13 +50,13 @@ export class ComponentInput {
   props?: Object;
 
   @Field((type) => Object, { nullable: true })
+  layout?: Object;
+
+  @Field((type) => Object, { nullable: true })
   data?: Object;
 
-  @Field({ nullable: true })
-  isContainer!: boolean;
-
-  @Field({ nullable: true })
-  isRootElement!: boolean;
+  @Field((type) => PackageComponentType, { nullable: true })
+  componentType?: PackageComponentType;
 
   @Field({ nullable: true })
   requiresAuth?: boolean;
@@ -67,6 +70,6 @@ export class ComponentInput {
   @Field((type) => ObjectIdScalar, { nullable: true })
   parent!: ObjectId;
 
-  @Field((type) => [ObjectIdScalar], { nullable: true })
-  children!: ObjectId[];
+  @Field({ nullable: true })
+  layerSort!: string;
 }

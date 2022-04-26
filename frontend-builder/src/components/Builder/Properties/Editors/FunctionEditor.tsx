@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Props, FunctionSchema } from '@fuchsia/types'
 import { useParams } from 'react-router-dom'
 import {
+  PackageComponentType,
   useGetBindingTreeQuery,
   useGetComponentsQuery,
   useGetProjectQuery,
@@ -24,6 +25,14 @@ import {
 import { Select } from '../../../Shared/primitives/Select'
 import { EditorState } from 'draft-js'
 import { EntitySelector } from '../../../Shared/EntitySelector'
+import {
+  Droppable,
+  Draggable,
+  DraggableProvided,
+  DragDropContext,
+  DropResult,
+} from 'react-beautiful-dnd'
+import { DragIndicator } from '@mui/icons-material'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -41,6 +50,7 @@ const FUNCTION_TYPES = [
   { label: 'Do something conditionally...', value: 'CONDITIONAL' },
   { label: 'Set a timer...', value: 'TIMER' },
   { label: 'Switch case...', value: 'SWITCH' },
+  { label: 'Send an Email...', value: 'EMAIL' },
 ]
 
 type ComponentId = string
@@ -53,6 +63,14 @@ interface SwitchProps {
     key: EditorState
     actions: ActionProps[]
   }>
+}
+interface EmailProps {
+  type: 'EMAIL'
+  serverside: boolean
+  from?: string
+  to: string
+  subject: string
+  html: string
 }
 
 interface TimerProps {
@@ -101,23 +119,23 @@ interface CreateProps {
   type: 'CREATE'
   dataType?: EntityId
   fields?: { [key: string]: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface DeleteProps {
   type: 'DELETE'
   deleteElement?: { path: string; label: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface UpdateProps {
   type: 'UPDATE'
   updateElement?: { entity: EntityId; path: string; label: string }
   fields?: { [key: string]: string }
-  onSucess?: () => void
-  onFail?: () => void
+  onSucess?: ActionProps[]
+  onFail?: ActionProps[]
 }
 
 interface ConditionalProps {
@@ -140,20 +158,29 @@ export type ActionProps =
   | ConditionalProps
   | TimerProps
   | SwitchProps
+  | EmailProps
 
-const FunctionWrapper = styled.div`
+export const FunctionWrapper = styled.div`
   background: var(--canvasBg);
   border: 1px dotted var(--text);
   border-radius: 0.5em;
   padding: 0.5em;
 `
 
-const ActionWrapper = styled.div`
+export const ActionWrapper = styled.div`
   &:not(:last-child) {
     border-bottom: dashed 1px black;
     padding-bottom: 0.5em;
   }
 `
+
+const EmailEditor = (props: {
+  componentId: string
+  params: EmailProps
+  onUpdate: (newValue: SwitchProps) => void
+}) => {
+  return <div>Email Editor</div>
+}
 
 const SwitchEditor = (props: {
   componentId: string
@@ -702,26 +729,27 @@ const UpdateEditor = (props: {
       <EntitySelector
         componentId={props.componentId}
         selectedLabel={props.params.updateElement?.label}
-        onSelect={(entity, path, label) => {
-          const newParams = { ...props.params }
-          newParams.updateElement = {
-            entity: entity,
-            label: label,
-            path: path,
-          }
-          const model = models.find(model => model._id === entity)
-          if (model) {
-            newParams.fields = model.fields.reduce(
-              (acc, f) => {
-                acc[f._id] = ''
-                return acc
-              },
-              {} as {
-                [key: string]: string
-              }
-            )
-            props.onUpdate(newParams)
-          }
+        onSelect={(entity, value) => {
+          throw new Error('THIS NEEDS FIXING')
+          // const newParams = { ...props.params }
+          // newParams.updateElement = {
+          //   entity: entity,
+          //   label: label,
+          //   path: path,
+          // }
+          // const model = models.find(model => model._id === entity)
+          // if (model) {
+          //   newParams.fields = model.fields.reduce(
+          //     (acc, f) => {
+          //       acc[f._id] = ''
+          //       return acc
+          //     },
+          //     {} as {
+          //       [key: string]: string
+          //     }
+          //   )
+          //   props.onUpdate(newParams)
+          // }
         }}
       />
       {props.params &&
@@ -893,13 +921,14 @@ const DeleteEditor = (props: {
         componentId={props.componentId}
         selectedLabel={props.params.deleteElement?.label}
         onSelect={(path, label) => {
-          props.onUpdate({
-            ...props.params,
-            deleteElement: {
-              label,
-              path,
-            },
-          })
+          throw new Error('THIS NEEDS FIXING')
+          // props.onUpdate({
+          //   ...props.params,
+          //   deleteElement: {
+          //     label,
+          //     path,
+          //   },
+          // })
         }}
       />
     </div>
@@ -916,7 +945,7 @@ const NavigateEditor = ({
   onUpdate: (newValue: NavigateProps) => void
 }) => {
   const { projectId } = useParams<{ projectId: string }>()
-  const { data: componentData } = useGetComponentsQuery({
+  const { data } = useGetComponentsQuery({
     variables: {
       projectId,
     },
@@ -942,17 +971,18 @@ const NavigateEditor = ({
             entityId={p.entityType}
             componentId={componentId}
             selectedLabel={params.parameters && params.parameters[p._id]?.label}
-            onSelect={(entityId, label) => {
-              onUpdate({
-                ...params,
-                parameters: {
-                  ...params.parameters,
-                  [p._id]: {
-                    path: entityId,
-                    label,
-                  },
-                },
-              })
+            onSelect={(entityId, value) => {
+              throw new Error('THIS NEEDS FIXING')
+              // onUpdate({
+              //   ...params,
+              //   parameters: {
+              //     ...params.parameters,
+              //     [p._id]: {
+              //       path: entityId,
+              //       label,
+              //     },
+              //   },
+              // })
             }}
           />
         ))
@@ -963,10 +993,14 @@ const NavigateEditor = ({
     return null
   }
   useEffect(() => {
-    if (componentData) {
-      setNagTargets(componentData.getComponents.filter(c => c.isRootElement))
+    if (data && data.getComponents) {
+      setNagTargets(
+        data.getComponents.filter(
+          c => c.componentType === PackageComponentType.Screen
+        )
+      )
     }
-  }, [componentData])
+  }, [data])
   return (
     <div>
       <LabeledSelect
@@ -1107,6 +1141,14 @@ function ConfigureFunction({
             onUpdate={onUpdate}
           />
         )
+      case 'EMAIL':
+        return (
+          <EmailEditor
+            componentId={componentId}
+            params={actionProps}
+            onUpdate={onUpdate}
+          />
+        )
       default:
         return null
     }
@@ -1125,40 +1167,70 @@ function ConfigureFunction({
       <span style={{ fontSize: '0.75em' }}>{title || 'undefined'}</span>
       <FunctionWrapper>
         {Control}
-        {functions.map((f, index) => (
-          <ActionWrapper key={index}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr auto' }}>
-              <LabeledSelect
-                label="action type"
-                selectedValue={f.type}
-                onChange={e => {
-                  const newFunctions = [...functions]
-                  // @ts-ignore
-                  newFunctions[index] = { type: e.target.value }
-                  updateValue(newFunctions, true)
-                }}
-                options={FUNCTION_TYPES.map(t => ({
-                  label: t.label,
-                  value: t.value,
-                }))}
-              />
-              <IconButton
-                onClick={() => {
-                  const newFunctions = [...functions]
-                  newFunctions.splice(index, 1)
-                  updateValue(newFunctions, true)
-                }}
-              >
-                <DeleteIcon />
-              </IconButton>
+        <Droppable droppableId="actionList" type="ACTIONS" direction="vertical">
+          {droppableActionsProvided => (
+            <div
+              ref={droppableActionsProvided.innerRef}
+              {...droppableActionsProvided.droppableProps}
+            >
+              {functions.map((f, index) => (
+                <Draggable
+                  key={index}
+                  draggableId={`${Math.random()}`}
+                  index={index}
+                >
+                  {(provided: DraggableProvided) => (
+                    <ActionWrapper
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <div
+                        style={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr auto auto',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <LabeledSelect
+                          label="action type"
+                          selectedValue={f.type}
+                          onChange={e => {
+                            const newFunctions = [...functions]
+                            // @ts-ignore
+                            newFunctions[index] = { type: e.target.value }
+                            updateValue(newFunctions, true)
+                          }}
+                          options={FUNCTION_TYPES.map(t => ({
+                            label: t.label,
+                            value: t.value,
+                          }))}
+                        />
+                        <IconButton
+                          onClick={() => {
+                            const newFunctions = [...functions]
+                            newFunctions.splice(index, 1)
+                            updateValue(newFunctions, true)
+                          }}
+                        >
+                          <DeleteIcon />
+                        </IconButton>
+                        <div {...provided.dragHandleProps}>
+                          <DragIndicator />
+                        </div>
+                      </div>
+                      {editor(f, newValue => {
+                        const newFunctions = [...functions]
+                        newFunctions[index] = newValue
+                        updateValue(newFunctions, true)
+                      })}
+                    </ActionWrapper>
+                  )}
+                </Draggable>
+              ))}
+              {droppableActionsProvided.placeholder}
             </div>
-            {editor(f, newValue => {
-              const newFunctions = [...functions]
-              newFunctions[index] = newValue
-              updateValue(newFunctions, true)
-            })}
-          </ActionWrapper>
-        ))}
+          )}
+        </Droppable>
         <OutlinedButton
           onClick={() => {
             updateValue([...functions, { type: 'CREATE' }], true)
@@ -1172,13 +1244,17 @@ function ConfigureFunction({
 }
 
 const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
+  function handleDragEnd(e: DropResult) {}
+
   return (
-    <ConfigureFunction
-      componentId={props.componentId}
-      value={props.initialValue}
-      title={props.schema.title}
-      updateValue={props.updateValue}
-    />
+    <DragDropContext onDragEnd={handleDragEnd}>
+      <ConfigureFunction
+        componentId={props.componentId}
+        value={props.initialValue}
+        title={props.schema.title}
+        updateValue={props.updateValue}
+      />
+    </DragDropContext>
   )
 }
 

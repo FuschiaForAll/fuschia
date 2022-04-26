@@ -5,8 +5,8 @@ fragment ComponentFragment on Component {
   name
   x
   y
-  isContainer
-  isRootElement
+  layerSort
+  componentType
   requiresAuth
   parameters {
     _id
@@ -21,8 +21,7 @@ fragment ComponentFragment on Component {
     variables
   }
   props
+  layout
   data
-  parent {
-    _id
-  }
+  parent
 }
