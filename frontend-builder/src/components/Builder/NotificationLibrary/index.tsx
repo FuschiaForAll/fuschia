@@ -1,14 +1,4 @@
-interface FolderStructure {
-  [key: string]: null | FolderStructure
-}
-
-const initialState = {
-  mouseX: null,
-  mouseY: null,
-}
-
-const ImageLibrary = function ImageLibrary() {
+const NotificationLibrary = function NotificationLibrary() {
   return <div></div>
 }
-
-export default ImageLibrary
+export default NotificationLibrary
