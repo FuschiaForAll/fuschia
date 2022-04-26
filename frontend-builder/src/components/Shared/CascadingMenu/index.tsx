@@ -1,5 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
+import { SourceType } from '../../../utils/draftJsConverters'
 
 export const NavMenu = styled.ul`
   list-style-type: none;
@@ -76,14 +77,6 @@ export interface MenuStructure {
 }
 
 type RootMenu = MenuStructure[]
-
-export type SourceType =
-  | 'LOCAL_DATA'
-  | 'SERVER_DATA'
-  | 'INPUT'
-  | 'PRIMITIVE'
-  | 'ASSET'
-  | 'VARIABLE'
 
 export interface BoundItem {
   value: string

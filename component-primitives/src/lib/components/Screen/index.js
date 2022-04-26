@@ -2,11 +2,12 @@ import React, { useEffect } from "react";
 import { View, ImageBackground } from "react-native";
 
 export function Screen(props) {
-  const { children, properties, layout, style, actions } = props;
+  const { children, properties, layout, style, actions, editor } = props;
   return (
     <View
       onClick={(e) => {
         if (editor?.inEditMode) {
+          e.stopPropagation();
           editor?.onSelect(editor?.id);
         }
       }}

@@ -2,11 +2,12 @@ import React from "react";
 import { View, ImageBackground } from "react-native";
 
 export function Container(props) {
-  const { style, layout, children, editor } = props;
+  const { style, children, editor } = props;
   return (
     <View
       onClick={(e) => {
         if (editor?.inEditMode) {
+          e.stopPropagation();
           editor?.onSelect(editor?.id);
         }
       }}
@@ -17,23 +18,23 @@ export function Container(props) {
         backgroundColor: style?.backgroundColor,
         borderRadius: style?.borderRadius,
         display: style?.display,
-        marginLeft: layout?.margin?.left,
-        marginRight: layout?.margin?.right,
-        marginTop: layout?.margin?.top,
-        marginBottom: layout?.margin?.bottom,
-        paddingLeft: layout?.padding?.left,
-        paddingRight: layout?.padding?.right,
-        paddingTop: layout?.padding?.top,
-        paddingBottom: layout?.padding?.bottom,
-        position: layout?.position,
-        flexDirection: layout?.flexContainer?.flexDirection,
-        alignItems: layout?.flexContainer?.alignItems,
-        alignContent: layout?.flexContainer?.alignContent,
-        justifyContent: layout?.flexContainer?.justifyContent,
-        justifyItems: layout?.flexContainer?.justifyItems,
-        flexWrap: layout?.flexContainer?.flexWrap,
-        gap: layout?.flexContainer?.gap,
-        flex: layout?.flex,
+        marginLeft: style?.margin?.left,
+        marginRight: style?.margin?.right,
+        marginTop: style?.margin?.top,
+        marginBottom: style?.margin?.bottom,
+        paddingLeft: style?.padding?.left,
+        paddingRight: style?.padding?.right,
+        paddingTop: style?.padding?.top,
+        paddingBottom: style?.padding?.bottom,
+        position: style?.position,
+        flexDirection: style?.flexContainer?.flexDirection,
+        alignItems: style?.flexContainer?.alignItems,
+        alignContent: style?.flexContainer?.alignContent,
+        justifyContent: style?.flexContainer?.justifyContent,
+        justifyItems: style?.flexContainer?.justifyItems,
+        flexWrap: style?.flexContainer?.flexWrap,
+        gap: style?.flexContainer?.gap,
+        flex: style?.flex,
       }}
     >
       {style?.backgroundImage?.source ? (

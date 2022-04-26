@@ -6,6 +6,7 @@ import {
   GetPackagesQuery,
   GetPreviewerDataDocument,
   PackageComponentType,
+  useGetComponentsQuery,
   useGetPackagesQuery,
   useGetPreviewerDataQuery,
   useGetProjectQuery,
@@ -19,6 +20,7 @@ import {
   StructuredComponent,
   useProjectComponents,
 } from '../../utils/hooks/useProjectComponents'
+import { DraftJSPreviewerConverter } from '../../utils/draftJsConverters'
 
 const FrameWrapper = styled.div`
   pointer-events: all;
@@ -48,80 +50,10 @@ function getComponentSchema(
   throw new Error('Schema not found')
 }
 
-function convertDraftJSBindings(
-  value: any,
-  inputState: any,
-  entityState: any,
-  localState: any,
-  dataContext: any
-) {
-  try {
-    if (value.blocks) {
-      let textParts = [] as string[]
-      // update block text, replacing entity ranges
-      value.blocks.forEach((block: any) => {
-        let currentText = block.text
-        ;[...block.entityRanges].reverse().forEach((range: any) => {
-          // find out what we are replacing the text with
-          let replacementText = ''
-          if (value.entityMap && value.entityMap[range.key]) {
-            switch (value.entityMap[range.key].data?.type) {
-              case 'INPUT':
-                replacementText =
-                  inputState[
-                    value.entityMap[range.key].data?.entityPath
-                      ?.split('.')
-                      .pop()
-                  ]
-                break
-              case 'LOCAL_DATA':
-                {
-                  const path = value.entityMap[range.key].data?.entityPath
-                    ?.split('.')
-                    .pop()
-                  if (path) {
-                    replacementText = localState[path]
-                  }
-                }
-                break
-              case 'SERVER_DATA':
-                {
-                  const path = value.entityMap[range.key].data?.entityPath
-                    ?.split('.')
-                    .pop()
-                  if (path) {
-                    if (dataContext[path]) {
-                      replacementText = dataContext[path]
-                    }
-                  }
-                }
-                break
-            }
-          }
-          currentText = `${currentText.slice(
-            0,
-            range.offset
-          )}${replacementText}${currentText.slice(range.offset + range.length)}`
-        })
-        textParts.push(currentText)
-      })
-      return textParts.join('\n')
-    }
-  } catch (e) {
-    console.error(`BINDING ERROR`)
-    console.error(e)
-  }
-  // it might be a property primitive
-  if (value.split && dataContext && dataContext[value.split('.').pop()]) {
-    return dataContext[value.split('.').pop()]
-  }
-  return value
-}
-
 function Viewer(props: {
   packageData: GetPackagesQuery
   project: Project
-  layer?: StructuredComponent
+  layer: StructuredComponent
   navigate: (screenId: string, dataParams?: any) => void
   onInputChange: (key: string, value: any) => void
   onEntityChange: (value: any) => void
@@ -136,205 +68,290 @@ function Viewer(props: {
     }
     return props.dataContext
   }
+  const schema = getComponentSchema(props.packageData, props.layer)
+  const { projectId } = useParams<{ projectId: string }>()
+  const { data: componentsData } = useGetComponentsQuery({
+    variables: {
+      projectId,
+    },
+  })
   if (!props.layer) {
     return <div>No entry point created</div>
   }
-  const schema = getComponentSchema(props.packageData, props.layer)
   // convert bindings
   const componentProperties = { ...props.layer.props }
   Object.keys(componentProperties).forEach(
     key =>
-      (componentProperties[key] = convertDraftJSBindings(
+      (componentProperties[key] = DraftJSPreviewerConverter(
         componentProperties[key],
         props.inputState,
         props.entityState,
         props.localState,
-        props.dataContext
+        props.dataContext,
+        props.project._id
       ))
   )
   const InlineComponent =
     // @ts-ignore
-    window[props.layer.package].components[props.layer.type]
+    window[props.layer.package][props.layer.type]
   if (props.layer.type === 'Checkbox') {
     if (componentProperties.value) {
       componentProperties.value = componentProperties.value === 'true'
     }
   }
-  const styles: React.CSSProperties = {
-    width: componentProperties.style?.width || 50,
-    height: componentProperties.style?.height || 50,
-    pointerEvents: 'all',
-    zIndex: 1000,
-    position: 'absolute',
-    left: `${props.layer.x}px`,
-    top: `${props.layer.y}px`,
+  if (!componentsData || !componentsData.getComponents) {
+    return <div>loading</div>
   }
-  if (props.layer.componentType === PackageComponentType.Screen) {
-    return (
-      <div>
-        <InlineComponent {...componentProperties}>
-          {props.layer.children?.map(child => (
-            <Viewer
-              dataContext={buildDataContext(child)}
-              packageData={props.packageData}
-              project={props.project}
-              layer={child}
-              navigate={props.navigate}
-              inputState={props.inputState}
-              localState={props.localState}
-              onLocalStateChange={props.onLocalStateChange}
-              onInputChange={props.onInputChange}
-              entityState={props.entityState}
-              onEntityChange={props.onEntityChange}
-            />
-          ))}
-        </InlineComponent>
-      </div>
-    )
-  }
-  if (props.layer.componentType !== PackageComponentType.Element) {
-    if (schema.type === 'array') {
-      // get array data
-      if (props.layer.fetched && props.layer.fetched.length === 1) {
-        const fetched = props.layer.fetched[0]
-        if (props.entityState[fetched.entityType]) {
-          let compData = []
-          if (fetched.variables) {
-            compData = props.entityState[fetched.entityType].filter(
-              (record: any) =>
-                fetched?.variables?.every(
-                  variable =>
-                    record[variable.key] !==
-                    convertDraftJSBindings(
-                      variable.value,
+  const children = componentsData.getComponents
+    .filter(c => c.parent === props.layer._id)
+    .sort((a, b) => a.layerSort.localeCompare(b.layerSort))
+  if (
+    schema.type === 'object' ||
+    schema.type === 'layout-component' ||
+    schema.type === 'ui-component'
+  ) {
+    // convert controlled components
+    const findDataBound = (
+      schema: Schema,
+      currentProps: any,
+      currentKey: string
+    ) => {
+      switch (schema.type) {
+        case 'ui-component':
+        case 'layout-component':
+        case 'object':
+          if (!schema.properties) {
+            return
+          }
+          Object.keys(schema.properties).forEach(key => {
+            if (!currentProps[key]) {
+              currentProps[key] = {}
+            }
+            currentProps[key] = findDataBound(
+              schema.properties[key],
+              currentProps[key],
+              key
+            )
+          })
+          break
+        case 'string':
+        case 'number':
+        case 'boolean':
+          if (schema.dataBound) {
+            // found
+            return {
+              //@ts-ignore
+              value:
+                props.inputState[`${props.layer?._id}+${currentKey}`] || '',
+              onChange: (e: any) => {
+                props.onInputChange(`${props.layer?._id}+${currentKey}`, e)
+              },
+            }
+          }
+      }
+      return currentProps
+    }
+    findDataBound(schema, componentProperties, '')
+
+    // convert actions
+    if (schema.properties && schema.properties.actions) {
+      if (schema.properties.actions.type === 'object') {
+        Object.keys(schema.properties.actions.properties).forEach(key => {
+          if (props.layer.props?.actions) {
+            if (props.layer.props.actions[key]) {
+              componentProperties.actions[key] = () => {
+                props.layer.props?.actions[key].forEach(
+                  (action: ActionProps) => {
+                    executeAction(
+                      action,
+                      props.navigate,
+                      DraftJSPreviewerConverter,
                       props.inputState,
                       props.entityState,
                       props.localState,
+                      props.project,
+                      props.onEntityChange,
+                      props.onLocalStateChange,
                       props.dataContext
                     )
+                  }
                 )
-            )
-          } else {
-            compData = props.entityState[fetched.entityType]
+              }
+            }
           }
-          return (
-            <div style={styles}>
-              {compData.map((d: any) => (
-                <InlineComponent
-                  {...componentProperties}
-                  style={{
-                    ...componentProperties.style,
-                    width: '100%',
-                    height: '100%',
-                  }}
-                >
-                  {props.layer?.children?.map(child => (
-                    <Viewer
-                      dataContext={{
-                        ...props.dataContext,
-                        ...d,
-                      }}
-                      packageData={props.packageData}
-                      project={props.project}
-                      layer={child}
-                      navigate={props.navigate}
-                      inputState={props.inputState}
-                      onInputChange={props.onInputChange}
-                      entityState={props.entityState}
-                      onEntityChange={props.onEntityChange}
-                      localState={props.localState}
-                      onLocalStateChange={props.onLocalStateChange}
-                    />
-                  ))}
-                </InlineComponent>
-              ))}
-            </div>
-          )
-        }
-        return null
-      }
-    }
-    return (
-      <div style={styles}>
-        <InlineComponent {...componentProperties}>
-          {props.layer.children?.map(child => (
-            <Viewer
-              dataContext={props.dataContext}
-              packageData={props.packageData}
-              project={props.project}
-              layer={child}
-              navigate={props.navigate}
-              inputState={props.inputState}
-              onInputChange={props.onInputChange}
-              entityState={props.entityState}
-              onEntityChange={props.onEntityChange}
-              localState={props.localState}
-              onLocalStateChange={props.onLocalStateChange}
-            />
-          ))}
-        </InlineComponent>
-      </div>
-    )
-  } else {
-    // if (props.layer.data) {
-    //   Object.keys(props.layer.data).forEach(key => {
-    //     componentProperties[key] = {
-    //       // @ts-ignore
-    //       value: props.inputState[`${props.layer?._id}+${key}`] || '',
-    //       onChange: (e: any) => {
-    //         props.onInputChange(`${props.layer?._id}+${key}`, e)
-    //       },
-    //     }
-    //   })
-    // }
-    // TODO: this must be dynamic based on schema
-    if (componentProperties.onPress) {
-      componentProperties.onPressActions = componentProperties.onPress
-      componentProperties.onPress = () => {
-        componentProperties.onPressActions.forEach((action: ActionProps) => {
-          executeAction(
-            action,
-            props.navigate,
-            convertDraftJSBindings,
-            props.inputState,
-            props.entityState,
-            props.localState,
-            props.project,
-            props.onEntityChange,
-            props.onLocalStateChange,
-            props.dataContext
-          )
         })
       }
     }
-    if (componentProperties.onValueChange) {
-      componentProperties.onValueChangeActions =
-        componentProperties.onValueChange
-      componentProperties.onValueChange = () => {
-        componentProperties.onValueChangeActions.forEach(
-          (action: ActionProps) => {
-            executeAction(
-              action,
-              props.navigate,
-              convertDraftJSBindings,
-              props.inputState,
-              props.entityState,
-              props.localState,
-              props.project,
-              props.onEntityChange,
-              props.onLocalStateChange,
-              props.dataContext
-            )
-          }
-        )
-      }
-    }
-    return (
-      <div style={styles}>
-        <InlineComponent {...componentProperties} />
-      </div>
-    )
   }
+  if (props.layer.componentType === PackageComponentType.Screen) {
+    delete componentProperties.style.height
+    delete componentProperties.style.width
+  }
+  return (
+    <InlineComponent {...componentProperties}>
+      {children?.map(child => (
+        <Viewer
+          dataContext={buildDataContext(child)}
+          packageData={props.packageData}
+          project={props.project}
+          layer={child}
+          navigate={props.navigate}
+          inputState={props.inputState}
+          localState={props.localState}
+          onLocalStateChange={props.onLocalStateChange}
+          onInputChange={props.onInputChange}
+          entityState={props.entityState}
+          onEntityChange={props.onEntityChange}
+        />
+      ))}
+    </InlineComponent>
+  )
+
+  // if (props.layer.componentType === PackageComponentType.Screen) {
+  // }
+  // if (props.layer.componentType !== PackageComponentType.Element) {
+  //   if (schema.type === 'array') {
+  //     // get array data
+  //     if (props.layer.fetched && props.layer.fetched.length === 1) {
+  //       const fetched = props.layer.fetched[0]
+  //       if (props.entityState[fetched.entityType]) {
+  //         let compData = []
+  //         if (fetched.variables) {
+  //           compData = props.entityState[fetched.entityType].filter(
+  //             (record: any) =>
+  //               fetched?.variables?.every(
+  //                 variable =>
+  //                   record[variable.key] !==
+  //                   convertDraftJSBindings(
+  //                     variable.value,
+  //                     props.inputState,
+  //                     props.entityState,
+  //                     props.localState,
+  //                     props.dataContext
+  //                   )
+  //               )
+  //           )
+  //         } else {
+  //           compData = props.entityState[fetched.entityType]
+  //         }
+  //         return (
+  //           <div style={styles}>
+  //             {compData.map((d: any) => (
+  //               <InlineComponent
+  //                 {...componentProperties}
+  //                 style={{
+  //                   ...componentProperties.style,
+  //                   width: '100%',
+  //                   height: '100%',
+  //                 }}
+  //               >
+  //                 {props.layer?.children?.map(child => (
+  //                   <Viewer
+  //                     dataContext={{
+  //                       ...props.dataContext,
+  //                       ...d,
+  //                     }}
+  //                     packageData={props.packageData}
+  //                     project={props.project}
+  //                     layer={child}
+  //                     navigate={props.navigate}
+  //                     inputState={props.inputState}
+  //                     onInputChange={props.onInputChange}
+  //                     entityState={props.entityState}
+  //                     onEntityChange={props.onEntityChange}
+  //                     localState={props.localState}
+  //                     onLocalStateChange={props.onLocalStateChange}
+  //                   />
+  //                 ))}
+  //               </InlineComponent>
+  //             ))}
+  //           </div>
+  //         )
+  //       }
+  //       return null
+  //     }
+  //   }
+  //   return (
+  //     <div style={styles}>
+  //       <InlineComponent {...componentProperties}>
+  //         {props.layer.children?.map(child => (
+  //           <Viewer
+  //             dataContext={props.dataContext}
+  //             packageData={props.packageData}
+  //             project={props.project}
+  //             layer={child}
+  //             navigate={props.navigate}
+  //             inputState={props.inputState}
+  //             onInputChange={props.onInputChange}
+  //             entityState={props.entityState}
+  //             onEntityChange={props.onEntityChange}
+  //             localState={props.localState}
+  //             onLocalStateChange={props.onLocalStateChange}
+  //           />
+  //         ))}
+  //       </InlineComponent>
+  //     </div>
+  //   )
+  // } else {
+  //   // if (props.layer.data) {
+  //   //   Object.keys(props.layer.data).forEach(key => {
+  //   //     componentProperties[key] = {
+  //   //       // @ts-ignore
+  //   //       value: props.inputState[`${props.layer?._id}+${key}`] || '',
+  //   //       onChange: (e: any) => {
+  //   //         props.onInputChange(`${props.layer?._id}+${key}`, e)
+  //   //       },
+  //   //     }
+  //   //   })
+  //   // }
+  //   // TODO: this must be dynamic based on schema
+  //   if (componentProperties.onPress) {
+  //     componentProperties.onPressActions = componentProperties.onPress
+  //     componentProperties.onPress = () => {
+  //       componentProperties.onPressActions.forEach((action: ActionProps) => {
+  //         executeAction(
+  //           action,
+  //           props.navigate,
+  //           convertDraftJSBindings,
+  //           props.inputState,
+  //           props.entityState,
+  //           props.localState,
+  //           props.project,
+  //           props.onEntityChange,
+  //           props.onLocalStateChange,
+  //           props.dataContext
+  //         )
+  //       })
+  //     }
+  //   }
+  //   if (componentProperties.onValueChange) {
+  //     componentProperties.onValueChangeActions =
+  //       componentProperties.onValueChange
+  //     componentProperties.onValueChange = () => {
+  //       componentProperties.onValueChangeActions.forEach(
+  //         (action: ActionProps) => {
+  //           executeAction(
+  //             action,
+  //             props.navigate,
+  //             convertDraftJSBindings,
+  //             props.inputState,
+  //             props.entityState,
+  //             props.localState,
+  //             props.project,
+  //             props.onEntityChange,
+  //             props.onLocalStateChange,
+  //             props.dataContext
+  //           )
+  //         }
+  //       )
+  //     }
+  //   }
+  //   return (
+  //     <div style={styles}>
+  //       <InlineComponent {...componentProperties} />
+  //     </div>
+  //   )
+  // }
 }
 
 const Previewer: React.FC = function Previewer() {
@@ -345,6 +362,11 @@ const Previewer: React.FC = function Previewer() {
   const [screen, setScreen] = useState<string>()
   const { projectId } = useParams<{ projectId: string }>()
   const { data: projectData } = useGetProjectQuery({
+    variables: {
+      projectId,
+    },
+  })
+  const { data: componentsData } = useGetComponentsQuery({
     variables: {
       projectId,
     },
@@ -376,10 +398,10 @@ const Previewer: React.FC = function Previewer() {
       setScreen(projectData.getProject.appConfig.appEntryComponentId)
     }
   }, [projectData])
-  if (!projectData || !components || !PreviewerData || !packageData) {
+  if (!projectData || !componentsData || !PreviewerData || !packageData) {
     return <div>Loading</div>
   }
-  const entryPoint = components.find(c => c._id === screen)
+  const entryPoint = componentsData.getComponents.find(c => c._id === screen)
   return (
     <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
       <Paper
@@ -428,7 +450,7 @@ const Previewer: React.FC = function Previewer() {
             inputState={inputState}
             localState={localState}
             entityState={JSON.parse(
-              JSON.stringify(PreviewerData?.getPreviewerData.data)
+              JSON.stringify(PreviewerData?.getPreviewerData.data || {})
             )}
             onEntityChange={newState => {
               updatePreviewerData({

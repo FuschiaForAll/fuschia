@@ -39,6 +39,46 @@
           "type": "string",
           "format": "color",
           "default": "#000000"
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "string",
+          "default": "5px"
+        },
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "position": {
+          "title": "Position",
+          "type": "string",
+          "default": "initial"
+        },
+        "placement": {
+          "title": "Position",
+          "type": "position",
+          "default": "initial"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string"
+        },
+        "alignSelf": {
+          "title": "Align Self",
+          "type": "string"
         }
       }
     },

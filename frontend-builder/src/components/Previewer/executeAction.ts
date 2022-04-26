@@ -9,7 +9,8 @@ export function executeAction(
     inputState: any,
     entityState: any,
     localState: any,
-    dataContext: any
+    dataContext: any,
+    projectId: any
   ) => string,
   inputState: any,
   entityState: any,
@@ -19,6 +20,7 @@ export function executeAction(
   onLocalStateChange: (data: any) => void,
   dataContext: any
 ) {
+  console.log(entityState)
   switch (action.type) {
     case 'NAVIGATE':
       if (action.destination) {
@@ -39,7 +41,8 @@ export function executeAction(
             inputState,
             entityState,
             localState,
-            dataContext
+            dataContext,
+            project._id
           )
           payload[key] = normalizedText
         })
@@ -65,16 +68,19 @@ export function executeAction(
             inputState,
             entityState,
             localState,
-            dataContext
+            dataContext,
+            project._id
           ),
           password: convertDraftJSBindings(
             action.password,
             inputState,
             entityState,
             localState,
-            dataContext
+            dataContext,
+            project._id
           ),
         }
+        debugger
         if (entityState[project.appConfig.authConfig.tableId]) {
           const user = entityState[project.appConfig.authConfig.tableId].find(
             (e: any) => {
@@ -125,6 +131,23 @@ export function executeAction(
               )
             }
           }
+        } else {
+          if (action.onFail) {
+            action.onFail.forEach(a =>
+              executeAction(
+                a,
+                navigate,
+                convertDraftJSBindings,
+                inputState,
+                entityState,
+                localState,
+                project,
+                onEntityChange,
+                onLocalStateChange,
+                dataContext
+              )
+            )
+          }
         }
       }
       break
@@ -135,7 +158,8 @@ export function executeAction(
           inputState,
           entityState,
           localState,
-          dataContext
+          dataContext,
+          project._id
         )
       )
       break
@@ -149,7 +173,8 @@ export function executeAction(
               inputState,
               entityState,
               localState,
-              dataContext
+              dataContext,
+              project._id
             )
             payload[key] = normalizedText
           }
@@ -190,7 +215,8 @@ export function executeAction(
                   inputState,
                   entityState,
                   localState,
-                  dataContext
+                  dataContext,
+                  project._id
                 )
               }
             })

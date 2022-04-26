@@ -2,7 +2,6 @@ import React from "react";
 import { View, ImageBackground as RNImageBackground } from "react-native";
 
 export function ImageBackground(props) {
-  console.log(props);
   const { style, layout, children } = props;
 
   return (

@@ -55,6 +55,14 @@ export type MarginSchema = CommonSchema & {
   marginBottom: string
 }
 
+export type PositionSchema = CommonSchema & {
+  type: 'position'
+  left: string
+  right: string
+  top: string
+  bottom: string
+}
+
 export type PaddingSchema = CommonSchema & {
   type: 'padding'
   paddingLeft: string
@@ -172,6 +180,7 @@ export type Schema =
   | LayoutComponentSchema
   | FontSchema
   | FlexContainerSchema
+  | PositionSchema
 
 export type ValueType =
   | { [name: string]: any }

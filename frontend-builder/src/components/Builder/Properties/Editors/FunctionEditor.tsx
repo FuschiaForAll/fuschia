@@ -4,6 +4,8 @@ import { useParams } from 'react-router-dom'
 import {
   PackageComponentType,
   useGetBindingTreeQuery,
+  useGetComponentQuery,
+  useGetComponentsQuery,
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
@@ -944,7 +946,12 @@ const NavigateEditor = ({
   params: NavigateProps
   onUpdate: (newValue: NavigateProps) => void
 }) => {
-  const { structuredComponents: components } = useProjectComponents()
+  const { projectId } = useParams<{ projectId: string }>()
+  const { data } = useGetComponentsQuery({
+    variables: {
+      projectId,
+    },
+  })
   const [navTargets, setNagTargets] = useState<
     Array<{
       name: string
@@ -988,12 +995,14 @@ const NavigateEditor = ({
     return null
   }
   useEffect(() => {
-    if (components) {
+    if (data && data.getComponents) {
       setNagTargets(
-        components.filter(c => c.componentType === PackageComponentType.Screen)
+        data.getComponents.filter(
+          c => c.componentType === PackageComponentType.Screen
+        )
       )
     }
-  }, [components])
+  }, [data])
   return (
     <div>
       <LabeledSelect
@@ -1180,7 +1189,8 @@ function ConfigureFunction({
                       <div
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: '1fr auto',
+                          gridTemplateColumns: '1fr auto auto',
+                          alignItems: 'center',
                         }}
                       >
                         <LabeledSelect
@@ -1197,9 +1207,6 @@ function ConfigureFunction({
                             value: t.value,
                           }))}
                         />
-                        <div {...provided.dragHandleProps}>
-                          <DragIndicator />
-                        </div>
                         <IconButton
                           onClick={() => {
                             const newFunctions = [...functions]
@@ -1209,6 +1216,9 @@ function ConfigureFunction({
                         >
                           <DeleteIcon />
                         </IconButton>
+                        <div {...provided.dragHandleProps}>
+                          <DragIndicator />
+                        </div>
                       </div>
                       {editor(f, newValue => {
                         const newFunctions = [...functions]

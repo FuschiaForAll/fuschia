@@ -92,7 +92,7 @@ async function getProjectStructure(mongoDbUrl: string, project: Project) {
     // get root components
     const rootElements = await fuschiaDb
       .collection('components')
-      .find<Component>({ _id: { $in: project.components } })
+      .find<Component>({ projectId: project._id, parent: null })
       .toArray()
     // recursively build entiry tree structure
     return await Promise.all(

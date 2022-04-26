@@ -32,13 +32,7 @@
           "type": "string",
           "default": "#303030",
           "format": "color"
-        }
-      }
-    },
-    "layout": {
-      "type": "object",
-      "title": "Component Layout",
-      "properties": {
+        },
         "display": {
           "title": "Display",
           "type": "string",

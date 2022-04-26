@@ -23,6 +23,7 @@ import {
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql'
 import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+import { Schema } from '@fuchsia/types'
 
 interface FolderStructure {
   [key: string]: null | FolderStructure
@@ -214,19 +215,63 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
     )
     useEffect(() => {
       if (dataContextData && packageData && components) {
+        const dataComponents = [] as Array<{
+          packageName: string
+          componentName: string
+          data: string
+          type: string
+        }>
+
         // find all packages that emit data
-        const dataComponents = packageData.getPackages.flatMap(p =>
-          p.components
-            .filter(c => !!c.schema.data)
-            .flatMap(c =>
-              Object.keys(c.schema.data).map(key => ({
-                packageName: p.packageName,
-                componentName: c.name,
-                data: key,
-                type: c.schema.data[key],
-              }))
-            )
-        )
+        packageData.getPackages.forEach(p => {
+          const components = p.components
+          const findDataBound = (
+            schema: Schema,
+            propKey: string,
+            packageName: string,
+            componentName: string
+          ) => {
+            switch (schema.type) {
+              case 'ui-component':
+              case 'layout-component':
+              case 'object':
+                if (!schema.properties) {
+                  return
+                }
+                Object.keys(schema.properties).forEach(key => {
+                  findDataBound(
+                    schema.properties[key],
+                    key,
+                    packageName,
+                    componentName
+                  )
+                })
+                break
+              case 'string':
+              case 'number':
+              case 'boolean':
+                if (schema.dataBound) {
+                  dataComponents.push({
+                    packageName,
+                    componentName,
+                    data: propKey,
+                    type: schema.type,
+                  })
+                }
+                break
+            }
+            return false
+          }
+          components.forEach(component =>
+            findDataBound(component.schema, '', p.packageName, component.name)
+          )
+
+          // return p.components
+          //   .filter(c => !!c.schema.data)
+          //   .flatMap(c =>
+          //     Object.keys(c.schema.data).map(key => ())
+          //   )
+        })
 
         // find all components with accessible data
         const structure = [] as MenuStructure[]

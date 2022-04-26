@@ -64,104 +64,115 @@ export const draftJsStuff = (
   projectInfo: Project,
   packages: Package[]
 ) => {
-  if (value.blocks) {
-    let textParts = [] as string[]
-    const draft = value as RawDraftContentState
-    draft.blocks.forEach(block => {
-      let currentText = block.text
-      ;[...block.entityRanges].reverse().forEach(range => {
-        let replacementText = ''
-        if (draft.entityMap && draft.entityMap[range.key]) {
-          switch (draft.entityMap[range.key].data.type) {
-            case 'INPUT':
-              const [parts, dataPath] = draft.entityMap[
-                range.key
-              ].data.entityPath.split('+') as string[]
-              const bits = parts.split('.')
-              let currentComponent: Component | null = null
-              bits.forEach(bit => {
-                if (!currentComponent) {
-                  const comp = project.find(p => p._id.toString() === bit)
-                  if (comp) {
-                    currentComponent = comp
-                  }
-                } else {
-                  if (currentComponent.children) {
-                    const comp = currentComponent.children.find(
-                      p => p._id.toString() === bit
-                    )
+  if (!value) {
+    return ``
+  }
+
+  if (typeof value === 'object') {
+    if (value.blocks) {
+      let textParts = [] as string[]
+      const draft = value as RawDraftContentState
+      draft.blocks.forEach(block => {
+        let currentText = block.text
+        ;[...block.entityRanges].reverse().forEach(range => {
+          let replacementText = ''
+          if (draft.entityMap && draft.entityMap[range.key]) {
+            switch (draft.entityMap[range.key].data.type) {
+              case 'INPUT':
+                const [parts, dataPath] = draft.entityMap[
+                  range.key
+                ].data.entityPath.split('+') as string[]
+                const bits = parts.split('.')
+                let currentComponent: Component | null = null
+                bits.forEach(bit => {
+                  if (!currentComponent) {
+                    const comp = project.find(p => p._id.toString() === bit)
                     if (comp) {
                       currentComponent = comp
                     }
+                  } else {
+                    if (currentComponent.children) {
+                      const comp = currentComponent.children.find(
+                        p => p._id.toString() === bit
+                      )
+                      if (comp) {
+                        currentComponent = comp
+                      }
+                    }
                   }
+                })
+                if (currentComponent !== null) {
+                  replacementText = `\${${
+                    (currentComponent as Component).name
+                  }${dataPath ? dataPath : ''}}`
                 }
-              })
-              if (currentComponent !== null) {
-                replacementText = `\${${(currentComponent as Component).name}${
-                  dataPath ? dataPath : ''
-                }}`
-              }
-              break
-            case 'LOCAL_DATA':
-              if (
-                draft.entityMap[range.key].data.entityPath === 'CurrentUser'
-              ) {
-                replacementText = `\${meData?.me?._id}`
-              }
-              break
-            case 'SERVER_DATA':
-              replacementText = draft.entityMap[range.key].data.entityPath
-              const entityParts = draft.entityMap[
-                range.key
-              ].data.entityPath.split('.') as string[]
-              const component = findNestedComponent(entityParts[0], project)
-              if (component) {
-                // we are targeting a component, lets find it's type
-                const componentPackage = packages.find(
-                  p => p.packageName === component.package
-                )
-                if (componentPackage) {
-                  const componentElement = componentPackage.components.find(
-                    c => c.name === component.type
+                break
+              case 'LOCAL_DATA':
+                if (
+                  draft.entityMap[range.key].data.entityPath === 'CurrentUser'
+                ) {
+                  replacementText = `\${meData?.me?._id}`
+                }
+                break
+              case 'SERVER_DATA':
+                replacementText = draft.entityMap[range.key].data.entityPath
+                const entityParts = draft.entityMap[
+                  range.key
+                ].data.entityPath.split('.') as string[]
+                const component = findNestedComponent(entityParts[0], project)
+                if (component) {
+                  // we are targeting a component, lets find it's type
+                  const componentPackage = packages.find(
+                    p => p.packageName === component.package
                   )
+                  if (componentPackage) {
+                    const componentElement = componentPackage.components.find(
+                      c => c.name === component.type
+                    )
 
-                  if (componentElement) {
-                    if (componentElement.schema.type === 'array') {
-                      // we need to find the field name targeted and prefix with item
+                    if (componentElement) {
+                      if (componentElement.schema.type === 'array') {
+                        // we need to find the field name targeted and prefix with item
 
-                      if (component.fetched) {
-                        component.fetched.forEach(fetched => {
-                          const fetchedModel =
-                            projectInfo.appConfig.apiConfig.models.find(
-                              m => m._id.toString() === fetched.entityType
-                            )
-                          if (fetchedModel) {
-                            // this only works 1 level down
-                            const targetField = fetchedModel.fields.find(
-                              field => field._id.toString() === entityParts[1]
-                            )
-                            if (targetField) {
-                              replacementText = `\${item.${targetField.fieldName}}`
+                        if (component.fetched) {
+                          component.fetched.forEach(fetched => {
+                            const fetchedModel =
+                              projectInfo.appConfig.apiConfig.models.find(
+                                m => m._id.toString() === fetched.entityType
+                              )
+                            if (fetchedModel) {
+                              // this only works 1 level down
+                              const targetField = fetchedModel.fields.find(
+                                field => field._id.toString() === entityParts[1]
+                              )
+                              if (targetField) {
+                                replacementText = `\${item.${targetField.fieldName}}`
+                              }
                             }
-                          }
-                        })
+                          })
+                        }
                       }
                     }
                   }
                 }
-              }
-              break
+                break
+            }
           }
-        }
-        currentText = `${currentText.slice(
-          0,
-          range.offset
-        )}${replacementText}${currentText.slice(range.offset + range.length)}`
+          currentText = `${currentText.slice(
+            0,
+            range.offset
+          )}${replacementText}${currentText.slice(range.offset + range.length)}`
+        })
+        textParts.push(currentText)
       })
-      textParts.push(currentText)
-    })
-    return textParts.join('\n')
+      return textParts.join('\n')
+    }
+    return Object.keys(value).reduce((acc, key) => {
+      acc[key] = draftJsStuff(value[key], project, projectInfo, packages)
+      return acc
+    }, {} as any)
   }
+
   return value
 }
 
