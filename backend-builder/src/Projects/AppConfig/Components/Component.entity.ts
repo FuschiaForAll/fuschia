@@ -41,17 +41,9 @@ export class RequiredParameter {
 
 @ObjectType()
 export class DataSource {
-  @Field()
+  @Field((type) => Object)
   @Property()
-  entityType!: string;
-
-  @Field()
-  @Property()
-  path!: string;
-
-  @Field()
-  @Property()
-  label!: string;
+  entityType!: Object;
 
   @Field((type) => [Object])
   @Property({ default: [] })

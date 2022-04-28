@@ -95,6 +95,8 @@ interface RegistrationProps {
 }
 interface ChangeInputProps {
   type: 'CHANGE_INPUT'
+  input: string
+  props: { [key: string]: any }
   onSucess?: ActionProps[]
   onFail?: ActionProps[]
 }
@@ -727,9 +729,10 @@ const UpdateEditor = (props: {
   return (
     <div>
       <EntitySelector
+        entities={[]}
         componentId={props.componentId}
         selectedLabel={props.params.updateElement?.label}
-        onSelect={(entity, value) => {
+        onChange={() => {
           throw new Error('THIS NEEDS FIXING')
           // const newParams = { ...props.params }
           // newParams.updateElement = {
@@ -807,14 +810,36 @@ const ForgotPasswordEditor = (props: {
     </div>
   )
 }
-const ChangeInputEditor = (props: {
+const ChangeInputEditor = ({
+  params,
+  onUpdate,
+}: {
   componentId: string
   params: ChangeInputProps
   onUpdate: (newValue: ChangeInputProps) => void
 }) => {
+  const { projectId } = useParams<{ projectId: string }>()
+  const { data } = useGetComponentsQuery({
+    variables: {
+      projectId,
+    },
+  })
+  if (!data) {
+    return null
+  }
   return (
     <div>
-      <div>Chane Input</div>
+      {
+        <LabeledSelect
+          label="Target"
+          onChange={e => {}}
+          options={data.getComponents.map(t => ({
+            label: t.name,
+            value: t._id,
+          }))}
+          selectedValue={params.input}
+        />
+      }
     </div>
   )
 }
@@ -918,9 +943,10 @@ const DeleteEditor = (props: {
   return (
     <div>
       <EntitySelector
+        entities={[]}
         componentId={props.componentId}
         selectedLabel={props.params.deleteElement?.label}
-        onSelect={(path, label) => {
+        onChange={() => {
           throw new Error('THIS NEEDS FIXING')
           // props.onUpdate({
           //   ...props.params,
@@ -968,10 +994,11 @@ const NavigateEditor = ({
       if (target.parameters && target.parameters.length > 0) {
         return target.parameters.map(p => (
           <EntitySelector
+            entities={[]}
             entityId={p.entityType}
             componentId={componentId}
             selectedLabel={params.parameters && params.parameters[p._id]?.label}
-            onSelect={(entityId, value) => {
+            onChange={() => {
               throw new Error('THIS NEEDS FIXING')
               // onUpdate({
               //   ...params,

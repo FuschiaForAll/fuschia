@@ -80,7 +80,6 @@ export function executeAction(
             project._id
           ),
         }
-        debugger
         if (entityState[project.appConfig.authConfig.tableId]) {
           const user = entityState[project.appConfig.authConfig.tableId].find(
             (e: any) => {

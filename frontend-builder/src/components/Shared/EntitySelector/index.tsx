@@ -1,131 +1,218 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
   useGetDataContextQuery,
 } from '../../../generated/graphql'
 import DataBinder from '../../Builder/Properties/Editors/DataBinder'
-import { BoundItem, DataStructure, MenuStructure } from '../CascadingMenu'
+import { DataStructure, MenuStructure } from '../CascadingMenu'
+import styled from '@emotion/styled'
+import {
+  Editor,
+  EditorState,
+  convertToRaw,
+  convertFromRaw,
+  Entity,
+  Modifier,
+  CompositeDecorator,
+  ContentState,
+  ContentBlock,
+} from 'draft-js'
+import DeleteIcon from '@mui/icons-material/Delete'
+import { IconButton } from '@mui/material'
+
+const EditorWrapper = styled.div`
+  margin-top: 2px;
+  margin-bottom: 2px;
+  display: block;
+  border: none;
+  border-radius: 8px;
+  border: 1px solid var(--black);
+  padding: 8px;
+  width: 100%;
+  &:focus {
+    outline-color: var(--accent) !important;
+    outline-width: 1px;
+  }
+`
+
+function convertInitialContent(content: any) {
+  if (content && content.blocks) {
+    if (!content.entityMap) {
+      content.entityMap = {}
+    }
+    return content
+  }
+  return {
+    blocks: [
+      {
+        text: content || '',
+        type: 'unstyled',
+      },
+    ],
+    entityMap: {
+      first: {
+        type: 'PLACEHOLDER',
+        mutability: 'IMMUTABLE',
+        data: {
+          content: 'firstName', // can be whatever
+        },
+      },
+    },
+  }
+}
+
+const Placeholder = (props: any) => {
+  const data = props.contentState
+    .getEntity(props.entityKey)
+    .getData() as Array<{
+    value: string
+    label: string
+    type: string
+  }>
+  console.log(`Placeholder`)
+  console.log(data)
+  return (
+    <span
+      readOnly={true}
+      title={data.map(t => t.label).join(' > ')}
+      {...props}
+      style={styles.placeholder}
+    >
+      <span>{props.children}</span>
+    </span>
+  )
+}
+
+const decorator = new CompositeDecorator([
+  {
+    strategy: findPlaceholders,
+    component: Placeholder,
+  },
+])
+
+function findPlaceholders(
+  contentBlock: ContentBlock,
+  callback: (start: number, end: number) => void,
+  contentState: ContentState
+) {
+  contentBlock.findEntityRanges((character: any) => {
+    const entityKey = character.getEntity()
+    return (
+      entityKey !== null &&
+      contentState.getEntity(entityKey).getType() === 'PLACEHOLDER'
+    )
+  }, callback)
+}
 
 export function EntitySelector({
-  additionalEntities,
+  entities,
   entityId,
   componentId,
   selectedLabel,
-  onSelect,
+  onChange,
+  onDelete,
   isList = false,
+  dataStructure = {},
 }: {
-  additionalEntities?: MenuStructure[]
+  entities: MenuStructure[]
+  dataStructure?: { [key: string]: DataStructure }
   entityId?: string
   componentId: string
   selectedLabel?: string
-  onSelect: (entity: string, path: BoundItem[]) => void
+  onChange: (value: any) => void
+  onDelete?: (value: any) => void
   isList?: boolean
 }) {
-  const { projectId } = useParams<{ projectId: string }>()
-  const { data: projectData } = useGetProjectQuery({
-    variables: { projectId },
-  })
-  const { data: dataContextData } = useGetDataContextQuery({
-    variables: {
-      componentId,
-    },
-  })
-  const [modelStructures, setModelStructures] = useState<{
-    [key: string]: DataStructure
-  }>({})
-  const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
-  const extractModelName = useCallback(
-    (parameter: string): [string, boolean] => {
-      const models = projectData?.getProject.appConfig.apiConfig.models || []
-      const model = models.find(model => model._id === parameter)
-      if (model) {
-        return [model.name, true]
-      }
-      return [parameter, false]
-    },
-    [projectData]
+  const [editorFocused, setEditorFocused] = useState(false)
+  const ref = useRef<Editor>(null)
+  const [editorState, setEditorState] = React.useState(
+    EditorState.createWithContent(
+      convertFromRaw(convertInitialContent(selectedLabel)),
+      decorator
+    )
   )
-  useEffect(() => {
-    if (dataContextData) {
-      const modelStruct =
-        projectData?.getProject.appConfig.apiConfig.models.reduce(
-          (acc, item) => {
-            acc[item._id] = {
-              _id: item._id,
-              name: item.name,
-              fields: item.fields
-                .filter(field => field.isList === isList) // don't add lists for now
-                .map(field => ({
-                  type: 'SERVER_DATA',
-                  entity: field.dataType,
-                  hasSubMenu: !!field.connection,
-                  source: field._id,
-                  label: field.fieldName,
-                })),
-            }
-            return acc
-          },
-          {} as {
-            [key: string]: DataStructure
-          }
-        )
-      setModelStructures(modelStruct || {})
+  function insertPlaceholder(label: string, path: any) {
+    const clearEditorState = EditorState.push(
+      editorState,
+      ContentState.createFromText(''),
+      'remove-range'
+    )
+    const selection = clearEditorState.getSelection()
+    const entityKey = Entity.create('PLACEHOLDER', 'IMMUTABLE', path)
 
-      const structure = dataContextData.getDataContext.reduce((acc, item) => {
-        item.dataSources.forEach(source => {
-          const [name, hasSubMenu] = extractModelName(source)
-          acc.push({
-            type: 'SERVER_DATA',
-            source: item.componentId,
-            entity: source,
-            label: `${item.name}'s ${name}`,
-            hasSubMenu,
-          })
-        })
-        return acc
-      }, [] as MenuStructure[])
-      if (projectData?.getProject.appConfig.authConfig.tableId) {
-        structure.push({
-          type: 'LOCAL_DATA',
-          label: 'Current User',
-          hasSubMenu: true,
-          entity: projectData?.getProject.appConfig.authConfig.tableId,
-          source: 'CurrentUser',
-        })
-      }
-      setDataStructure([...(additionalEntities || []), ...structure])
-    }
-  }, [
-    additionalEntities,
-    dataContextData,
-    extractModelName,
-    isList,
-    projectData,
-  ])
+    const textWithEntity = Modifier.replaceText(
+      clearEditorState.getCurrentContent(),
+      selection,
+      label,
+      undefined,
+      entityKey
+    )
+
+    const newEditorState = EditorState.push(
+      clearEditorState,
+      textWithEntity,
+      'insert-characters'
+    )
+    onChange(convertToRaw(newEditorState.getCurrentContent()))
+    setEditorState(newEditorState)
+  }
   return (
     <>
-      <div>{entityId && extractModelName(entityId)}</div>
-      <div
+      <div>{entityId}</div>
+      <EditorWrapper
         style={{
+          borderColor: editorFocused ? 'var(--accent)' : 'var(--black)',
           display: 'grid',
-          gridAutoFlow: 'column',
-          border: 'solid 1px var(--accent)',
-          borderRadius: 5,
-          justifyContent: 'start',
+          gridTemplateColumns: 'auto 1fr auto',
           alignItems: 'center',
+          wordBreak: 'break-word',
         }}
       >
         <DataBinder
           targetType={entityId}
-          onSelect={onSelect}
-          entry={dataStructure}
-          dataStructure={modelStructures}
+          onSelect={(entity, value) => {
+            if (value.length > 0) {
+              const last = value[value.length - 1]
+              insertPlaceholder(last.label, value)
+            }
+          }}
+          entry={entities}
+          dataStructure={dataStructure}
         />
-        <span title={selectedLabel && selectedLabel.split('.').join(' > ')}>
-          {selectedLabel && selectedLabel.split('.').pop()}
-        </span>
-      </div>
+        <Editor
+          onFocus={e => setEditorFocused(true)}
+          onBlur={e => {
+            setEditorFocused(false)
+          }}
+          readOnly={true}
+          editorState={editorState}
+          onChange={e => {
+            onChange(convertToRaw(editorState.getCurrentContent()))
+            setEditorState(e)
+          }}
+          ref={ref}
+        />
+        {onDelete && (
+          <IconButton onClick={onDelete}>
+            <DeleteIcon />
+          </IconButton>
+        )}
+      </EditorWrapper>
     </>
   )
+}
+
+const styles = {
+  editor: {
+    border: '1px solid gray',
+    minHeight: 300,
+    cursor: 'text',
+  },
+  placeholder: {
+    color: 'var(--accent)',
+    textDecoration: 'underline',
+    fontWeight: '600',
+    display: 'inline-block',
+  },
 }

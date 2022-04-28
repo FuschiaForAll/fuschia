@@ -2,6 +2,7 @@ import { IconButton } from '@mui/material'
 import React, { useEffect, useRef, useState } from 'react'
 import LanIcon from '@mui/icons-material/Lan'
 import { BoundItem, CascadingMenu } from '../../../Shared/CascadingMenu'
+import { SourceType } from '../../../../utils/draftJsConverters'
 
 export type ComponentId = string
 export type EntityId = string
@@ -13,13 +14,7 @@ export interface DataStructure {
 }
 
 export interface MenuStructure {
-  type:
-    | 'LOCAL_DATA'
-    | 'SERVER_DATA'
-    | 'INPUT'
-    | 'PRIMITIVE'
-    | 'ASSET'
-    | 'VARIABLE'
+  type: SourceType
   source: ComponentId
   entity: EntityId
   label: string

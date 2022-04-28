@@ -60,10 +60,24 @@ function Viewer(props: {
   localState: any
   dataContext: any
 }): JSX.Element | null {
-  function buildDataContext(component: StructuredComponent) {
+  function buildDataContext(component: StructuredComponent, mappedData?: any) {
+    const updateContext = { ...props.dataContext }
     if (component.fetched) {
+      updateContext[component._id] = {}
+      component.fetched.forEach(f => {
+        const entity = f.entityType as any
+        if (entity && entity.blocks) {
+          console.error('Filter this list based on parameters')
+          updateContext[component._id][entity.entityMap[0].data[0].value] =
+            props.entityState[entity.entityMap[0].data[0].value]
+        }
+      })
     }
-    return props.dataContext
+    if (mappedData) {
+      console.warn('this is not right')
+      updateContext['mappedData'] = mappedData
+    }
+    return updateContext
   }
   const schema = getComponentSchema(props.packageData, props.layer)
   const { projectId } = useParams<{ projectId: string }>()
@@ -88,6 +102,9 @@ function Viewer(props: {
         props.project._id
       ))
   )
+  if (typeof componentProperties.text === 'object') {
+    debugger
+  }
   const InlineComponent =
     // @ts-ignore
     window[props.layer.package][props.layer.type]
@@ -183,6 +200,37 @@ function Viewer(props: {
   if (props.layer.componentType === PackageComponentType.Screen) {
     delete componentProperties.style.height
     delete componentProperties.style.width
+  }
+  console.log(props.layer._id)
+  console.log(componentProperties)
+  if (schema.type === 'array' && props.layer.props) {
+    const data = findDataSourceData(
+      props.layer.props.dataSource,
+      props.dataContext
+    )
+    return (
+      <>
+        {data.map((d, index) => (
+          <InlineComponent key={index} {...componentProperties}>
+            {children?.map(child => (
+              <Viewer
+                dataContext={buildDataContext(child, d)}
+                packageData={props.packageData}
+                project={props.project}
+                layer={child}
+                navigate={props.navigate}
+                inputState={props.inputState}
+                localState={props.localState}
+                onLocalStateChange={props.onLocalStateChange}
+                onInputChange={props.onInputChange}
+                entityState={props.entityState}
+                onEntityChange={props.onEntityChange}
+              />
+            ))}
+          </InlineComponent>
+        ))}
+      </>
+    )
   }
   return (
     <InlineComponent {...componentProperties}>
@@ -554,4 +602,28 @@ interface Project {
       passwordFieldId: string
     }
   }
+}
+
+function findDataSourceData(dataSource: any, dataContext: any) {
+  if (dataSource.entityMap && dataSource.entityMap[0]) {
+    const context = dataSource.entityMap[0].data.reduce(
+      (acc: any, item: any) => {
+        if (item.value === 'DataContext') {
+          return acc
+        }
+        if (acc[item.value]) {
+          return acc[item.value]
+        }
+        throw new Error()
+      },
+      dataContext
+    )
+    return context as []
+  }
+  console.error(
+    `This is not right, we need to get the filtered list from context`
+  )
+  debugger
+
+  return []
 }

@@ -451,7 +451,6 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
             <SketchPicker
               color={color}
               onChange={color => {
-                debugger
                 const editorState = EditorState.createWithContent(
                   convertFromRaw(convertInitialContent(color.hex)),
                   decorator

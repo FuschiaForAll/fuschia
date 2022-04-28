@@ -493,6 +493,21 @@ mutation Update${m.name}($input: Update${m.name}Input!, $condition: Model${
       `,
         { flag: 'w' }
       )
+      await fs.writeFile(
+        path.join(srcdir, 'graphql', `On${m.name}Change.graphql`),
+        `
+subscription On${m.name}Change {
+  on${m.name}Change {
+    _id
+    ${m.fields
+      .filter(f => !f.connection && !f.isHashed)
+      .map(f => f.fieldName)
+      .join('\n')}
+  }
+}
+      `,
+        { flag: 'w' }
+      )
     })
   )
 }

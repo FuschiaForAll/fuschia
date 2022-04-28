@@ -187,6 +187,20 @@ function VariableConfiguration({
   )
 }
 
+function ServerConfiguration({
+  selectedPage,
+  pageIndex,
+}: {
+  selectedPage: number
+  pageIndex: number
+}) {
+  return (
+    <div
+      style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}
+    ></div>
+  )
+}
+
 function DatabaseConfiguration({
   isLocal,
   selectedPage,
@@ -432,6 +446,12 @@ const Database: React.FC = function Database() {
           >
             Local Database
           </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 3}
+            onClick={() => setSelectedTabIndex(3)}
+          >
+            Server Configuration
+          </MainTabHeader>
         </TabWrapper>
         <DatabaseConfiguration
           isLocal={false}
@@ -444,6 +464,7 @@ const Database: React.FC = function Database() {
           pageIndex={2}
           selectedPage={selectedTabIndex}
         />
+        <ServerConfiguration pageIndex={3} selectedPage={selectedTabIndex} />
       </Paper>
     </Modal>
   )

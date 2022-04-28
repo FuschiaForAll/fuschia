@@ -179,16 +179,12 @@ input DataFieldInput {
 }
 
 type DataSource {
-  entityType: String!
-  label: String!
-  path: String!
+  entityType: JSONObject!
   variables: [JSONObject!]!
 }
 
 input DataSourceInput {
-  entityType: String!
-  label: String!
-  path: String!
+  entityType: JSONObject!
   variables: [JSONObject!]!
 }
 

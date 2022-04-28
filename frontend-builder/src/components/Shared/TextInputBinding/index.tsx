@@ -20,10 +20,15 @@ import {
   useGetProjectQuery,
   useGetDataContextQuery,
   useListAssetFolderQuery,
+  useGetComponentsQuery,
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql'
-import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
+import {
+  StructuredComponent,
+  useProjectComponents,
+} from '../../../utils/hooks/useProjectComponents'
 import { Schema } from '@fuchsia/types'
+import { SourceType } from '../../../utils/draftJsConverters'
 
 interface FolderStructure {
   [key: string]: null | FolderStructure
@@ -90,12 +95,18 @@ function convertInitialContent(content: any) {
 }
 
 const Placeholder = (props: any) => {
-  const data = props.contentState.getEntity(props.entityKey).getData()
+  const data = props.contentState
+    .getEntity(props.entityKey)
+    .getData() as Array<{
+    value: string
+    label: string
+    type: string
+  }>
   return (
     <span
       //@ts-ignore
       readOnly={true}
-      title={data.labelPath?.split('.').join(' > ')}
+      title={data.map(t => t.label).join(' > ')}
       {...props}
       style={styles.placeholder}
     >
@@ -194,9 +205,9 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
         projectId,
       },
     })
-    const { data: dataContextData } = useGetDataContextQuery({
+    const { data: componentData } = useGetComponentsQuery({
       variables: {
-        componentId,
+        projectId,
       },
     })
     const { structuredComponents: components } = useProjectComponents()
@@ -214,7 +225,7 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
       [projectData]
     )
     useEffect(() => {
-      if (dataContextData && packageData && components) {
+      if (packageData && components && componentData) {
         const dataComponents = [] as Array<{
           packageName: string
           componentName: string
@@ -409,29 +420,78 @@ const TextInputBinding: React.FC<TextInputBindingProps> =
             ],
           }
         })
-        setModelStructures(modelStructure || {})
+        const dataContextBuilder = [] as Array<{
+          type: SourceType
+          entity: string
+          label: string
+          source: string
+        }>
+        const buildRecusiveParentData = (c: any) => {
+          const parent = componentData.getComponents.find(
+            p => p._id === c.parent
+          )
+          if (parent) {
+            if (parent.fetched) {
+              dataContextBuilder.push({
+                entity: `DC+${parent._id}`,
+                label: parent.name,
+                source: parent._id,
+                type: 'DATA_CONTEXT',
+              })
+              modelStructure[`DC+${parent._id}`] = {
+                _id: parent._id,
+                name: parent.name,
+                fields: parent.fetched
+                  .filter(fd => !!fd.entityType.entityMap)
+                  .map(fetchedData => ({
+                    type: fetchedData.entityType.entityMap[0].data[0].type,
+                    source: fetchedData.entityType.entityMap[0].data[0].value,
+                    entity: fetchedData.entityType.entityMap[0].data[0].value,
+                    label: `${parent.name}'s ${fetchedData.entityType.entityMap[0].data[0].label}`,
+                    hasSubMenu: true,
+                  })),
+              }
+            }
+            buildRecusiveParentData(parent)
+          }
+        }
 
-        dataContextData.getDataContext.forEach(item => {
-          item.dataSources.forEach(source => {
-            const [name, hasSubMenu] = extractModelName(source)
-            structure.push({
-              type: 'SERVER_DATA',
-              source: item.componentId,
-              entity: source,
-              label: `${item.name}'s ${name}`,
-              hasSubMenu,
-            })
-          })
+        structure.push({
+          type: 'DATA_CONTEXT',
+          label: 'Data Context',
+          hasSubMenu: true,
+          entity: 'DataContext',
+          source: 'DataContext',
         })
+
+        const component = componentData.getComponents.find(
+          c => c._id === componentId
+        )
+        if (component) {
+          buildRecusiveParentData(component)
+          modelStructure.DataContext = {
+            _id: 'DataContext',
+            name: 'Data Context',
+            fields: dataContextBuilder.map(subKey => ({
+              type: subKey.type,
+              entity: subKey.entity,
+              hasSubMenu: true,
+              source: subKey.source,
+              label: subKey.label,
+            })),
+          }
+        }
         setDataStructure(structure)
+        setModelStructures(modelStructure || {})
       }
     }, [
-      dataContextData,
       extractModelName,
       projectData,
       packageData,
       components,
       folderData,
+      componentData,
+      componentId,
     ])
     return (
       <EditorWrapper

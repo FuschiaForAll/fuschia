@@ -4,12 +4,14 @@ import styled from '@emotion/styled'
 import { useSelection, useDragDrop } from '../../../../utils/hooks'
 import {
   PackageComponentType,
+  useGetPackageComponentQuery,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../../generated/graphql'
 import { StructuredComponent } from '../../../../utils/hooks/useProjectComponents'
 import { useParams } from 'react-router-dom'
 import { DraftJSEditorConverter } from '../../../../utils/draftJsConverters'
+import { getComponentSchema } from '../../../../utils/getComponentSchema'
 
 type ClickHandler = React.MouseEventHandler<HTMLDivElement>
 
@@ -89,7 +91,7 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
   return (
     <FrameWrapper
       name={layer.name}
-      root={!!layer.parentId}
+      root={!!layer.parent?._id}
       id={layer._id}
       className={classNames.join(' ')}
       style={styles}
@@ -97,7 +99,7 @@ const StackLayer: React.FC<FrameProps> = function AbsoluteLayer({
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
-      data-parentid={layer.parentId}
+      data-parentid={layer.parent?._id}
     >
       {children}
     </FrameWrapper>
@@ -126,13 +128,13 @@ function ScreenLayer({
     <FrameWrapper
       name={layer.name}
       id={layer._id}
-      root={!!layer.parentId}
+      root={!!layer.parent?._id}
       style={styles}
       className={classNames.join(' ')}
       onClick={onClick}
       data-package={layer.package}
       data-type={layer.type}
-      data-parentid={layer.parentId}
+      data-parentid={layer.parent?._id}
     >
       <div style={{ contain: 'content' }}>{children}</div>
     </FrameWrapper>
@@ -185,6 +187,7 @@ const Layer = React.memo(function Layer({
       WrapperType = ({ children }: PropsWithChildren<{}>) => <>{children}</>
       break
   }
+  const schema = getComponentSchema(packageData, layer)
   // @ts-ignore
   const LayerComponent = window[layer.package][layer.type]
   const convertedProps = DraftJSEditorConverter({ ...layer.props }, projectId)
@@ -201,6 +204,14 @@ const Layer = React.memo(function Layer({
       <WrapperType layer={layer}>
         {layer.componentType === PackageComponentType.Element ? (
           <LayerComponent editor={editor} {...convertedProps} />
+        ) : schema.type === 'array' ? (
+          [1, 2, 3].map((item, index) => (
+            <LayerComponent key={index} {...convertedProps} editor={editor}>
+              {layer.children?.map(child => (
+                <Layer layer={child} key={child._id} />
+              ))}
+            </LayerComponent>
+          ))
         ) : (
           <LayerComponent {...convertedProps} editor={editor}>
             {layer.children?.map(child => (

@@ -5,6 +5,7 @@ export type SourceType =
   | 'PRIMITIVE'
   | 'ASSET'
   | 'VARIABLE'
+  | 'DATA_CONTEXT'
 
 export interface EntityData {
   value: string
@@ -76,11 +77,12 @@ export function DraftJSPreviewerConverter(
                   case 'ASSET':
                     const arr = [...entityData]
                     arr.shift()
-                    return `${
+                    replacementText = `${
                       process.env.REACT_APP_GQL_ENDPOINT
                     }/project-files/${projectId}/${arr
                       .map(a => a.value)
                       .join('/')}`
+                    break
                   case 'INPUT':
                     replacementText =
                       inputState[entityData[entityData.length - 1].value]
@@ -90,6 +92,8 @@ export function DraftJSPreviewerConverter(
                     // if (path) {
                     //   replacementText = localState[path]
                     // }
+
+                    replacementText = 'LOCAL_DATA'
                     break
                   case 'SERVER_DATA':
                     // const path = entityData.entityPath?.split('.').pop()
@@ -98,6 +102,20 @@ export function DraftJSPreviewerConverter(
                     //     replacementText = dataContext[path]
                     //   }
                     // }
+                    replacementText = 'SERVER_DATA'
+                    break
+                  case 'DATA_CONTEXT':
+                    if (dataContext.mappedData) {
+                      replacementText =
+                        dataContext.mappedData[
+                          entityData[entityData.length - 1].value
+                        ]
+                    } else {
+                      replacementText = 'no data'
+                    }
+                    break
+                  default:
+                    replacementText = 'AHHHHH'
                     break
                 }
               }
