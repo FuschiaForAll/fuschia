@@ -8,7 +8,7 @@ import {
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
-import TextInputBinding from '../../../Shared/TextInputBinding'
+import TextInputBinding, { Component } from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
 import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
@@ -33,6 +33,7 @@ import {
   DropResult,
 } from 'react-beautiful-dnd'
 import { DragIndicator } from '@mui/icons-material'
+import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -811,6 +812,7 @@ const ForgotPasswordEditor = (props: {
   )
 }
 const ChangeInputEditor = ({
+  componentId,
   params,
   onUpdate,
 }: {
@@ -818,28 +820,70 @@ const ChangeInputEditor = ({
   params: ChangeInputProps
   onUpdate: (newValue: ChangeInputProps) => void
 }) => {
+  const [modelStructures, setModelStructures] = useState<{
+    [key: string]: DataStructure
+  }>({})
+  const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
   const { projectId } = useParams<{ projectId: string }>()
-  const { data } = useGetComponentsQuery({
-    variables: {
-      projectId,
-    },
-  })
-  if (!data) {
-    return null
-  }
+  const { structuredComponents: components } = useProjectComponents()
+  useEffect(() => {
+    if (components) {
+      const structure = [] as MenuStructure[]
+
+      structure.push({
+        type: 'INPUT',
+        label: 'Inputs',
+        hasSubMenu: true,
+        entity: 'InputObject',
+        source: 'InputObject',
+      })
+      const modelStructure = {} as { [key: string]: DataStructure }
+      modelStructure.InputObject = {
+        _id: 'InputObject',
+        name: 'Inputs',
+        fields: components.map(c => ({
+          type: 'INPUT',
+          entity: c._id,
+          hasSubMenu: !!(c.children && c.children.length > 0),
+          source: c._id,
+          label: c.name,
+        })),
+      }
+
+      const search = (c: Component) => {
+        modelStructure[c._id] = {
+          _id: c._id,
+          name: c.name,
+          fields: [],
+        }
+        c.children?.forEach(ch => {
+          modelStructure[c._id].fields.push({
+            type: 'INPUT',
+            source: ch._id,
+            entity: ch._id,
+            label: ch.name,
+            hasSubMenu: !!(ch.children && ch.children.length > 0),
+          })
+        })
+        if (c.children) {
+          c.children.forEach(ch => search(ch))
+        }
+      }
+      components.forEach(c => search(c))
+      setDataStructure(structure)
+      setModelStructures(modelStructure || {})
+    }
+  }, [components])
+
   return (
     <div>
-      {
-        <LabeledSelect
-          label="Target"
-          onChange={e => {}}
-          options={data.getComponents.map(t => ({
-            label: t.name,
-            value: t._id,
-          }))}
-          selectedValue={params.input}
-        />
-      }
+      <EntitySelector
+        componentId={componentId}
+        entities={dataStructure}
+        dataStructure={modelStructures}
+        onChange={e => {}}
+        selectedLabel={params.input}
+      />
     </div>
   )
 }

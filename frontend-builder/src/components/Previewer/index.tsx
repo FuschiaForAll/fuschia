@@ -99,7 +99,8 @@ function Viewer(props: {
         props.entityState,
         props.localState,
         props.dataContext,
-        props.project._id
+        props.project._id,
+        props.project.appConfig.authConfig.tableId
       ))
   )
   if (typeof componentProperties.text === 'object') {

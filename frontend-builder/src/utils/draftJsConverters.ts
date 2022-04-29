@@ -53,7 +53,8 @@ export function DraftJSPreviewerConverter(
   entityState: any,
   localState: any,
   dataContext: any,
-  projectId: any
+  projectId: any,
+  authTableId: any
 ) {
   if (!value) {
     return ``
@@ -92,8 +93,33 @@ export function DraftJSPreviewerConverter(
                     // if (path) {
                     //   replacementText = localState[path]
                     // }
-
-                    replacementText = 'LOCAL_DATA'
+                    const data = value.entityMap[range.key].data as Array<{
+                      label: string
+                      value: string
+                      type: SourceType
+                    }>
+                    const currentValue = data.reduce((acc, d) => {
+                      switch (d.type) {
+                        case 'LOCAL_DATA':
+                          if (d.value === 'CurrentUser') {
+                            return entityState[authTableId].find(
+                              (r: any) => r._id === localState.CurrentUser
+                            )
+                          }
+                          break
+                        case 'SERVER_DATA': {
+                          return acc[d.value]
+                        }
+                      }
+                      return 'unknown'
+                    }, {} as any)
+                    console.log(`currentValue`)
+                    console.log(currentValue)
+                    if (typeof currentValue === 'object') {
+                      replacementText = currentValue._id
+                    } else {
+                      replacementText = currentValue
+                    }
                     break
                   case 'SERVER_DATA':
                     // const path = entityData.entityPath?.split('.').pop()
@@ -138,7 +164,8 @@ export function DraftJSPreviewerConverter(
           entityState,
           localState,
           dataContext,
-          projectId
+          projectId,
+          authTableId
         )
         return acc
       }, {} as any)
