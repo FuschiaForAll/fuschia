@@ -623,10 +623,10 @@ const CreateEditor = (props: {
   const { data } = useGetProjectQuery({
     variables: { projectId },
   })
-  if (!data || !data.getProject.appConfig) {
+  if (!data || !data.getProject.serverConfig) {
     return <div>loading...</div>
   }
-  const models = data.getProject.appConfig.apiConfig.models
+  const models = data.getProject.serverConfig.apiConfig.models
   return (
     <div>
       <LabeledSelect
@@ -726,7 +726,7 @@ const UpdateEditor = (props: {
   if (!data || !data.getProject.appConfig) {
     return <div>loading...</div>
   }
-  const models = data.getProject.appConfig.apiConfig.models
+  const models = data.getProject.serverConfig.apiConfig.models
   return (
     <div>
       <EntitySelector
@@ -900,11 +900,11 @@ const RegisterEditor = (props: {
     return null
   }
 
-  const { appConfig } = data.getProject
+  const { serverConfig } = data.getProject
   return (
     <div>
-      {appConfig.apiConfig.models
-        .find(m => m._id === appConfig.authConfig.tableId)
+      {serverConfig.apiConfig.models
+        .find(m => m._id === serverConfig.authConfig.tableId)
         ?.fields.map(field => (
           <React.Fragment key={field._id}>
             <div>

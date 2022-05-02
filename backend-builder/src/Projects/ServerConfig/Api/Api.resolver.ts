@@ -12,7 +12,6 @@ import portfinder from "portfinder";
 import { MONGO_DB_URL } from "../../../utils/config";
 import axios from "axios";
 import kill from "tree-kill";
-import { ApiVariable } from "./Api.entity";
 
 interface AWSGetRequest {
   endpoint: string;
@@ -84,7 +83,7 @@ export class ApiResolver {
     const project = await ProjectModel.findById(projectId);
     if (project) {
       if (sandbox) {
-        if (project.appConfig.apiConfig.sandboxEndpoint) {
+        if (project.serverConfig.apiConfig.sandboxEndpoint) {
           if (this.processes[projectId.toString()]) {
             await new Promise((resolve, reject) => {
               kill(this.processes[projectId.toString()], "SIGKILL", (e) => {
@@ -93,13 +92,13 @@ export class ApiResolver {
             });
             delete this.processes[projectId.toString()];
           }
-          const url = new URL(project.appConfig.apiConfig.sandboxEndpoint);
+          const url = new URL(project.serverConfig.apiConfig.sandboxEndpoint);
           const pid = spawnInstance(
             "test",
             MONGO_DB_URL,
             project._id.toString(),
             url.port,
-            project.appConfig.sandboxJwtSecret
+            project.serverConfig.sandboxJwtSecret
           );
           if (pid) {
             this.processes[`${projectId.toString()}`] = pid;
@@ -107,14 +106,14 @@ export class ApiResolver {
         } else {
           // temp for now, it will actually cause problems if an api is offline but the server is started.
           const openPort = await portfinder.getPortPromise();
-          project.appConfig.apiConfig.sandboxEndpoint = `http://localhost:${openPort}`;
+          project.serverConfig.apiConfig.sandboxEndpoint = `http://localhost:${openPort}`;
           project.save();
           const pid = spawnInstance(
             "test",
             MONGO_DB_URL,
             project._id.toString(),
             `${openPort}`,
-            project.appConfig.sandboxJwtSecret
+            project.serverConfig.sandboxJwtSecret
           );
           if (pid) {
             this.processes[`${projectId.toString()}`] = pid;
@@ -122,25 +121,25 @@ export class ApiResolver {
           return true;
         }
       } else {
-        if (project.appConfig.apiConfig.liveEndpoint) {
-          const url = new URL(project.appConfig.apiConfig.liveEndpoint);
+        if (project.serverConfig.apiConfig.liveEndpoint) {
+          const url = new URL(project.serverConfig.apiConfig.liveEndpoint);
           spawnInstance(
             "prod",
             MONGO_DB_URL,
             project._id.toString(),
             url.port,
-            project.appConfig.liveJwtSecret
+            project.serverConfig.liveJwtSecret
           );
         } else {
           const openPort = await portfinder.getPortPromise();
-          project.appConfig.apiConfig.liveEndpoint = `http://localhost:${openPort}`;
+          project.serverConfig.apiConfig.liveEndpoint = `http://localhost:${openPort}`;
           project.save();
           spawnInstance(
             "prod",
             MONGO_DB_URL,
             project._id.toString(),
             `${openPort}`,
-            project.appConfig.liveJwtSecret
+            project.serverConfig.liveJwtSecret
           );
           return true;
         }
@@ -156,10 +155,10 @@ export class ApiResolver {
   ) {
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      if (sandbox && project.appConfig.apiConfig.sandboxEndpoint) {
+      if (sandbox && project.serverConfig.apiConfig.sandboxEndpoint) {
         try {
           const response = await axios.post(
-            project.appConfig.apiConfig.sandboxEndpoint,
+            project.serverConfig.apiConfig.sandboxEndpoint,
             {
               operationName: "Introspection",
               query: `
@@ -181,10 +180,10 @@ export class ApiResolver {
           return true;
         } catch {}
         return false;
-      } else if (!sandbox && project.appConfig.apiConfig.liveEndpoint) {
+      } else if (!sandbox && project.serverConfig.apiConfig.liveEndpoint) {
         try {
           const response = await axios.post(
-            project.appConfig.apiConfig.liveEndpoint,
+            project.serverConfig.apiConfig.liveEndpoint,
             {
               operationName: "Introspection",
               query: `
@@ -292,64 +291,6 @@ export class ApiResolver {
   }
   @Mutation(() => Boolean, { nullable: true })
   async deleteSubscription(@Ctx() ctx: Context) {
-    return true;
-  }
-
-  @Mutation(() => ApiVariable)
-  async createApiVariable(
-    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
-    @Arg("name") name: string,
-    @Arg("type") type: string,
-    @Ctx() ctx: Context
-  ) {
-    if (
-      !ctx.req.session.userId ||
-      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
-    ) {
-      throw new ApolloError("Unauthorized");
-    }
-    const newProject = await ProjectModel.findByIdAndUpdate(
-      projectId,
-      {
-        $push: {
-          "appConfig.apiConfig.variables": {
-            name,
-            type,
-          },
-        },
-      },
-      {
-        returnDocument: "after",
-      }
-    );
-    return newProject?.appConfig.apiConfig.variables[
-      newProject?.appConfig.apiConfig.variables.length - 1
-    ];
-  }
-
-  @Mutation(() => Boolean)
-  async deleteApiVariable(
-    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
-    @Arg("variableId", (type) => ObjectIdScalar) variableId: ObjectId,
-    @Ctx() ctx: Context
-  ) {
-    if (
-      !ctx.req.session.userId ||
-      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
-    ) {
-      throw new ApolloError("Unauthorized");
-    }
-    const newProject = await ProjectModel.findByIdAndUpdate(
-      projectId,
-      {
-        $pull: {
-          "appConfig.apiConfig.variables": { _id: variableId },
-        },
-      },
-      {
-        returnDocument: "after",
-      }
-    );
     return true;
   }
 }

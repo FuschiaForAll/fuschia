@@ -3,8 +3,6 @@ schema:
 documents: './src/**/!(*.d).{ts,tsx,graphql}'
 generates:
   src/generated/graphql.tsx:
-    config:
-      gqlImport: 'graphql.macro#gql'
     plugins:
       - 'typescript'
       - 'typescript-operations'

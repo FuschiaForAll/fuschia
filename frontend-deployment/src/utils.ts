@@ -74,7 +74,7 @@ export interface EntityData {
 
 export const draftJsStuff = (
   value: any,
-  project: Component[],
+  rootComponents: Component[],
   projectInfo: Project,
   packages: Package[]
 ) => {
@@ -94,6 +94,11 @@ export const draftJsStuff = (
           if (draft.entityMap && draft.entityMap[range.key]) {
             if (draft.entityMap[range.key].data) {
               const entityData = draft.entityMap[range.key].data as EntityData[]
+              const value = entityData.reduce((acc, d) => {
+                switch (d.type) {
+                }
+              }, {} as any)
+
               switch (entityData[0].type) {
                 case 'INPUT':
                   const [parts, dataPath] = entityData[
@@ -103,7 +108,7 @@ export const draftJsStuff = (
                   let currentComponent: Component | null = null
                   bits.forEach(bit => {
                     if (!currentComponent) {
-                      const comp = project.find(p => p._id.toString() === bit)
+                      const comp = rootComponents.find(p => p._id.toString() === bit)
                       if (comp) {
                         currentComponent = comp
                       }
@@ -133,44 +138,47 @@ export const draftJsStuff = (
                   replacementText = entityData[0].value
                   const entityParts = draft.entityMap[
                     range.key
-                  ].data.entityPath.split('.') as string[]
-                  const component = findNestedComponent(entityParts[0], project)
-                  if (component) {
-                    // we are targeting a component, lets find it's type
-                    const componentPackage = packages.find(
-                      p => p.packageName === component.package
-                    )
-                    if (componentPackage) {
-                      const componentElement = componentPackage.components.find(
-                        c => c.name === component.type
-                      )
+                  ].data as Array<{ label: string, type: SourceType, value: string}>
 
-                      if (componentElement) {
-                        if (componentElement.schema.type === 'array') {
-                          // we need to find the field name targeted and prefix with item
+                  
 
-                          if (component.fetched) {
-                            component.fetched.forEach(fetched => {
-                              const fetchedModel =
-                                projectInfo.appConfig.apiConfig.models.find(
-                                  m => m._id.toString() === fetched.entityType
-                                )
-                              if (fetchedModel) {
-                                // this only works 1 level down
-                                const targetField = fetchedModel.fields.find(
-                                  field =>
-                                    field._id.toString() === entityParts[1]
-                                )
-                                if (targetField) {
-                                  replacementText = `\${item.${targetField.fieldName}}`
-                                }
-                              }
-                            })
-                          }
-                        }
-                      }
-                    }
-                  }
+                  // const component = findNestedComponent(entityParts[0], rootComponents)
+                  // if (component) {
+                  //   // we are targeting a component, lets find it's type
+                  //   const componentPackage = packages.find(
+                  //     p => p.packageName === component.package
+                  //   )
+                  //   if (componentPackage) {
+                  //     const componentElement = componentPackage.components.find(
+                  //       c => c.name === component.type
+                  //     )
+
+                  //     if (componentElement) {
+                  //       if (componentElement.schema.type === 'array') {
+                  //         // we need to find the field name targeted and prefix with item
+
+                  //         if (component.fetched) {
+                  //           component.fetched.forEach(fetched => {
+                  //             const fetchedModel =
+                  //               projectInfo.appConfig.apiConfig.models.find(
+                  //                 m => m._id.toString() === fetched.entityType
+                  //               )
+                  //             if (fetchedModel) {
+                  //               // this only works 1 level down
+                  //               const targetField = fetchedModel.fields.find(
+                  //                 field =>
+                  //                   field._id.toString() === entityParts[1]
+                  //               )
+                  //               if (targetField) {
+                  //                 replacementText = `\${item.${targetField.fieldName}}`
+                  //               }
+                  //             }
+                  //           })
+                  //         }
+                  //       }
+                  //     }
+                  //   }
+                  // }
                   break
               }
             }
@@ -185,7 +193,7 @@ export const draftJsStuff = (
       return textParts.join('\n')
     }
     return Object.keys(value).reduce((acc, key) => {
-      acc[key] = draftJsStuff(value[key], project, projectInfo, packages)
+      acc[key] = draftJsStuff(value[key], rootComponents, projectInfo, packages)
       return acc
     }, {} as any)
   }

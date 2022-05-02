@@ -628,7 +628,7 @@ function Properties({
       })}
       <TabPanel value={value} index={5}>
         <DataSources
-          models={projectData?.getProject.appConfig.apiConfig.models || []}
+          models={projectData?.getProject.serverConfig.apiConfig.models || []}
           componentId={elementId}
           component={component}
         />

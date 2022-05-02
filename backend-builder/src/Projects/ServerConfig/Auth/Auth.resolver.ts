@@ -26,7 +26,7 @@ export class AuthResolver {
     }
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      return project.appConfig.authConfig;
+      return project.serverConfig.authConfig;
     }
     return null;
   }
@@ -44,7 +44,7 @@ export class AuthResolver {
     }
     const update = Object.keys(input).reduce((acc, key) => {
       // @ts-ignore
-      acc[`appConfig.authConfig.${key}`] = input[key];
+      acc[`serverConfig.authConfig.${key}`] = input[key];
       return acc;
     }, {} as any);
     const project = await ProjectModel.findByIdAndUpdate(
@@ -54,8 +54,8 @@ export class AuthResolver {
       },
       { returnDocument: "after" }
     );
-    if (project && project.appConfig) {
-      return project.appConfig.authConfig;
+    if (project && project.serverConfig) {
+      return project.serverConfig.authConfig;
     }
     return null;
   }

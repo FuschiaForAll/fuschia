@@ -28,6 +28,29 @@ const workdir = path.join(__dirname, '../workdir')
 const srcdir = path.join(workdir, 'src')
 const starterdir = path.join(__dirname, '../StarterProject')
 
+const specialTypeStructure = {
+  'margin': {
+    'left': { type: 'string'},
+    'right': { type: 'string'},
+    'top': { type: 'string'},
+    'bottom': { type: 'string'}
+  },
+  'padding': {
+    'left': { type: 'string'},
+    'right': { type: 'string'},
+    'top': { type: 'string'},
+    'bottom': { type: 'string'}
+  },
+  'flexContainer': {
+    'size': { type: 'string'},
+    'style': { type: 'string'},
+    'weight': { type: 'string'},
+    'textAlign': { type: 'string'},
+    'textTransform': { type: 'string'},
+    'lineHeight': { type: 'string'}
+  }
+}
+
 async function copyWorkDir() {
   console.log('copy started')
   const files = fs.readdirSync(starterdir)
@@ -142,45 +165,49 @@ async function buildScreen(
         if (packageComponent.schema.type === 'array') {
           if (component.fetched) {
             component.fetched.map(f => {
-              const fetchedModel = projectInfo.appConfig.apiConfig.models.find(
-                m => m._id.toString() === f.entityType
-              )
-              if (fetchedModel) {
-                // need import for fetch
-                if (!importsBuilder['./generated/graphql']) {
-                  importsBuilder['./generated/graphql'] = {}
-                }
-                importsBuilder['./generated/graphql'][
-                  `useList${fetchedModel.name}Query`
-                ] = 'single'
-                if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
-                  hooksBuilder[`useList${fetchedModel.name}Query`] = {
-                    hook: {
-                      type: 'destructed',
-                      value: {},
-                    },
+              // convert to DraftJS
+              const entityType = f.entityType as any
+              if (entityType && entityType.blocks) {
+                
+                const fetchedModel = projectInfo.appConfig.apiConfig.models.find(
+                  m => m._id.toString() === entityType.entityMap[0].data[0].value)
+                  if (fetchedModel) {
+                    // need import for fetch
+                    if (!importsBuilder['./generated/graphql']) {
+                      importsBuilder['./generated/graphql'] = {}
+                    }
+                    importsBuilder['./generated/graphql'][
+                      `useList${fetchedModel.name}Query`
+                    ] = 'single'
+                    if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
+                      hooksBuilder[`useList${fetchedModel.name}Query`] = {
+                        hook: {
+                          type: 'destructed',
+                          value: {},
+                        },
+                      }
+                    }
+                    ;(
+                      hooksBuilder[`useList${fetchedModel.name}Query`]
+                        .hook as DestructedHookVariable
+                    ).value.data = {
+                      type: 'variable',
+                      value: `data`,
+                      renamed: `${fetchedModel.name}Data`,
+                    }
+                    // need hook for fetch
+                    // need data
+                    propsBuilder.push(`${''.padStart(indentation, ' ')}{
+                      ${fetchedModel.name}Data?.list${
+                      fetchedModel.name
+                    }?.items?.map((item, index) => (
+                    `)
+                    propsBuilder.push(
+                      `${''.padStart(indentation, ' ')}<${
+                        component.type
+                      } key={item._id} index={index}`
+                    )
                   }
-                }
-                ;(
-                  hooksBuilder[`useList${fetchedModel.name}Query`]
-                    .hook as DestructedHookVariable
-                ).value.data = {
-                  type: 'variable',
-                  value: `data`,
-                  renamed: `${fetchedModel.name}Data`,
-                }
-                // need hook for fetch
-                // need data
-                propsBuilder.push(`${''.padStart(indentation, ' ')}{
-                  ${fetchedModel.name}Data?.list${
-                  fetchedModel.name
-                }?.items?.map((item, index) => (
-                `)
-                propsBuilder.push(
-                  `${''.padStart(indentation, ' ')}<${
-                    component.type
-                  } key={item._id} index={index}`
-                )
               }
             })
           }
@@ -292,7 +319,7 @@ async function buildScreen(
                   break
                 case 'string':
                   acc[prop] = draftJsStuff(
-                    component.props[prop],
+                    componentProps[prop],
                     rootComponents,
                     projectInfo,
                     packages
@@ -304,6 +331,17 @@ async function buildScreen(
                     structure.properties,
                     {}
                   )
+                  break
+                case 'flexContainer':
+                case 'margin':
+                case 'padding':
+                  acc[prop] = convertSchemaProps(
+                    componentProps[prop],
+                    // @ts-ignore
+                    specialTypeStructure[structure.type],
+                    {}
+                  )
+
                   break
                 case 'array':
                   break

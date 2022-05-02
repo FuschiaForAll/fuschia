@@ -10,23 +10,21 @@ type Api {
   queries: [String!]!
   sandboxEndpoint: String
   subscriptions: [String!]!
-  variables: [ApiVariable!]!
-}
-
-type ApiVariable {
-  _id: ObjectId!
-  name: String!
-  type: String!
 }
 
 type AppConfig {
-  apiConfig: Api!
   appEntryComponentId: ObjectId
-  authConfig: Auth!
+  variables: [AppVariable!]!
 }
 
 input AppConfigInput {
   appEntryComponentId: ObjectId
+}
+
+type AppVariable {
+  _id: ObjectId!
+  name: String!
+  type: String!
 }
 
 type Asset {
@@ -265,7 +263,7 @@ type Mutation {
   acceptInvitaion(invitationId: ObjectId!): Boolean!
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
-  createApiVariable(name: String!, projectId: ObjectId!, type: String!): ApiVariable!
+  createAppVariable(name: String!, projectId: ObjectId!, type: String!): AppVariable!
   createAssetFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
@@ -281,7 +279,7 @@ type Mutation {
   createSubscription: Boolean
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
-  deleteApiVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
+  deleteAppVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
   deleteAsset(imageId: ObjectId!, projectId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
@@ -411,6 +409,7 @@ type Project {
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
+  serverConfig: ServerConfig!
 }
 
 input ProjectInput {
@@ -459,6 +458,13 @@ input RequiredParameterInput {
   entityType: ObjectId!
   label: String!
   path: String!
+}
+
+type ServerConfig {
+  apiConfig: Api!
+  authConfig: Auth!
+  liveEndpoint: String!
+  sandboxEndpoint: String!
 }
 
 type Subscription {

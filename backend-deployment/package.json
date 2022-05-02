@@ -5,11 +5,16 @@
   "license": "MIT",
   "scripts": {
     "start": "MONGO_DB_URL=mongodb://localhost:27017 PROJECT_ID=625305b3fba4a089bc2725fe ts-node src/index.ts",
+    "build": "ts-node src/index.ts build '{ \"name\": \"Steven\" }'",
     "test": "ts-mocha -p tsconfig.json test/*.spec.ts"
   },
   "dependencies": {
+    "@octokit/rest": "^18.12.0",
+    "commander": "^9.2.0",
+    "configstore": "^6.0.0",
     "fs-extra": "^10.0.1",
-    "mongodb": "^4.4.1"
+    "mongodb": "^4.4.1",
+    "simple-git": "^3.7.1"
   },
   "devDependencies": {
     "@types/expect": "^24.3.0",

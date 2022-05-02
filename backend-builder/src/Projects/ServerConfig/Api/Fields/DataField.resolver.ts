@@ -31,16 +31,18 @@ export class DataFieldResolver {
     }
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      const entityModel = project.appConfig.apiConfig.models.find((model) => {
-        // @ts-ignore
-        return model._id.equals(entityModelId);
-      });
+      const entityModel = project.serverConfig.apiConfig.models.find(
+        (model) => {
+          // @ts-ignore
+          return model._id.equals(entityModelId);
+        }
+      );
       if (entityModel) {
         const newDataField = new DataField();
         if (PRIMITIVE_DATA_TYPES.includes(dataField.dataType)) {
           newDataField.dataType = dataField.dataType;
         } else {
-          const linkedEntity = project.appConfig.apiConfig.models.find(
+          const linkedEntity = project.serverConfig.apiConfig.models.find(
             (model) => {
               // @ts-ignore
               return model._id.equals(dataField.dataType);
@@ -81,10 +83,12 @@ export class DataFieldResolver {
     }
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      const entityModel = project.appConfig.apiConfig.models.find((model) => {
-        // @ts-ignore
-        return model._id.equals(entityModelId);
-      });
+      const entityModel = project.serverConfig.apiConfig.models.find(
+        (model) => {
+          // @ts-ignore
+          return model._id.equals(entityModelId);
+        }
+      );
       if (entityModel) {
         entityModel.fields = entityModel.fields.filter((field) => {
           // @ts-ignore

@@ -100,7 +100,7 @@ function Viewer(props: {
         props.localState,
         props.dataContext,
         props.project._id,
-        props.project.appConfig.authConfig.tableId
+        props.project.serverConfig.authConfig.tableId
       ))
   )
   if (typeof componentProperties.text === 'object') {
@@ -520,9 +520,7 @@ interface Project {
   _id: any
   appId: string
   projectName: string
-  appConfig: {
-    __typename?: 'AppConfig'
-    appEntryComponentId?: any | null
+  serverConfig: {
     apiConfig: {
       __typename?: 'Api'
       sandboxEndpoint?: string | null
@@ -602,6 +600,10 @@ interface Project {
       usernameFieldId: string
       passwordFieldId: string
     }
+  }
+  appConfig: {
+    __typename?: 'AppConfig'
+    appEntryComponentId?: any | null
   }
 }
 

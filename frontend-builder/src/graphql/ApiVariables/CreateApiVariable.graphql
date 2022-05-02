@@ -1,9 +1,9 @@
-mutation CreateApiVariable(
+mutation CreateAppVariable(
   $projectId: ObjectId!
   $name: String!
   $type: String!
 ) {
-  createApiVariable(projectId: $projectId, name: $name, type: $type) {
+  createAppVariable(projectId: $projectId, name: $name, type: $type) {
     _id
     name
     type

@@ -31,25 +31,23 @@ export type Api = {
   queries: Array<Scalars['String']>;
   sandboxEndpoint?: Maybe<Scalars['String']>;
   subscriptions: Array<Scalars['String']>;
-  variables: Array<ApiVariable>;
-};
-
-export type ApiVariable = {
-  __typename?: 'ApiVariable';
-  _id: Scalars['ObjectId'];
-  name: Scalars['String'];
-  type: Scalars['String'];
 };
 
 export type AppConfig = {
   __typename?: 'AppConfig';
-  apiConfig: Api;
   appEntryComponentId?: Maybe<Scalars['ObjectId']>;
-  authConfig: Auth;
+  variables: Array<AppVariable>;
 };
 
 export type AppConfigInput = {
   appEntryComponentId?: InputMaybe<Scalars['ObjectId']>;
+};
+
+export type AppVariable = {
+  __typename?: 'AppVariable';
+  _id: Scalars['ObjectId'];
+  name: Scalars['String'];
+  type: Scalars['String'];
 };
 
 export type Asset = {
@@ -300,7 +298,7 @@ export type Mutation = {
   acceptInvitaion: Scalars['Boolean'];
   addParameter: Scalars['Boolean'];
   changePassword: Scalars['Boolean'];
-  createApiVariable: ApiVariable;
+  createAppVariable: AppVariable;
   createAssetFolder: Scalars['Boolean'];
   createComponent: Component;
   createDataField?: Maybe<DataField>;
@@ -316,7 +314,7 @@ export type Mutation = {
   createSubscription?: Maybe<Scalars['Boolean']>;
   createTranslation: Project;
   createUser: User;
-  deleteApiVariable: Scalars['Boolean'];
+  deleteAppVariable: Scalars['Boolean'];
   deleteAsset: Scalars['Boolean'];
   deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
@@ -376,7 +374,7 @@ export type MutationChangePasswordArgs = {
 };
 
 
-export type MutationCreateApiVariableArgs = {
+export type MutationCreateAppVariableArgs = {
   name: Scalars['String'];
   projectId: Scalars['ObjectId'];
   type: Scalars['String'];
@@ -451,7 +449,7 @@ export type MutationCreateUserArgs = {
 };
 
 
-export type MutationDeleteApiVariableArgs = {
+export type MutationDeleteAppVariableArgs = {
   projectId: Scalars['ObjectId'];
   variableId: Scalars['ObjectId'];
 };
@@ -715,6 +713,7 @@ export type Project = {
   labelLibrary: LabelLibrary;
   organization: Organization;
   projectName: Scalars['String'];
+  serverConfig: ServerConfig;
 };
 
 export type ProjectInput = {
@@ -833,6 +832,14 @@ export type RequiredParameterInput = {
   entityType: Scalars['ObjectId'];
   label: Scalars['String'];
   path: Scalars['String'];
+};
+
+export type ServerConfig = {
+  __typename?: 'ServerConfig';
+  apiConfig: Api;
+  authConfig: Auth;
+  liveEndpoint: Scalars['String'];
+  sandboxEndpoint: Scalars['String'];
 };
 
 export type Subscription = {
@@ -1075,22 +1082,22 @@ export enum __TypeKind {
   NonNull = 'NON_NULL'
 }
 
-export type CreateApiVariableMutationVariables = Exact<{
+export type CreateAppVariableMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   name: Scalars['String'];
   type: Scalars['String'];
 }>;
 
 
-export type CreateApiVariableMutation = { __typename?: 'Mutation', createApiVariable: { __typename?: 'ApiVariable', _id: any, name: string, type: string } };
+export type CreateAppVariableMutation = { __typename?: 'Mutation', createAppVariable: { __typename?: 'AppVariable', _id: any, name: string, type: string } };
 
-export type DeleteApiVariableMutationVariables = Exact<{
+export type DeleteAppVariableMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   variableId: Scalars['ObjectId'];
 }>;
 
 
-export type DeleteApiVariableMutation = { __typename?: 'Mutation', deleteApiVariable: boolean };
+export type DeleteAppVariableMutation = { __typename?: 'Mutation', deleteAppVariable: boolean };
 
 export type CreateAssetFolderMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1435,7 +1442,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, assetLibrary?: { __typename?: 'AssetLibrary', assets: Array<{ __typename?: 'Asset', _id: any, key: string, name: string }> } | null, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }>, variables: Array<{ __typename?: 'ApiVariable', _id: any, name: string, type: string }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, assetLibrary?: { __typename?: 'AssetLibrary', assets: Array<{ __typename?: 'Asset', _id: any, key: string, name: string }> } | null, serverConfig: { __typename?: 'ServerConfig', apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } }, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, variables: Array<{ __typename?: 'AppVariable', _id: any, name: string, type: string }> } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1676,29 +1683,29 @@ export const AuthFragmentFragmentDoc = gql`
   passwordFieldId
 }
     `;
-export const CreateApiVariableDocument = gql`
-    mutation CreateApiVariable($projectId: ObjectId!, $name: String!, $type: String!) {
-  createApiVariable(projectId: $projectId, name: $name, type: $type) {
+export const CreateAppVariableDocument = gql`
+    mutation CreateAppVariable($projectId: ObjectId!, $name: String!, $type: String!) {
+  createAppVariable(projectId: $projectId, name: $name, type: $type) {
     _id
     name
     type
   }
 }
     `;
-export type CreateApiVariableMutationFn = Apollo.MutationFunction<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
+export type CreateAppVariableMutationFn = Apollo.MutationFunction<CreateAppVariableMutation, CreateAppVariableMutationVariables>;
 
 /**
- * __useCreateApiVariableMutation__
+ * __useCreateAppVariableMutation__
  *
- * To run a mutation, you first call `useCreateApiVariableMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateApiVariableMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateAppVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateAppVariableMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createApiVariableMutation, { data, loading, error }] = useCreateApiVariableMutation({
+ * const [createAppVariableMutation, { data, loading, error }] = useCreateAppVariableMutation({
  *   variables: {
  *      projectId: // value for 'projectId'
  *      name: // value for 'name'
@@ -1706,45 +1713,45 @@ export type CreateApiVariableMutationFn = Apollo.MutationFunction<CreateApiVaria
  *   },
  * });
  */
-export function useCreateApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>) {
+export function useCreateAppVariableMutation(baseOptions?: Apollo.MutationHookOptions<CreateAppVariableMutation, CreateAppVariableMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateApiVariableMutation, CreateApiVariableMutationVariables>(CreateApiVariableDocument, options);
+        return Apollo.useMutation<CreateAppVariableMutation, CreateAppVariableMutationVariables>(CreateAppVariableDocument, options);
       }
-export type CreateApiVariableMutationHookResult = ReturnType<typeof useCreateApiVariableMutation>;
-export type CreateApiVariableMutationResult = Apollo.MutationResult<CreateApiVariableMutation>;
-export type CreateApiVariableMutationOptions = Apollo.BaseMutationOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
-export const DeleteApiVariableDocument = gql`
-    mutation DeleteApiVariable($projectId: ObjectId!, $variableId: ObjectId!) {
-  deleteApiVariable(projectId: $projectId, variableId: $variableId)
+export type CreateAppVariableMutationHookResult = ReturnType<typeof useCreateAppVariableMutation>;
+export type CreateAppVariableMutationResult = Apollo.MutationResult<CreateAppVariableMutation>;
+export type CreateAppVariableMutationOptions = Apollo.BaseMutationOptions<CreateAppVariableMutation, CreateAppVariableMutationVariables>;
+export const DeleteAppVariableDocument = gql`
+    mutation DeleteAppVariable($projectId: ObjectId!, $variableId: ObjectId!) {
+  deleteAppVariable(projectId: $projectId, variableId: $variableId)
 }
     `;
-export type DeleteApiVariableMutationFn = Apollo.MutationFunction<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
+export type DeleteAppVariableMutationFn = Apollo.MutationFunction<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>;
 
 /**
- * __useDeleteApiVariableMutation__
+ * __useDeleteAppVariableMutation__
  *
- * To run a mutation, you first call `useDeleteApiVariableMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteApiVariableMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useDeleteAppVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteAppVariableMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [deleteApiVariableMutation, { data, loading, error }] = useDeleteApiVariableMutation({
+ * const [deleteAppVariableMutation, { data, loading, error }] = useDeleteAppVariableMutation({
  *   variables: {
  *      projectId: // value for 'projectId'
  *      variableId: // value for 'variableId'
  *   },
  * });
  */
-export function useDeleteApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>) {
+export function useDeleteAppVariableMutation(baseOptions?: Apollo.MutationHookOptions<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>(DeleteApiVariableDocument, options);
+        return Apollo.useMutation<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>(DeleteAppVariableDocument, options);
       }
-export type DeleteApiVariableMutationHookResult = ReturnType<typeof useDeleteApiVariableMutation>;
-export type DeleteApiVariableMutationResult = Apollo.MutationResult<DeleteApiVariableMutation>;
-export type DeleteApiVariableMutationOptions = Apollo.BaseMutationOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
+export type DeleteAppVariableMutationHookResult = ReturnType<typeof useDeleteAppVariableMutation>;
+export type DeleteAppVariableMutationResult = Apollo.MutationResult<DeleteAppVariableMutation>;
+export type DeleteAppVariableMutationOptions = Apollo.BaseMutationOptions<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>;
 export const CreateAssetFolderDocument = gql`
     mutation CreateAssetFolder($projectId: ObjectId!, $folderName: String!) {
   createAssetFolder(projectId: $projectId, folderName: $folderName)
@@ -3339,8 +3346,7 @@ export const GetProjectDocument = gql`
         name
       }
     }
-    appConfig {
-      appEntryComponentId
+    serverConfig {
       apiConfig {
         sandboxEndpoint
         liveEndpoint
@@ -3390,11 +3396,6 @@ export const GetProjectDocument = gql`
         queries
         mutations
         subscriptions
-        variables {
-          _id
-          name
-          type
-        }
       }
       authConfig {
         requiresAuth
@@ -3417,6 +3418,14 @@ export const GetProjectDocument = gql`
         tableId
         usernameFieldId
         passwordFieldId
+      }
+    }
+    appConfig {
+      appEntryComponentId
+      variables {
+        _id
+        name
+        type
       }
     }
   }

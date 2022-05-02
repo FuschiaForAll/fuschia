@@ -4,8 +4,11 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "clean": "rm -rf workdir",
     "start": "MONGO_DB_URL=mongodb://localhost:27017 PROJECT_ID=625305b3fba4a089bc2725fe ts-node src/index.ts",
-    "test": "ts-mocha -p tsconfig.json test/*.spec.ts"
+    "test": "ts-mocha -p tsconfig.json test/*.spec.ts",
+    "build": "tsc",
+    "cleanAndBuild": "yarn clean && yarn build"
   },
   "dependencies": {
     "fs-extra": "^10.0.1",

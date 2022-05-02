@@ -31,7 +31,7 @@ const Settings: React.FC = function Settings() {
           gridTemplateRows: 'auto 1fr',
         }}
       >
-        {data && data.getProject.appConfig.authConfig && (
+        {data && data.getProject.serverConfig.authConfig && (
           <AuthConfig projectId={projectId} />
         )}
       </Paper>

@@ -6,8 +6,8 @@ import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
 import { Add } from '@mui/icons-material'
 import {
-  useCreateApiVariableMutation,
-  useDeleteApiVariableMutation,
+  useCreateAppVariableMutation,
+  useDeleteAppVariableMutation,
   useCreateEntityModelMutation,
   useGetProjectQuery,
   useGetServerStatusQuery,
@@ -100,10 +100,10 @@ function VariableConfiguration({
   })
   const [fieldName, setFieldName] = useState('')
   const [dataType, setDataType] = useState('String')
-  const [createVariable] = useCreateApiVariableMutation({
+  const [createVariable] = useCreateAppVariableMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
-  const [deleteVariable] = useDeleteApiVariableMutation({
+  const [deleteVariable] = useDeleteAppVariableMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
 
@@ -118,7 +118,7 @@ function VariableConfiguration({
   }
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
-      {data.getProject.appConfig.apiConfig.variables.map(variable => (
+      {data.getProject.appConfig.variables.map(variable => (
         <div key={variable._id}>
           {variable.name} - {variable.type}
           <IconButton
@@ -160,7 +160,7 @@ function VariableConfiguration({
               label: type,
               value: type,
             })),
-            ...data.getProject.appConfig.apiConfig.models.map(modelType => ({
+            ...data.getProject.serverConfig.apiConfig.models.map(modelType => ({
               label: modelType.name,
               value: modelType._id,
             })),
@@ -301,7 +301,7 @@ function DatabaseConfiguration({
         <div style={{ overflow: 'auto' }}>
           {data?.getProject && (
             <div>
-              {data.getProject.appConfig.apiConfig.models
+              {data.getProject.serverConfig.apiConfig.models
                 .filter(m => m.isLocal === isLocal)
                 .map(model => (
                   <Accordion
@@ -334,7 +334,7 @@ function DatabaseConfiguration({
                       <EntityModel
                         projectId={projectId!}
                         model={model}
-                        models={data.getProject.appConfig.apiConfig.models}
+                        models={data.getProject.serverConfig.apiConfig.models}
                       />
                     </AccordionDetails>
                   </Accordion>
@@ -396,14 +396,14 @@ function DatabaseConfiguration({
         <div style={{ overflow: 'auto' }}>
           {data && (
             <DataEditor
-              model={data.getProject.appConfig.apiConfig.models.find(
+              model={data.getProject.serverConfig.apiConfig.models.find(
                 model => model._id.toString() === expanded
               )}
-              models={data.getProject.appConfig.apiConfig.models}
+              models={data.getProject.serverConfig.apiConfig.models}
               sandboxEndpoint={
-                data.getProject.appConfig.apiConfig.sandboxEndpoint
+                data.getProject.serverConfig.apiConfig.sandboxEndpoint
               }
-              liveEndpoint={data.getProject.appConfig.apiConfig.liveEndpoint}
+              liveEndpoint={data.getProject.serverConfig.apiConfig.liveEndpoint}
             />
           )}
         </div>

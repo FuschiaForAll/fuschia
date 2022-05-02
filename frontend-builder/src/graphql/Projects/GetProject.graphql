@@ -10,8 +10,7 @@ query GetProject($projectId: ObjectId!) {
         name
       }
     }
-    appConfig {
-      appEntryComponentId
+    serverConfig {
       apiConfig {
         sandboxEndpoint
         liveEndpoint
@@ -61,11 +60,6 @@ query GetProject($projectId: ObjectId!) {
         queries
         mutations
         subscriptions
-        variables {
-          _id
-          name
-          type
-        }
       }
       authConfig {
         requiresAuth
@@ -88,6 +82,14 @@ query GetProject($projectId: ObjectId!) {
         tableId
         usernameFieldId
         passwordFieldId
+      }
+    }
+    appConfig {
+      appEntryComponentId
+      variables {
+        _id
+        name
+        type
       }
     }
   }

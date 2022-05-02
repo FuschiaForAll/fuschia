@@ -206,7 +206,8 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
     const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
     const extractModelName = useCallback(
       (parameter: string): [string, boolean] => {
-        const models = projectData?.getProject.appConfig.apiConfig.models || []
+        const models =
+          projectData?.getProject.serverConfig.apiConfig.models || []
         const model = models.find(model => model._id === parameter)
         if (model) {
           return [model.name, true]
@@ -233,12 +234,12 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
 
         // find all components with accessible data
         const structure = [] as MenuStructure[]
-        if (projectData?.getProject.appConfig.authConfig.tableId) {
+        if (projectData?.getProject.serverConfig.authConfig.tableId) {
           structure.push({
             type: 'LOCAL_DATA',
             label: 'Current User',
             hasSubMenu: true,
-            entity: projectData?.getProject.appConfig.authConfig.tableId,
+            entity: projectData?.getProject.serverConfig.authConfig.tableId,
             source: 'CurrentUser',
           })
         }
@@ -343,7 +344,7 @@ const ColorInputBinding: React.FC<TextInputBindingProps> =
         }
         Object.keys(folderData).forEach(key => flattenAssets(key, folderData))
 
-        projectData?.getProject.appConfig.apiConfig.models.forEach(item => {
+        projectData?.getProject.serverConfig.apiConfig.models.forEach(item => {
           modelStructure[item._id] = {
             _id: item._id,
             name: item.name,

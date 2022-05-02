@@ -33,10 +33,10 @@ export class EntityModelResolver {
     if (project) {
       const entityModel = new EntityModel();
       entityModel.name = name;
-      entityModel.isLocal = isLocal
-      project.appConfig.apiConfig.models.push(entityModel);
+      entityModel.isLocal = isLocal;
+      project.serverConfig.apiConfig.models.push(entityModel);
       project.save();
-      return project.appConfig.apiConfig.models.at(-1);
+      return project.serverConfig.apiConfig.models.at(-1);
     }
     return null;
   }
@@ -59,12 +59,12 @@ export class EntityModelResolver {
       console.log(entityModelId);
       console.log(
         JSON.stringify(
-          project.appConfig.apiConfig.models.find(
+          project.serverConfig.apiConfig.models.find(
             (m) => m._id.toString() === entityModelId.toString()
           )
         )
       );
-      return project.appConfig.apiConfig.models.find(
+      return project.serverConfig.apiConfig.models.find(
         (m) => m._id.toString() === entityModelId.toString()
       );
     }
@@ -92,7 +92,7 @@ export class EntityModelResolver {
     }
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      const apiConfig = project.appConfig.apiConfig;
+      const apiConfig = project.serverConfig.apiConfig;
       if (apiConfig) {
         apiConfig.models = apiConfig.models.filter((model) => {
           // @ts-ignore
