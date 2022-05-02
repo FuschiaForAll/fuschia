@@ -9,6 +9,7 @@ import {
   generateFilterInput,
   generateUpdateInput,
 } from './utils'
+import { Field, JsonInputFile, Model } from './types'
 
 function checkTypeForPrimitive(type: string) {
   switch (type) {
@@ -28,44 +29,6 @@ function checkTypeForSpecial(type: string) {
       return true
   }
   return false
-}
-
-export interface Field {
-  _id: ObjectId
-  isUnique: boolean
-  isHashed: boolean
-  isList: boolean
-  nullable: boolean
-  connection: boolean
-  dataType: string
-  fieldName: string
-}
-
-export interface Model {
-  _id: ObjectId
-  name: string
-  fields: Field[]
-}
-
-export interface ApiConfig {
-  models: Model[]
-}
-
-export interface Project {
-  _id: ObjectId
-  components: ObjectId[]
-  appConfig: {
-    appEntryComponentId: ObjectId
-    sandboxEndpoint: string
-    apiConfig: ApiConfig
-    authConfig: {
-      requiresAuth: boolean
-      tableId: ObjectId
-      usernameFieldId: ObjectId
-      passwordFieldId: ObjectId
-      usernameCaseSensitive: boolean
-    }
-  }
 }
 
 export interface Import {
@@ -111,7 +74,11 @@ export function convertImports(imports: Import) {
     .join('\n')
 }
 
-function generateIndexFile(project: Project, models: Model[]) {
+function generateIndexFile(
+  payload: JsonInputFile,
+  models: Model[],
+  projectId: string
+) {
   const importsBuilder: Import = {}
   importsBuilder['express-session'] = {
     session: { type: 'default' },
@@ -199,7 +166,7 @@ function generateIndexFile(project: Project, models: Model[]) {
   importsBuilder['./utils/s3-uploader'] = {
     S3Uploader: { type: 'single' },
   }
-  if (project.appConfig.authConfig.requiresAuth) {
+  if (payload.authConfig.requiresAuth) {
     importsBuilder['./Authentication/Authentication.resolver'] = {
       AuthenticationResolver: { type: 'single' },
     }
@@ -211,7 +178,7 @@ function generateIndexFile(project: Project, models: Model[]) {
   const redis = new Redis(\`\${REDIS_URL}:\${REDIS_PORT}\`);
   `)
   classBuilder.push(`
-  const mongoose = await connect(MONGO_DB_URL, { dbName: "${project._id.toString()}" });
+  const mongoose = await connect(MONGO_DB_URL, { dbName: "${projectId.toString()}" });
   const options = {
     host: REDIS_URL,
     port: REDIS_PORT,
@@ -226,7 +193,7 @@ function generateIndexFile(project: Project, models: Model[]) {
   `)
   classBuilder.push(`  const schema = await buildSchema({`)
   classBuilder.push(`    resolvers: [`)
-  if (project.appConfig.authConfig.requiresAuth) {
+  if (payload.authConfig.requiresAuth) {
     classBuilder.push(`      AuthenticationResolver,`)
   }
   models.forEach(m => {
@@ -743,82 +710,75 @@ async function generateEntityField(field: Field, models: Model[]) {
   return fieldBuilder.join('\n')
 }
 
-async function createProjectStructure(mongoDbUrl: string, projectId: string) {
-  const mongoClient = new MongoClient(mongoDbUrl)
-  try {
-    await mongoClient.connect()
-    const fuschiaDb = mongoClient.db('fuschia')
-    const project = await fuschiaDb.collection('projects').findOne<Project>({
-      _id: new ObjectId(projectId),
-    })
-    console.log(project)
-    if (!project) {
-      throw new Error('Project does not exist')
-    }
-    const modelsImportsBuilder = [
-      `import { getModelForClass } from "@typegoose/typegoose";`,
-    ]
-    const modelsBuilder = [] as string[]
-    const workdir = path.join(__dirname, '../workdir')
-    const srcdir = path.join(workdir, 'src')
-    const biolerplatedir = path.join(__dirname, 'boilerplate')
-    const models = project.appConfig.apiConfig.models
-    await fs.ensureDir(workdir)
-    await fs.writeFile(
-      path.join(workdir, 'package.json'),
-      generatePackageJson(project._id.toString())
-    )
+async function createProjectStructure(
+  payload: JsonInputFile,
+  projectId: string
+) {
+  const modelsImportsBuilder = [
+    `import { getModelForClass } from "@typegoose/typegoose";`,
+  ]
+  const modelsBuilder = [] as string[]
+  const workdir = path.join('/tmp', projectId)
+  fs.rmSync(workdir, { recursive: true, force: true })
+  const srcdir = path.join(workdir, 'src')
+  const biolerplatedir = path.join(__dirname, 'boilerplate')
+  const models = payload.apiConfig.models
+  await fs.ensureDir(workdir)
+  await fs.writeFile(
+    path.join(workdir, 'package.json'),
+    generatePackageJson(projectId)
+  )
 
-    await fs.copyFile(
-      path.join(biolerplatedir, 'tsconfig.json'),
-      path.join(workdir, 'tsconfig.json')
-    )
-    await fs.ensureDir(srcdir)
-    await fs.writeFile(
-      path.join(srcdir, 'index.ts'),
-      generateIndexFile(project, models)
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'common.input.ts'),
-      path.join(srcdir, 'common.input.ts')
-    )
-    const utilsdir = path.join(srcdir, 'utils')
-    await fs.ensureDir(utilsdir)
-    await fs.copyFile(
-      path.join(biolerplatedir, 'object-id.scalar.ts'),
-      path.join(utilsdir, 'object-id.scalar.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'ref-type.ts'),
-      path.join(utilsdir, 'ref-type.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'typegoose-middleware.ts'),
-      path.join(utilsdir, 'typegoose-middleware.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'consts.ts'),
-      path.join(utilsdir, 'consts.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'auth-checker.ts'),
-      path.join(utilsdir, 'auth-checker.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 'filter-parser.ts'),
-      path.join(utilsdir, 'filter-parser.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 's3-uploader.ts'),
-      path.join(utilsdir, 'mail-client.ts')
-    )
-    await fs.copyFile(
-      path.join(biolerplatedir, 's3-uploader.ts'),
-      path.join(utilsdir, 's3-uploader.ts')
-    )
-    await fs.writeFile(
-      path.join(utilsdir, 'config.ts'),
-      `
+  await fs.copyFile(
+    path.join(biolerplatedir, 'tsconfig.json'),
+    path.join(workdir, 'tsconfig.json')
+  )
+  await fs.ensureDir(srcdir)
+  await fs.writeFile(
+    path.join(srcdir, 'index.ts'),
+    generateIndexFile(payload, models, projectId)
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'common.input.ts'),
+    path.join(srcdir, 'common.input.ts')
+  )
+  const utilsdir = path.join(srcdir, 'utils')
+  await fs.ensureDir(utilsdir)
+  await fs.copyFile(
+    path.join(biolerplatedir, 'object-id.scalar.ts'),
+    path.join(utilsdir, 'object-id.scalar.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'ref-type.ts'),
+    path.join(utilsdir, 'ref-type.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'typegoose-middleware.ts'),
+    path.join(utilsdir, 'typegoose-middleware.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'consts.ts'),
+    path.join(utilsdir, 'consts.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'auth-checker.ts'),
+    path.join(utilsdir, 'auth-checker.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 'filter-parser.ts'),
+    path.join(utilsdir, 'filter-parser.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 's3-uploader.ts'),
+    path.join(utilsdir, 'mail-client.ts')
+  )
+  await fs.copyFile(
+    path.join(biolerplatedir, 's3-uploader.ts'),
+    path.join(utilsdir, 's3-uploader.ts')
+  )
+  await fs.writeFile(
+    path.join(utilsdir, 'config.ts'),
+    `
 import * as dotenv from 'dotenv'
 const packageJsonInfo = require('../../package.json')
 
@@ -933,40 +893,40 @@ export const EMAIL_CLIENT = emailClient
 export const FROM_EMAIL_ADDRESS = process.env.FROM_EMAIL_ADDRESS
 export const APP_ENDPOINT = process.env.APP_ENDPOINT
     `
-    )
+  )
 
-    await Promise.all(
-      models.map(async model => {
-        const modelFolder = path.join(srcdir, model.name)
-        await fs.ensureDir(modelFolder)
-        await fs.writeFile(
-          path.join(modelFolder, `${model.name}.resolver.ts`),
-          await generateResolver(model, models)
-        )
-        await fs.writeFile(
-          path.join(modelFolder, `${model.name}.entity.ts`),
-          await generateEntityFile(model, models)
-        )
-        modelsImportsBuilder.push(
-          `import { ${model.name} } from './${model.name}/${model.name}.entity`
-        )
-        modelsBuilder.push(
-          `export const ${model.name}Model = getModelForClass(${model.name});`
-        )
-        await fs.writeFile(
-          path.join(modelFolder, `${model.name}.input.ts`),
-          await generateInputFile(model, models)
-        )
-        await fs.ensureDir(modelFolder)
-      })
-    )
-    await fs.writeFile(
-      path.join(srcdir, 'Models.ts'),
-      await generateModelFile(models)
-    )
-    await fs.writeFile(
-      path.join(srcdir, 'types.ts'),
-      `
+  await Promise.all(
+    models.map(async model => {
+      const modelFolder = path.join(srcdir, model.name)
+      await fs.ensureDir(modelFolder)
+      await fs.writeFile(
+        path.join(modelFolder, `${model.name}.resolver.ts`),
+        await generateResolver(model, models)
+      )
+      await fs.writeFile(
+        path.join(modelFolder, `${model.name}.entity.ts`),
+        await generateEntityFile(model, models)
+      )
+      modelsImportsBuilder.push(
+        `import { ${model.name} } from './${model.name}/${model.name}.entity`
+      )
+      modelsBuilder.push(
+        `export const ${model.name}Model = getModelForClass(${model.name});`
+      )
+      await fs.writeFile(
+        path.join(modelFolder, `${model.name}.input.ts`),
+        await generateInputFile(model, models)
+      )
+      await fs.ensureDir(modelFolder)
+    })
+  )
+  await fs.writeFile(
+    path.join(srcdir, 'Models.ts'),
+    await generateModelFile(models)
+  )
+  await fs.writeFile(
+    path.join(srcdir, 'types.ts'),
+    `
 import { Redis } from "ioredis";
 import { Request as ExpressRequest, Response } from "express";
 import { Session, SessionData } from "express-session";
@@ -987,21 +947,17 @@ export interface Context {
   res: Response,
 }
       `
+  )
+  if (payload.authConfig.requiresAuth) {
+    const modelFolder = path.join(srcdir, 'Authentication')
+    await fs.ensureDir(modelFolder)
+    await fs.writeFile(
+      path.join(modelFolder, `Authentication.resolver.ts`),
+      await generateAuthenticationResolver(payload, models)
     )
-    if (project.appConfig.authConfig.requiresAuth) {
-      const modelFolder = path.join(srcdir, 'Authentication')
-      await fs.ensureDir(modelFolder)
-      await fs.writeFile(
-        path.join(modelFolder, `Authentication.resolver.ts`),
-        await generateAuthenticationResolver(project, models)
-      )
-    }
-    return
-  } finally {
-    await mongoClient.close()
   }
+  return
 }
-
 
 function generatePackageJson(projectId: string): any {
   return `{
@@ -1053,13 +1009,13 @@ function generatePackageJson(projectId: string): any {
   }`
 }
 function generateAuthenticationResolver(
-  project: Project,
+  payload: JsonInputFile,
   models: Model[]
 ): any {
   const importsBuilder: Import = {}
   const classBuilder = [] as string[]
   const authModel = models.find(
-    m => m._id.toString() === project.appConfig.authConfig.tableId.toString()
+    m => m._id.toString() === payload.authConfig.tableId.toString()
   )
   if (authModel) {
     importsBuilder['apollo-server'] = {
@@ -1109,14 +1065,10 @@ function generateAuthenticationResolver(
     }
 
     const usernameField = authModel.fields.find(
-      f =>
-        f._id.toString() ===
-        project.appConfig.authConfig.usernameFieldId.toString()
+      f => f._id.toString() === payload.authConfig.usernameFieldId.toString()
     )
     const passwordField = authModel.fields.find(
-      f =>
-        f._id.toString() ===
-        project.appConfig.authConfig.passwordFieldId.toString()
+      f => f._id.toString() === payload.authConfig.passwordFieldId.toString()
     )
     if (!usernameField || !passwordField) {
       throw new Error('Misconfigured')
@@ -1149,7 +1101,7 @@ function generateAuthenticationResolver(
     classBuilder.push(`  ) {`)
     classBuilder.push(
       `    const user = await ${authModel.name}Model.findOne({ email: ${
-        project.appConfig.authConfig.usernameCaseSensitive
+        payload.authConfig.usernameCaseSensitive
           ? usernameField.fieldName
           : `${usernameField.fieldName}.toLowerCase()`
       } });`
@@ -1220,14 +1172,6 @@ function generateAuthenticationResolver(
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-export async function GenerateCode() {
-  if (!process.env.MONGO_DB_URL) {
-    throw new Error('Missing MONGO_DB_URL')
-  }
-  if (!process.env.PROJECT_ID) {
-    throw new Error('Missing PROJECT_ID')
-  }
-  const mongoUrl = process.env.MONGO_DB_URL
-  const projectId = process.env.PROJECT_ID
-  await createProjectStructure(mongoUrl, projectId)
+export async function GenerateCode(payload: JsonInputFile, projectId: string) {
+  await createProjectStructure(payload, projectId)
 }

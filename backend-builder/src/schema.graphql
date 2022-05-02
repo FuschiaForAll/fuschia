@@ -463,8 +463,6 @@ input RequiredParameterInput {
 type ServerConfig {
   apiConfig: Api!
   authConfig: Auth!
-  liveEndpoint: String!
-  sandboxEndpoint: String!
 }
 
 type Subscription {

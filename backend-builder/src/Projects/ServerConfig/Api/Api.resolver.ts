@@ -9,7 +9,12 @@ import { ProjectModel } from "../../../Models";
 import { Service } from "typedi";
 import { spawn } from "child_process";
 import portfinder from "portfinder";
-import { MONGO_DB_URL } from "../../../utils/config";
+import {
+  GITHUB_API_KEY,
+  MONGO_DB_URL,
+  S3_ACCESS_KEY,
+  S3_SECRET,
+} from "../../../utils/config";
 import axios from "axios";
 import kill from "tree-kill";
 
@@ -20,41 +25,40 @@ interface AWSGetRequest {
 
 function spawnInstance(
   environment: string,
-  mongoUrl: string,
-  projectId: string,
-  port: string,
-  jwtSecret?: string
+  payload: string,
+  githubToken: string,
+  awsKey: string,
+  awsSecret: string,
+  projectId: string
 ) {
   // check if local or remove and either spawn instance or call AWS
-  if (process.env.NODE_ENV === "prod") {
-    throw new Error("Not Implemented");
-  } else {
-    const child = spawn(
-      "node",
-      [`${__dirname}/../../../../../backend-runner/src/index.js`],
-      {
-        env: {
-          ...process.env,
-          NODE_ENV: environment,
-          MONGO_DB_URL: mongoUrl,
-          PROJECT_ID: projectId,
-          PORT: port,
-          JWT_SECRET: jwtSecret,
-        },
-      }
-    );
+  const child = spawn("npx", [
+    "ts-node",
+    `${__dirname}/../../../../../backend-deployment/src/index.ts`,
+    `build`,
+    `${payload}`,
+    `--github`,
+    `${githubToken}`,
+    `--aws-key`,
+    `${awsKey}`,
+    `--aws-secret`,
+    `${awsSecret}`,
+    `--env`,
+    `${environment}`,
+    `--project-id`,
+    `${projectId}`,
+  ]);
 
-    child.stdout.setEncoding("utf8");
-    child.stdout.on("data", function (data) {
-      console.log("stdout: " + data);
-    });
+  child.stdout.setEncoding("utf8");
+  child.stdout.on("data", function (data) {
+    console.log("stdout: " + data);
+  });
 
-    child.stderr.setEncoding("utf8");
-    child.stderr.on("data", function (data) {
-      console.log("stderr: " + data);
-    });
-    return child.pid;
-  }
+  child.stderr.setEncoding("utf8");
+  child.stderr.on("data", function (data) {
+    console.log("stderr: " + data);
+  });
+  return child.pid;
 }
 
 type pid = number;
@@ -74,76 +78,24 @@ export class ApiResolver {
     @Arg("sandbox") sandbox: Boolean,
     @Ctx() ctx: Context
   ) {
-    if (
-      !ctx.req.session.userId ||
-      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
-    ) {
-      throw new ApolloError("Unauthorized");
-    }
+    // if (
+    //   !ctx.req.session.userId ||
+    //   !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    // ) {
+    //   throw new ApolloError("Unauthorized");
+    // }
     const project = await ProjectModel.findById(projectId);
     if (project) {
-      if (sandbox) {
-        if (project.serverConfig.apiConfig.sandboxEndpoint) {
-          if (this.processes[projectId.toString()]) {
-            await new Promise((resolve, reject) => {
-              kill(this.processes[projectId.toString()], "SIGKILL", (e) => {
-                resolve(true);
-              });
-            });
-            delete this.processes[projectId.toString()];
-          }
-          const url = new URL(project.serverConfig.apiConfig.sandboxEndpoint);
-          const pid = spawnInstance(
-            "test",
-            MONGO_DB_URL,
-            project._id.toString(),
-            url.port,
-            project.serverConfig.sandboxJwtSecret
-          );
-          if (pid) {
-            this.processes[`${projectId.toString()}`] = pid;
-          }
-        } else {
-          // temp for now, it will actually cause problems if an api is offline but the server is started.
-          const openPort = await portfinder.getPortPromise();
-          project.serverConfig.apiConfig.sandboxEndpoint = `http://localhost:${openPort}`;
-          project.save();
-          const pid = spawnInstance(
-            "test",
-            MONGO_DB_URL,
-            project._id.toString(),
-            `${openPort}`,
-            project.serverConfig.sandboxJwtSecret
-          );
-          if (pid) {
-            this.processes[`${projectId.toString()}`] = pid;
-          }
-          return true;
-        }
-      } else {
-        if (project.serverConfig.apiConfig.liveEndpoint) {
-          const url = new URL(project.serverConfig.apiConfig.liveEndpoint);
-          spawnInstance(
-            "prod",
-            MONGO_DB_URL,
-            project._id.toString(),
-            url.port,
-            project.serverConfig.liveJwtSecret
-          );
-        } else {
-          const openPort = await portfinder.getPortPromise();
-          project.serverConfig.apiConfig.liveEndpoint = `http://localhost:${openPort}`;
-          project.save();
-          spawnInstance(
-            "prod",
-            MONGO_DB_URL,
-            project._id.toString(),
-            `${openPort}`,
-            project.serverConfig.liveJwtSecret
-          );
-          return true;
-        }
-      }
+      // connect with Github and AWS
+      const projectConfig = JSON.stringify(project.serverConfig);
+      spawnInstance(
+        sandbox ? "test" : "prod",
+        projectConfig,
+        GITHUB_API_KEY,
+        S3_ACCESS_KEY,
+        S3_SECRET,
+        projectId.toString()
+      );
     }
     return true;
   }

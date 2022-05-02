@@ -41,13 +41,16 @@ if (!process.env.PORT) {
   throw new Error("PORT is missing");
 }
 if (!process.env.S3_ACCESS_KEY) {
-  throw new Error("PORT is missing");
+  throw new Error("S3_ACCESS_KEY is missing");
 }
 if (!process.env.S3_SECRET) {
-  throw new Error("PORT is missing");
+  throw new Error("S3_SECRET is missing");
 }
 if (!process.env.S3_BUCKET_NAME) {
-  throw new Error("PORT is missing");
+  throw new Error("S3_BUCKET_NAME is missing");
+}
+if (!process.env.GITHUB_API_KEY) {
+  throw new Error("GITHUB_API_KEY is missing");
 }
 let emailClient: EmailClient;
 // email type could be mailtrap or google
@@ -120,3 +123,4 @@ export const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME;
 export const EMAIL_CLIENT = emailClient;
 export const FROM_EMAIL_ADDRESS = process.env.FROM_EMAIL_ADDRESS;
 export const APP_ENDPOINT = process.env.APP_ENDPOINT;
+export const GITHUB_API_KEY = process.env.GITHUB_API_KEY;

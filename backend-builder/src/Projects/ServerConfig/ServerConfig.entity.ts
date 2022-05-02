@@ -14,6 +14,9 @@ export class ServerConfig {
   @Property()
   sandboxJwtSecret?: string;
 
+  @Property()
+  githubUrl?: string;
+
   @Field()
   @Property({ type: () => Api, default: new Api() })
   apiConfig!: Api;
