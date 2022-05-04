@@ -1,10 +1,15 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Modal from '@mui/material/Modal'
 import { Paper, Typography } from '@mui/material'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import { usePublishApiMutation } from '../../../generated/graphql'
+import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 
 const Publish = function Publish() {
   const navigate = useNavigate()
+  const [publishApi] = usePublishApiMutation()
+  const [version, setVersion] = useState('')
+  let { projectId } = useParams<{ projectId: string }>()
 
   return (
     <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
@@ -25,6 +30,33 @@ const Publish = function Publish() {
           }}
         >
           <Typography>Publish</Typography>
+        </div>
+        <div>
+          <LabeledTextInput
+            title="New Version number"
+            fontSize="1rem"
+            label="New Version number"
+            type="text"
+            defaultValue={version}
+            onBlur={e => {
+              const v = e.currentTarget.value
+              setVersion(v)
+            }}
+          />
+
+          <button
+            onClick={() => {
+              publishApi({
+                variables: {
+                  projectId,
+                  sandbox: false,
+                  version,
+                },
+              })
+            }}
+          >
+            Publish
+          </button>
         </div>
       </Paper>
     </Modal>

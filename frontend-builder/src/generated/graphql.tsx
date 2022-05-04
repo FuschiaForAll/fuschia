@@ -523,6 +523,7 @@ export type MutationLoginArgs = {
 export type MutationPublishApiArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
 };
 
 
@@ -838,8 +839,7 @@ export type ServerConfig = {
   __typename?: 'ServerConfig';
   apiConfig: Api;
   authConfig: Auth;
-  liveEndpoint: Scalars['String'];
-  sandboxEndpoint: Scalars['String'];
+  version: Scalars['String'];
 };
 
 export type Subscription = {
@@ -1460,6 +1460,7 @@ export type ListProjectsQuery = { __typename?: 'Query', listProjects: Array<{ __
 export type PublishApiMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
 }>;
 
 
@@ -3533,8 +3534,8 @@ export type ListProjectsQueryHookResult = ReturnType<typeof useListProjectsQuery
 export type ListProjectsLazyQueryHookResult = ReturnType<typeof useListProjectsLazyQuery>;
 export type ListProjectsQueryResult = Apollo.QueryResult<ListProjectsQuery, ListProjectsQueryVariables>;
 export const PublishApiDocument = gql`
-    mutation PublishApi($projectId: ObjectId!, $sandbox: Boolean!) {
-  publishApi(projectId: $projectId, sandbox: $sandbox)
+    mutation PublishApi($projectId: ObjectId!, $sandbox: Boolean!, $version: String!) {
+  publishApi(projectId: $projectId, sandbox: $sandbox, version: $version)
 }
     `;
 export type PublishApiMutationFn = Apollo.MutationFunction<PublishApiMutation, PublishApiMutationVariables>;
@@ -3554,6 +3555,7 @@ export type PublishApiMutationFn = Apollo.MutationFunction<PublishApiMutation, P
  *   variables: {
  *      projectId: // value for 'projectId'
  *      sandbox: // value for 'sandbox'
+ *      version: // value for 'version'
  *   },
  * });
  */

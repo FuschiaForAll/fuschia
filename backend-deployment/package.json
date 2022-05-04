@@ -15,7 +15,8 @@
     "fs-extra": "^10.1.0",
     "globby": "11.0.4",
     "mongodb": "^4.4.1",
-    "simple-git": "^3.7.1"
+    "simple-git": "^3.7.1",
+    "tweetsodium": "0.0.5"
   },
   "devDependencies": {
     "@types/expect": "^24.3.0",

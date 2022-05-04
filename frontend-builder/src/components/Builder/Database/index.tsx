@@ -11,7 +11,6 @@ import {
   useCreateEntityModelMutation,
   useGetProjectQuery,
   useGetServerStatusQuery,
-  usePublishApiMutation,
 } from '../../../generated/graphql'
 import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
@@ -78,9 +77,11 @@ function StatusChip({
           }}
         >
           <span>{label}</span>
-          <IconButton onClick={onClick}>
-            {status ? <RestartAltIcon /> : <PlayCircleIcon />}
-          </IconButton>
+          {onClick && (
+            <IconButton onClick={onClick}>
+              {status ? <RestartAltIcon /> : <PlayCircleIcon />}
+            </IconButton>
+          )}
         </div>
       </Box>
     </Box>
@@ -229,7 +230,6 @@ function DatabaseConfiguration({
   const { data, loading, error } = useGetProjectQuery({
     variables: { projectId },
   })
-  const [publishApi] = usePublishApiMutation()
   const [createNewEntityModel] = useCreateEntityModelMutation({
     refetchQueries: [
       {
@@ -267,26 +267,10 @@ function DatabaseConfiguration({
           <StatusChip
             label="Sandbox"
             status={sandboxServerStatusData?.getServerStatus}
-            onClick={() => {
-              publishApi({
-                variables: {
-                  projectId,
-                  sandbox: true,
-                },
-              })
-            }}
           />
           <StatusChip
             label="Live"
             status={liveServerStatusData?.getServerStatus}
-            onClick={() => {
-              publishApi({
-                variables: {
-                  projectId,
-                  sandbox: false,
-                },
-              })
-            }}
           />
         </div>
       )}

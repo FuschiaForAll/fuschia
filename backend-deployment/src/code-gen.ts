@@ -290,7 +290,7 @@ function generateIndexFile(
   classBuilder.push(`  const server = http.createServer({}, app);`)
   classBuilder.push(`
   server.listen(PORT, () => {
-    console.log(\`Server is running on port \${PORT}\`);
+    console.log(\`HTTPS Server is running on port \${PORT}\`);
     new SubscriptionServer(
       {
         execute,
@@ -314,8 +314,8 @@ function generateIndexFile(
       }
     );
   });
-  app.listen(PORT, () => {
-    console.log(\`Server is running on port \${PORT}\`);
+  app.listen(PORT + 1, () => {
+    console.log(\`HTTP Server is running on port \${PORT + 1}\`);
   });
   `)
   classBuilder.push(
@@ -712,7 +712,8 @@ async function generateEntityField(field: Field, models: Model[]) {
 
 async function createProjectStructure(
   payload: JsonInputFile,
-  projectId: string
+  projectId: string,
+  version: string
 ) {
   const modelsImportsBuilder = [
     `import { getModelForClass } from "@typegoose/typegoose";`,
@@ -726,7 +727,22 @@ async function createProjectStructure(
   await fs.ensureDir(workdir)
   await fs.writeFile(
     path.join(workdir, 'package.json'),
-    generatePackageJson(projectId)
+    generatePackageJson(projectId, version)
+  )
+
+  await fs.copyFile(
+    path.join(biolerplatedir, 'yarn.lock'),
+    path.join(workdir, 'yarn.lock')
+  )
+
+  await fs.copyFile(
+    path.join(biolerplatedir, 'Dockerfile'),
+    path.join(workdir, 'Dockerfile')
+  )
+
+  await fs.copyFile(
+    path.join(biolerplatedir, '.dockerignore'),
+    path.join(workdir, '.dockerignore')
   )
 
   await fs.copyFile(
@@ -734,6 +750,14 @@ async function createProjectStructure(
     path.join(workdir, 'tsconfig.json')
   )
   await fs.ensureDir(srcdir)
+  await fs.ensureDir(path.join(workdir, '.github'))
+  await fs.ensureDir(path.join(workdir, '.github', 'workflows'))
+  
+  await fs.copyFile(
+    path.join(biolerplatedir, 'deploy_test_server.yaml'),
+    path.join(workdir, '.github', 'workflows', 'deploy_test_server.yaml')
+  )
+
   await fs.writeFile(
     path.join(srcdir, 'index.ts'),
     generateIndexFile(payload, models, projectId)
@@ -802,7 +826,8 @@ interface SimpleEmailClient {
   port: number;
   user: string;
   pass: string;
-}
+} 
+console.log(process.env)
 
 if (!process.env.SESSION_SECRET) { throw new Error('SESSION_SECRET is missing')}
 if (!process.env.MONGO_DB_URL) { throw new Error('MONGO_DB_URL is missing')}
@@ -818,7 +843,7 @@ if (!process.env.FROM_EMAIL_ADDRESS) { throw new Error("FROM_EMAIL_ADDRESS is mi
 
 let emailClient: EmailClient;
 // email type could be mailtrap or google
-if (process.env.EMAL_TYPE === "OAuth2") {
+if (process.env.EMAIL_TYPE === "OAuth2") {
   if (!process.env.EMAIL_SERVICE) {
     throw new Error("EMAIL_SERVICE is missing");
   }
@@ -843,11 +868,11 @@ if (process.env.EMAL_TYPE === "OAuth2") {
 
   emailClient = {
     type: "OAuth2",
-    user: process.env.EMAL_USER,
-    service: process.env.EMAL_USER,
-    clientId: process.env.EMAL_CLIENT_ID,
-    clientSecret: process.env.EMAL_CLIENT_SECRET,
-    refreshToken: process.env.EMAL_REFRESH_TOKEN,
+    user: process.env.EMAIL_USER,
+    service: process.env.EMAIL_SERVICE,
+    clientId: process.env.EMAIL_CLIENT_ID,
+    clientSecret: process.env.EMAIL_CLIENT_SECRET,
+    refreshToken: process.env.EMAIL_REFRESH_TOKEN,
     expires: +process.env.EMAIL_EXPIRES,
   };
 } else {
@@ -930,6 +955,7 @@ export const APP_ENDPOINT = process.env.APP_ENDPOINT
 import { Redis } from "ioredis";
 import { Request as ExpressRequest, Response } from "express";
 import { Session, SessionData } from "express-session";
+import { ObjectId } from "mongoose";
 
 export interface Request extends ExpressRequest {
   session: Session & Partial<{
@@ -959,10 +985,11 @@ export interface Context {
   return
 }
 
-function generatePackageJson(projectId: string): any {
+// TODO: Make version auto-increment
+function generatePackageJson(projectId: string, version: string): any {
   return `{
     "name": "fuchsia-${projectId}",
-    "version": "1.0.0",
+    "version": "${version}",
     "main": "index.js",
     "license": "MIT",
     "scripts": {
@@ -974,6 +1001,7 @@ function generatePackageJson(projectId: string): any {
       "@typegoose/typegoose": "^9.6.2",
       "apollo-server": "^3.6.3",
       "argon2": "^0.28.4",
+      "aws-sdk": "^2.1113.0",
       "body-parser": "^1.19.1",
       "class-validator": "^0.13.2",
       "connect-redis": "^6.1.1",
@@ -999,6 +1027,7 @@ function generatePackageJson(projectId: string): any {
       "@types/connect-redis": "^0.0.18",
       "@types/cookie-parser": "^1.4.2",
       "@types/express-session": "^1.17.4",
+      "@types/graphql-upload": "^8.0.11",
       "@types/ioredis": "^4.28.8",
       "@types/node": "^17.0.17",
       "@types/uuid": "^8.3.4",
@@ -1172,6 +1201,6 @@ function generateAuthenticationResolver(
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-export async function GenerateCode(payload: JsonInputFile, projectId: string) {
-  await createProjectStructure(payload, projectId)
+export async function GenerateCode(payload: JsonInputFile, projectId: string, version: string) {
+  await createProjectStructure(payload, projectId, version)
 }

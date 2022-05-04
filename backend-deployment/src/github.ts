@@ -4,6 +4,7 @@ import { Octokit } from '@octokit/rest'
 import { readFile } from 'fs-extra'
 import path from 'path'
 import globby from 'globby'
+import sodium from 'tweetsodium';
 
 const ORGANIZATION = 'FuschiaForAll'
 
@@ -34,7 +35,6 @@ const uploadToRepo = async (
   branch: string = `develop`
 ) => {
   // gets commit's AND its tree's SHA
-
   const currentCommit = await getCurrentCommit(octo, org, repo, branch)
   const filesPaths = await globby(coursePath)
   const filesBlobs = await Promise.all(
@@ -170,6 +170,33 @@ const createBranch = (
     sha: commitSha,
   })
 
+async function AddGithubSecrets(
+  octo: Octokit,
+  org: string,
+  repo: string,
+  secrets: { [key: string]: string }
+  ) {
+    const publicKey = await octo.rest.actions.getRepoPublicKey({
+      owner: org,
+      repo
+    })
+    Promise.all(Object.keys(secrets).map(async key => {
+      const messageBytes = Buffer.from(secrets[key]);
+      const keyBytes = Buffer.from(publicKey.data.key, 'base64');
+
+      const encryptedBytes = sodium.seal(messageBytes, keyBytes);
+      const encrypted_value = Buffer.from(encryptedBytes).toString('base64');
+
+      await octo.rest.actions.createOrUpdateRepoSecret({
+        owner: org,
+        repo,
+        secret_name: key,
+        encrypted_value,
+        key_id: publicKey.data.key_id
+      })
+    }))
+}
+
 export async function CheckGithub(
   token: string,
   projectid: string,
@@ -196,5 +223,23 @@ export async function CheckGithub(
       currentCommit.commitSha
     )
   }
+  await AddGithubSecrets(octokit, ORGANIZATION, REPO, {
+    SESSION_SECRET: 'a',
+    MONGO_DB_URL: 'b',
+    DATABASE_NAME: 'c',
+    REDIS_URL: 'd',
+    REDIS_PORT: 'e',
+    PORT: 'f',
+    S3_ACCESS_KEY: 'g',
+    S3_SECRET: 'h',
+    S3_BUCKET_NAME: 'i',
+    APP_ENDPOINT: 'j',
+    FROM_EMAIL_ADDRESS: 'k',
+    EMAIL_TYPE: 'l',
+    EMAIL_HOST: 'm',
+    EMAIL_PORT: 'n',
+    EMAIL_USER: 'o',
+    EMAIL_PASS: 'p'
+  })
   await uploadToRepo(octokit, `/tmp/${projectid}`, ORGANIZATION, REPO)
 }

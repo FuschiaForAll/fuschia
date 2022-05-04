@@ -14,11 +14,12 @@ program
   .option('-s, --aws-secret <secret>', 'Aws secret token')
   .option('-e, --env <environment>', 'Environment')
   .option('-p, --project-id <projectid>', 'Project Id')
+  .option('-v, --version <version>', 'New package version number')
   .action(async (payload, options) => {
     console.log('build a project')
     const parsed = JSON.parse(payload) as JsonInputFile
     console.log('generate code')
-    await GenerateCode(parsed, options.projectId)
+    await GenerateCode(parsed, options.projectId, options.version)
     console.log('upload to github')
     await CheckGithub(options.github, options.projectId, parsed.githubUrl)
     console.log('complete')

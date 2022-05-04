@@ -296,7 +296,7 @@ type Mutation {
   inviteMember(email: String!, organizationId: ObjectId!, sendInvite: Boolean): Invitation!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
-  publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
+  publishApi(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
   publishPackageComponents(componentInput: [PackageComponentInput!]!): [PackageComponent!]!
   register(email: String!, password: String!): UserResponse!
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
@@ -463,6 +463,7 @@ input RequiredParameterInput {
 type ServerConfig {
   apiConfig: Api!
   authConfig: Auth!
+  version: String!
 }
 
 type Subscription {

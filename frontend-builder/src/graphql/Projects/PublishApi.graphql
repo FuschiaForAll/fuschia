@@ -1,3 +1,7 @@
-mutation PublishApi($projectId: ObjectId!, $sandbox: Boolean!) {
-  publishApi(projectId: $projectId, sandbox: $sandbox)
+mutation PublishApi(
+  $projectId: ObjectId!
+  $sandbox: Boolean!
+  $version: String!
+) {
+  publishApi(projectId: $projectId, sandbox: $sandbox, version: $version)
 }

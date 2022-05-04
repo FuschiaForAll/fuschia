@@ -1,5 +1,5 @@
 import { ObjectId } from "mongoose";
-import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Int, Mutation, Query, Resolver } from "type-graphql";
 import { Context } from "../../../types";
 import { ObjectIdScalar } from "../../../utils/object-id.scalar";
 import { ApiService } from "./Api.service";
@@ -17,6 +17,7 @@ import {
 } from "../../../utils/config";
 import axios from "axios";
 import kill from "tree-kill";
+import { Matches } from "class-validator";
 
 interface AWSGetRequest {
   endpoint: string;
@@ -29,7 +30,8 @@ function spawnInstance(
   githubToken: string,
   awsKey: string,
   awsSecret: string,
-  projectId: string
+  projectId: string,
+  version: string
 ) {
   // check if local or remove and either spawn instance or call AWS
   const child = spawn("npx", [
@@ -47,6 +49,8 @@ function spawnInstance(
     `${environment}`,
     `--project-id`,
     `${projectId}`,
+    `--version`,
+    `${version}`,
   ]);
 
   child.stdout.setEncoding("utf8");
@@ -76,6 +80,7 @@ export class ApiResolver {
   async publishApi(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
     @Arg("sandbox") sandbox: Boolean,
+    @Arg("version") version: string,
     @Ctx() ctx: Context
   ) {
     // if (
@@ -84,7 +89,13 @@ export class ApiResolver {
     // ) {
     //   throw new ApolloError("Unauthorized");
     // }
-    const project = await ProjectModel.findById(projectId);
+    const project = await ProjectModel.findByIdAndUpdate(
+      projectId,
+      {
+        "serverConfig.version": version,
+      },
+      { returnDocument: "after" }
+    );
     if (project) {
       // connect with Github and AWS
       const projectConfig = JSON.stringify(project.serverConfig);
@@ -94,7 +105,8 @@ export class ApiResolver {
         GITHUB_API_KEY,
         S3_ACCESS_KEY,
         S3_SECRET,
-        projectId.toString()
+        projectId.toString(),
+        project.serverConfig.version || "0.0.1"
       );
     }
     return true;
