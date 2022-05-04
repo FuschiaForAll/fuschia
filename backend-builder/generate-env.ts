@@ -1,7 +1,6 @@
 import { requiredConfigVars } from './src/utils/config.vars';
 import fs from 'fs';
 import * as readline from 'readline';
-import _ from 'lodash';
 
 function askQuestion(query: string) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
