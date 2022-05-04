@@ -14,7 +14,7 @@ export const requiredConfigVars: {
   }[]
 }[] = [
     { key: "SESSION_SECRET", message: "Missing SESSION_SECRET" },
-    { key: "MONGO_DB_URL", note: "The mongodb://.... URL used to access the database" },
+    { key: "MONGO_DB_URL", note: "The `mongodb://` URL used to access the database" },
     { key: "DATABASE_NAME" },
     { key: "REDIS_URL" },
     { key: "REDIS_PORT" },
