@@ -1107,7 +1107,7 @@ function generateAuthenticationResolver(
     classBuilder.push(`@Resolver()`)
     classBuilder.push('export class AuthenticationResolver {')
     // Me resolver
-    classBuilder.push(`  @Query(() => User, { nullable: true })`)
+    classBuilder.push(`  @Query(() => ${authModel.name}, { nullable: true })`)
     classBuilder.push(`  async me(@Ctx() ctx: Context) {`)
     classBuilder.push(`    if (!ctx.req.session.email) {`)
     classBuilder.push(`      throw new ApolloError("Unauthorized");`)

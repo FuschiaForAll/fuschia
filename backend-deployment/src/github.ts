@@ -41,9 +41,11 @@ const uploadToRepo = async (
   const filesBlobs = await Promise.all(
     filesPaths.map(createBlobForFile(octo, org, repo))
   )
+  filesBlobs.push(await createBlobForFile(octo, org, repo)(`${coursePath}/.github/workflows/deploy_test_server.yaml`))
   const pathsForBlobs = filesPaths.map(fullPath =>
     path.relative(coursePath, fullPath)
   )
+  pathsForBlobs.push(path.relative(coursePath, `${coursePath}/.github/workflows/deploy_test_server.yaml`))
   const newTree = await createNewTree(
     octo,
     org,
