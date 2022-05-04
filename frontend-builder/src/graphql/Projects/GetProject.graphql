@@ -11,6 +11,8 @@ query GetProject($projectId: ObjectId!) {
       }
     }
     serverConfig {
+      ec2InstanceId
+      ec2PublicDns
       apiConfig {
         sandboxEndpoint
         liveEndpoint

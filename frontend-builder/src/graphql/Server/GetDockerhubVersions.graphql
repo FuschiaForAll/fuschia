@@ -1,0 +1,3 @@
+query GetDockerhubVersions($projectId: ObjectId!) {
+  getDockerhubVersions(projectId: $projectId)
+}

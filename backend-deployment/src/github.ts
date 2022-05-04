@@ -5,6 +5,7 @@ import { readFile } from 'fs-extra'
 import path from 'path'
 import globby from 'globby'
 import sodium from 'tweetsodium';
+import { DOCKERHUB_PASSWORD, DOCKERHUB_USERNAME } from './config';
 
 const ORGANIZATION = 'FuschiaForAll'
 
@@ -224,22 +225,8 @@ export async function CheckGithub(
     )
   }
   await AddGithubSecrets(octokit, ORGANIZATION, REPO, {
-    SESSION_SECRET: 'a',
-    MONGO_DB_URL: 'b',
-    DATABASE_NAME: 'c',
-    REDIS_URL: 'd',
-    REDIS_PORT: 'e',
-    PORT: 'f',
-    S3_ACCESS_KEY: 'g',
-    S3_SECRET: 'h',
-    S3_BUCKET_NAME: 'i',
-    APP_ENDPOINT: 'j',
-    FROM_EMAIL_ADDRESS: 'k',
-    EMAIL_TYPE: 'l',
-    EMAIL_HOST: 'm',
-    EMAIL_PORT: 'n',
-    EMAIL_USER: 'o',
-    EMAIL_PASS: 'p'
+    DOCKERHUB_USERNAME,
+    DOCKERHUB_PASSWORD
   })
   await uploadToRepo(octokit, `/tmp/${projectid}`, ORGANIZATION, REPO)
 }

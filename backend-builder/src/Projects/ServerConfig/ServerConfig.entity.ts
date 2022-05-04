@@ -18,6 +18,14 @@ export class ServerConfig {
   @Property()
   githubUrl?: string;
 
+  @Field({ nullable: true })
+  @Property()
+  ec2InstanceId?: string;
+
+  @Field({ nullable: true })
+  @Property()
+  ec2PublicDns?: string;
+
   @Field()
   @Property({ default: "0.0.1" })
   @Matches(/\d{1,2}\.\d{1,2}\.\d{1,3}/)

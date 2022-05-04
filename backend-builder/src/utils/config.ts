@@ -110,6 +110,15 @@ if (process.env.EMAL_TYPE === "OAuth2") {
     pass: process.env.EMAIL_PASS,
   };
 }
+
+if (!process.env.DOCKERHUB_USERNAME) {
+  throw new Error("DOCKERHUB_USERNAME is missing");
+}
+if (!process.env.DOCKERHUB_PASSWORD) {
+  throw new Error("DOCKERHUB_PASSWORD is missing");
+}
+export const DOCKERHUB_USERNAME=process.env.DOCKERHUB_USERNAME
+export const DOCKERHUB_PASSWORD=process.env.DOCKERHUB_PASSWORD
 export const SERVER_VERSION = packageJsonInfo.version;
 export const SESSION_SECRET = process.env.SESSION_SECRET;
 export const MONGO_DB_URL = process.env.MONGO_DB_URL;

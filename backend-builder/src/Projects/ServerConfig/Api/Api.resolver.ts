@@ -9,6 +9,7 @@ import { ProjectModel } from "../../../Models";
 import { Service } from "typedi";
 import { spawn } from "child_process";
 import portfinder from "portfinder";
+import AWS from "aws-sdk";
 import {
   GITHUB_API_KEY,
   MONGO_DB_URL,
@@ -83,12 +84,12 @@ export class ApiResolver {
     @Arg("version") version: string,
     @Ctx() ctx: Context
   ) {
-    // if (
-    //   !ctx.req.session.userId ||
-    //   !this.projectService.checkAccess(projectId, ctx.req.session.userId)
-    // ) {
-    //   throw new ApolloError("Unauthorized");
-    // }
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
     const project = await ProjectModel.findByIdAndUpdate(
       projectId,
       {
@@ -110,6 +111,17 @@ export class ApiResolver {
       );
     }
     return true;
+  }
+
+  @Mutation(() => Boolean)
+  async launchInstance(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("instanceType", (type) => String) instanceType: string,
+    @Arg("availabilityZone", (type) => String) availabilityZone: string,
+    @Ctx() ctx: Context
+  ) {
+    await this.apiService.createEC2Instance(projectId.toString(), instanceType, availabilityZone)
+    
   }
 
   @Query(() => Boolean)

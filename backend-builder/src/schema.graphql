@@ -294,6 +294,7 @@ type Mutation {
   duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
   forgotPassword(email: String!): Boolean!
   inviteMember(email: String!, organizationId: ObjectId!, sendInvite: Boolean): Invitation!
+  launchInstance(availabilityZone: String!, instanceType: String!, projectId: ObjectId!): Boolean!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
@@ -316,6 +317,7 @@ type Mutation {
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
+  updateServerVersion(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
   updateSubscription: Boolean
   updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   uploadAsset(file: Upload!, folder: String!, projectId: ObjectId!): Boolean!
@@ -423,6 +425,7 @@ type Query {
   getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
   getDataContext(componentId: ObjectId!): [DataContext!]!
+  getDockerhubVersions(projectId: ObjectId!): [String!]!
   getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getPackageComponent(packageComponentId: ObjectId!): PackageComponent
@@ -463,6 +466,8 @@ input RequiredParameterInput {
 type ServerConfig {
   apiConfig: Api!
   authConfig: Auth!
+  ec2InstanceId: String
+  ec2PublicDns: String
   version: String!
 }
 

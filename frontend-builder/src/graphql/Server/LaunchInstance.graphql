@@ -1,0 +1,11 @@
+mutation LaunchInstance(
+  $projectId: ObjectId!
+  $instanceType: String!
+  $availabilityZone: String!
+) {
+  launchInstance(
+    projectId: $projectId
+    instanceType: $instanceType
+    availabilityZone: $availabilityZone
+  )
+}
