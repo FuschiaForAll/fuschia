@@ -26,6 +26,7 @@ export const requiredConfigVars: {
     { key: "APP_ENDPOINT" },
     { key: "DOCKERHUB_USERNAME", note: "This is not the website username, but an access username for their API" },
     { key: "DOCKERHUB_PASSWORD", note: "This is not the website password, but an access token for their API" },
+    { key: "GITHUB_API_KEY" },
     {
       key: "EMAIL_TYPE", options: [
         { value: "OAuth2", dependencies: ["EMAIL_USER", "EMAIL_CLIENT_ID", "EMAIL_CLIENT_SECRET", "EMAIL_REFRESH_TOKEN", "EMAIL_EXPIRES"] },
