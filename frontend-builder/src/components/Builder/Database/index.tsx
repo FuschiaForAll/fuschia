@@ -6,12 +6,11 @@ import { styled } from '@mui/material/styles'
 import MuiAccordion, { AccordionProps } from '@mui/material/Accordion'
 import { Add } from '@mui/icons-material'
 import {
-  useCreateApiVariableMutation,
-  useDeleteApiVariableMutation,
+  useCreateAppVariableMutation,
+  useDeleteAppVariableMutation,
   useCreateEntityModelMutation,
   useGetProjectQuery,
   useGetServerStatusQuery,
-  usePublishApiMutation,
 } from '../../../generated/graphql'
 import DataEditor from './DataEditor'
 import { EntityModel } from './EntityModel'
@@ -78,9 +77,11 @@ function StatusChip({
           }}
         >
           <span>{label}</span>
-          <IconButton onClick={onClick}>
-            {status ? <RestartAltIcon /> : <PlayCircleIcon />}
-          </IconButton>
+          {onClick && (
+            <IconButton onClick={onClick}>
+              {status ? <RestartAltIcon /> : <PlayCircleIcon />}
+            </IconButton>
+          )}
         </div>
       </Box>
     </Box>
@@ -100,10 +101,10 @@ function VariableConfiguration({
   })
   const [fieldName, setFieldName] = useState('')
   const [dataType, setDataType] = useState('String')
-  const [createVariable] = useCreateApiVariableMutation({
+  const [createVariable] = useCreateAppVariableMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
-  const [deleteVariable] = useDeleteApiVariableMutation({
+  const [deleteVariable] = useDeleteAppVariableMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
 
@@ -118,7 +119,7 @@ function VariableConfiguration({
   }
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
-      {data.getProject.appConfig.apiConfig.variables.map(variable => (
+      {data.getProject.appConfig.variables.map(variable => (
         <div key={variable._id}>
           {variable.name} - {variable.type}
           <IconButton
@@ -160,7 +161,7 @@ function VariableConfiguration({
               label: type,
               value: type,
             })),
-            ...data.getProject.appConfig.apiConfig.models.map(modelType => ({
+            ...data.getProject.serverConfig.apiConfig.models.map(modelType => ({
               label: modelType.name,
               value: modelType._id,
             })),
@@ -184,6 +185,20 @@ function VariableConfiguration({
         </button>
       </div>
     </div>
+  )
+}
+
+function ServerConfiguration({
+  selectedPage,
+  pageIndex,
+}: {
+  selectedPage: number
+  pageIndex: number
+}) {
+  return (
+    <div
+      style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}
+    ></div>
   )
 }
 
@@ -215,7 +230,6 @@ function DatabaseConfiguration({
   const { data, loading, error } = useGetProjectQuery({
     variables: { projectId },
   })
-  const [publishApi] = usePublishApiMutation()
   const [createNewEntityModel] = useCreateEntityModelMutation({
     refetchQueries: [
       {
@@ -253,26 +267,10 @@ function DatabaseConfiguration({
           <StatusChip
             label="Sandbox"
             status={sandboxServerStatusData?.getServerStatus}
-            onClick={() => {
-              publishApi({
-                variables: {
-                  projectId,
-                  sandbox: true,
-                },
-              })
-            }}
           />
           <StatusChip
             label="Live"
             status={liveServerStatusData?.getServerStatus}
-            onClick={() => {
-              publishApi({
-                variables: {
-                  projectId,
-                  sandbox: false,
-                },
-              })
-            }}
           />
         </div>
       )}
@@ -287,7 +285,7 @@ function DatabaseConfiguration({
         <div style={{ overflow: 'auto' }}>
           {data?.getProject && (
             <div>
-              {data.getProject.appConfig.apiConfig.models
+              {data.getProject.serverConfig.apiConfig.models
                 .filter(m => m.isLocal === isLocal)
                 .map(model => (
                   <Accordion
@@ -320,7 +318,7 @@ function DatabaseConfiguration({
                       <EntityModel
                         projectId={projectId!}
                         model={model}
-                        models={data.getProject.appConfig.apiConfig.models}
+                        models={data.getProject.serverConfig.apiConfig.models}
                       />
                     </AccordionDetails>
                   </Accordion>
@@ -382,14 +380,14 @@ function DatabaseConfiguration({
         <div style={{ overflow: 'auto' }}>
           {data && (
             <DataEditor
-              model={data.getProject.appConfig.apiConfig.models.find(
+              model={data.getProject.serverConfig.apiConfig.models.find(
                 model => model._id.toString() === expanded
               )}
-              models={data.getProject.appConfig.apiConfig.models}
+              models={data.getProject.serverConfig.apiConfig.models}
               sandboxEndpoint={
-                data.getProject.appConfig.apiConfig.sandboxEndpoint
+                data.getProject.serverConfig.apiConfig.sandboxEndpoint
               }
-              liveEndpoint={data.getProject.appConfig.apiConfig.liveEndpoint}
+              liveEndpoint={data.getProject.serverConfig.apiConfig.liveEndpoint}
             />
           )}
         </div>
@@ -432,6 +430,12 @@ const Database: React.FC = function Database() {
           >
             Local Database
           </MainTabHeader>
+          <MainTabHeader
+            selected={selectedTabIndex === 3}
+            onClick={() => setSelectedTabIndex(3)}
+          >
+            Server Configuration
+          </MainTabHeader>
         </TabWrapper>
         <DatabaseConfiguration
           isLocal={false}
@@ -444,6 +448,7 @@ const Database: React.FC = function Database() {
           pageIndex={2}
           selectedPage={selectedTabIndex}
         />
+        <ServerConfiguration pageIndex={3} selectedPage={selectedTabIndex} />
       </Paper>
     </Modal>
   )

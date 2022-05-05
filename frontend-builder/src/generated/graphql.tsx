@@ -31,25 +31,23 @@ export type Api = {
   queries: Array<Scalars['String']>;
   sandboxEndpoint?: Maybe<Scalars['String']>;
   subscriptions: Array<Scalars['String']>;
-  variables: Array<ApiVariable>;
-};
-
-export type ApiVariable = {
-  __typename?: 'ApiVariable';
-  _id: Scalars['ObjectId'];
-  name: Scalars['String'];
-  type: Scalars['String'];
 };
 
 export type AppConfig = {
   __typename?: 'AppConfig';
-  apiConfig: Api;
   appEntryComponentId?: Maybe<Scalars['ObjectId']>;
-  authConfig: Auth;
+  variables: Array<AppVariable>;
 };
 
 export type AppConfigInput = {
   appEntryComponentId?: InputMaybe<Scalars['ObjectId']>;
+};
+
+export type AppVariable = {
+  __typename?: 'AppVariable';
+  _id: Scalars['ObjectId'];
+  name: Scalars['String'];
+  type: Scalars['String'];
 };
 
 export type Asset = {
@@ -213,16 +211,12 @@ export type DataFieldInput = {
 
 export type DataSource = {
   __typename?: 'DataSource';
-  entityType: Scalars['String'];
-  label: Scalars['String'];
-  path: Scalars['String'];
+  entityType: Scalars['JSONObject'];
   variables: Array<Scalars['JSONObject']>;
 };
 
 export type DataSourceInput = {
-  entityType: Scalars['String'];
-  label: Scalars['String'];
-  path: Scalars['String'];
+  entityType: Scalars['JSONObject'];
   variables: Array<Scalars['JSONObject']>;
 };
 
@@ -304,7 +298,7 @@ export type Mutation = {
   acceptInvitaion: Scalars['Boolean'];
   addParameter: Scalars['Boolean'];
   changePassword: Scalars['Boolean'];
-  createApiVariable: ApiVariable;
+  createAppVariable: AppVariable;
   createAssetFolder: Scalars['Boolean'];
   createComponent: Component;
   createDataField?: Maybe<DataField>;
@@ -320,7 +314,7 @@ export type Mutation = {
   createSubscription?: Maybe<Scalars['Boolean']>;
   createTranslation: Project;
   createUser: User;
-  deleteApiVariable: Scalars['Boolean'];
+  deleteAppVariable: Scalars['Boolean'];
   deleteAsset: Scalars['Boolean'];
   deleteComponents: Array<Scalars['ObjectId']>;
   deleteDataField?: Maybe<Scalars['ObjectId']>;
@@ -335,6 +329,7 @@ export type Mutation = {
   duplicateComponent: Scalars['Boolean'];
   forgotPassword: Scalars['Boolean'];
   inviteMember: Invitation;
+  launchInstance: Scalars['Boolean'];
   login: UserResponse;
   logout: Scalars['Boolean'];
   publishApi: Scalars['Boolean'];
@@ -357,6 +352,7 @@ export type Mutation = {
   updateProject: Project;
   updateQuery?: Maybe<Scalars['Boolean']>;
   updateRelationship?: Maybe<Scalars['Boolean']>;
+  updateServerVersion: Scalars['Boolean'];
   updateSubscription?: Maybe<Scalars['Boolean']>;
   updateTranslation: Project;
   uploadAsset: Scalars['Boolean'];
@@ -380,7 +376,7 @@ export type MutationChangePasswordArgs = {
 };
 
 
-export type MutationCreateApiVariableArgs = {
+export type MutationCreateAppVariableArgs = {
   name: Scalars['String'];
   projectId: Scalars['ObjectId'];
   type: Scalars['String'];
@@ -455,7 +451,7 @@ export type MutationCreateUserArgs = {
 };
 
 
-export type MutationDeleteApiVariableArgs = {
+export type MutationDeleteAppVariableArgs = {
   projectId: Scalars['ObjectId'];
   variableId: Scalars['ObjectId'];
 };
@@ -520,6 +516,13 @@ export type MutationInviteMemberArgs = {
 };
 
 
+export type MutationLaunchInstanceArgs = {
+  availabilityZone: Scalars['String'];
+  instanceType: Scalars['String'];
+  projectId: Scalars['ObjectId'];
+};
+
+
 export type MutationLoginArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
@@ -529,6 +532,7 @@ export type MutationLoginArgs = {
 export type MutationPublishApiArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
 };
 
 
@@ -616,6 +620,13 @@ export type MutationUpdatePreviewerDataArgs = {
 export type MutationUpdateProjectArgs = {
   project: UpdateProjectInput;
   projectId: Scalars['ObjectId'];
+};
+
+
+export type MutationUpdateServerVersionArgs = {
+  projectId: Scalars['ObjectId'];
+  sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
 };
 
 
@@ -719,6 +730,7 @@ export type Project = {
   labelLibrary: LabelLibrary;
   organization: Organization;
   projectName: Scalars['String'];
+  serverConfig: ServerConfig;
 };
 
 export type ProjectInput = {
@@ -733,6 +745,7 @@ export type Query = {
   getComponent?: Maybe<Component>;
   getComponents: Array<Component>;
   getDataContext: Array<DataContext>;
+  getDockerhubVersions: Array<Scalars['String']>;
   getEntityModel?: Maybe<EntityModel>;
   getLabelLibrary?: Maybe<LabelLibrary>;
   getPackageComponent?: Maybe<PackageComponent>;
@@ -781,6 +794,11 @@ export type QueryGetComponentsArgs = {
 
 export type QueryGetDataContextArgs = {
   componentId: Scalars['ObjectId'];
+};
+
+
+export type QueryGetDockerhubVersionsArgs = {
+  projectId: Scalars['ObjectId'];
 };
 
 
@@ -837,6 +855,15 @@ export type RequiredParameterInput = {
   entityType: Scalars['ObjectId'];
   label: Scalars['String'];
   path: Scalars['String'];
+};
+
+export type ServerConfig = {
+  __typename?: 'ServerConfig';
+  apiConfig: Api;
+  authConfig: Auth;
+  ec2InstanceId?: Maybe<Scalars['String']>;
+  ec2PublicDns?: Maybe<Scalars['String']>;
+  version: Scalars['String'];
 };
 
 export type Subscription = {
@@ -1079,22 +1106,22 @@ export enum __TypeKind {
   NonNull = 'NON_NULL'
 }
 
-export type CreateApiVariableMutationVariables = Exact<{
+export type CreateAppVariableMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   name: Scalars['String'];
   type: Scalars['String'];
 }>;
 
 
-export type CreateApiVariableMutation = { __typename?: 'Mutation', createApiVariable: { __typename?: 'ApiVariable', _id: any, name: string, type: string } };
+export type CreateAppVariableMutation = { __typename?: 'Mutation', createAppVariable: { __typename?: 'AppVariable', _id: any, name: string, type: string } };
 
-export type DeleteApiVariableMutationVariables = Exact<{
+export type DeleteAppVariableMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   variableId: Scalars['ObjectId'];
 }>;
 
 
-export type DeleteApiVariableMutation = { __typename?: 'Mutation', deleteApiVariable: boolean };
+export type DeleteAppVariableMutation = { __typename?: 'Mutation', deleteAppVariable: boolean };
 
 export type CreateAssetFolderMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1143,7 +1170,7 @@ export type AddParameterMutationVariables = Exact<{
 
 export type AddParameterMutation = { __typename?: 'Mutation', addParameter: boolean };
 
-export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null };
+export type ComponentFragmentFragment = { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null };
 
 export type CreateComponentMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1151,7 +1178,7 @@ export type CreateComponentMutationVariables = Exact<{
 }>;
 
 
-export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
+export type CreateComponentMutation = { __typename?: 'Mutation', createComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null } };
 
 export type DeleteComponentsMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1182,7 +1209,7 @@ export type GetComponentQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } | null };
+export type GetComponentQuery = { __typename?: 'Query', getComponent?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null } | null };
 
 export type GetDataContextQueryVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1196,7 +1223,7 @@ export type GetComponentsQueryVariables = Exact<{
 }>;
 
 
-export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> };
+export type GetComponentsQuery = { __typename?: 'Query', getComponents: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null }> };
 
 export type GetEntityModelQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1211,7 +1238,7 @@ export type OnComponentChangeSubscriptionVariables = Exact<{
 }>;
 
 
-export type OnComponentChangeSubscription = { __typename?: 'Subscription', onComponentChange: { __typename?: 'ComponentSubscriptionPayload', type: string, _ids: Array<any>, components: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null }> } };
+export type OnComponentChangeSubscription = { __typename?: 'Subscription', onComponentChange: { __typename?: 'ComponentSubscriptionPayload', type: string, _ids: Array<any>, components: Array<{ __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null }> } };
 
 export type RemoveParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1227,7 +1254,7 @@ export type UpdateComponentMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } };
+export type UpdateComponentMutation = { __typename?: 'Mutation', updateComponent: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null } };
 
 export type UpdateComponentPropsMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1235,7 +1262,7 @@ export type UpdateComponentPropsMutationVariables = Exact<{
 }>;
 
 
-export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: string, path: string, label: string, variables: Array<any> }> | null } | null };
+export type UpdateComponentPropsMutation = { __typename?: 'Mutation', updateComponentProps?: { __typename?: 'Component', _id: any, package: string, type: string, name: string, x?: number | null, y?: number | null, layerSort: string, componentType: PackageComponentType, requiresAuth?: boolean | null, props?: any | null, layout?: any | null, data?: any | null, parent?: any | null, parameters?: Array<{ __typename?: 'RequiredParameter', _id: any, entityType: any, path: string, label: string }> | null, fetched?: Array<{ __typename?: 'DataSource', entityType: any, variables: Array<any> }> | null } | null };
 
 export type UpdateParameterMutationVariables = Exact<{
   componentId: Scalars['ObjectId'];
@@ -1439,7 +1466,7 @@ export type GetProjectQueryVariables = Exact<{
 }>;
 
 
-export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, assetLibrary?: { __typename?: 'AssetLibrary', assets: Array<{ __typename?: 'Asset', _id: any, key: string, name: string }> } | null, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }>, variables: Array<{ __typename?: 'ApiVariable', _id: any, name: string, type: string }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } } } };
+export type GetProjectQuery = { __typename?: 'Query', getProject: { __typename?: 'Project', _id: any, appId: string, projectName: string, assetLibrary?: { __typename?: 'AssetLibrary', assets: Array<{ __typename?: 'Asset', _id: any, key: string, name: string }> } | null, serverConfig: { __typename?: 'ServerConfig', ec2InstanceId?: string | null, ec2PublicDns?: string | null, apiConfig: { __typename?: 'Api', sandboxEndpoint?: string | null, liveEndpoint?: string | null, queries: Array<string>, mutations: Array<string>, subscriptions: Array<string>, models: Array<{ __typename?: 'EntityModel', _id: any, name: string, isLocal: boolean, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }>, auth: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, fields: Array<{ __typename?: 'DataField', _id: any, fieldName: string, isUnique: boolean, isHashed: boolean, isList?: boolean | null, nullable: boolean, dataType: string, connection?: boolean | null, rules: Array<{ __typename?: 'DataAuth', allow: string, provider: string, ownerField: string, identityClaim: string, groupClaim: string, groups: Array<string>, groupsField: string, operations: Array<string> }>, keys: Array<{ __typename?: 'Key', name: string, fieldNames: Array<string> }> }> }> }, authConfig: { __typename?: 'Auth', requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } }, appConfig: { __typename?: 'AppConfig', appEntryComponentId?: any | null, variables: Array<{ __typename?: 'AppVariable', _id: any, name: string, type: string }> } } };
 
 export type GetServerStatusQueryVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -1457,6 +1484,7 @@ export type ListProjectsQuery = { __typename?: 'Query', listProjects: Array<{ __
 export type PublishApiMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
 }>;
 
 
@@ -1477,6 +1505,31 @@ export type UpdateAuthMutationVariables = Exact<{
 
 
 export type UpdateAuthMutation = { __typename?: 'Mutation', updateAuth?: { __typename?: 'Auth', _id: any, requiresAuth: boolean, allowUnauthenticatedUsers: boolean, mfaEnabled: boolean, mfaConfiguration: string, mfaTypes: string, smsAuthenticationMessage: string, smsVerificationMessage: string, emailVerificationSubject: string, emailVerificationMessage: string, defaultPasswordPolicy: boolean, passwordPolicyMinLength: number, passwordRequiresUppercase: boolean, passwordRequiresNumbers: boolean, passwordRequiresSymbols: boolean, requiredAttributes: Array<string>, clientRefreshTokenValidity: number, usernameCaseSensitive: boolean, tableId: string, usernameFieldId: string, passwordFieldId: string } | null };
+
+export type GetDockerhubVersionsQueryVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+}>;
+
+
+export type GetDockerhubVersionsQuery = { __typename?: 'Query', getDockerhubVersions: Array<string> };
+
+export type LaunchInstanceMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  instanceType: Scalars['String'];
+  availabilityZone: Scalars['String'];
+}>;
+
+
+export type LaunchInstanceMutation = { __typename?: 'Mutation', launchInstance: boolean };
+
+export type UpdateServerVersionMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
+}>;
+
+
+export type UpdateServerVersionMutation = { __typename?: 'Mutation', updateServerVersion: boolean };
 
 export type ChangePasswordMutationVariables = Exact<{
   oldPassword: Scalars['String'];
@@ -1553,8 +1606,6 @@ export const ComponentFragmentFragmentDoc = gql`
   }
   fetched {
     entityType
-    path
-    label
     variables
   }
   props
@@ -1682,29 +1733,29 @@ export const AuthFragmentFragmentDoc = gql`
   passwordFieldId
 }
     `;
-export const CreateApiVariableDocument = gql`
-    mutation CreateApiVariable($projectId: ObjectId!, $name: String!, $type: String!) {
-  createApiVariable(projectId: $projectId, name: $name, type: $type) {
+export const CreateAppVariableDocument = gql`
+    mutation CreateAppVariable($projectId: ObjectId!, $name: String!, $type: String!) {
+  createAppVariable(projectId: $projectId, name: $name, type: $type) {
     _id
     name
     type
   }
 }
     `;
-export type CreateApiVariableMutationFn = Apollo.MutationFunction<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
+export type CreateAppVariableMutationFn = Apollo.MutationFunction<CreateAppVariableMutation, CreateAppVariableMutationVariables>;
 
 /**
- * __useCreateApiVariableMutation__
+ * __useCreateAppVariableMutation__
  *
- * To run a mutation, you first call `useCreateApiVariableMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateApiVariableMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateAppVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateAppVariableMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createApiVariableMutation, { data, loading, error }] = useCreateApiVariableMutation({
+ * const [createAppVariableMutation, { data, loading, error }] = useCreateAppVariableMutation({
  *   variables: {
  *      projectId: // value for 'projectId'
  *      name: // value for 'name'
@@ -1712,45 +1763,45 @@ export type CreateApiVariableMutationFn = Apollo.MutationFunction<CreateApiVaria
  *   },
  * });
  */
-export function useCreateApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>) {
+export function useCreateAppVariableMutation(baseOptions?: Apollo.MutationHookOptions<CreateAppVariableMutation, CreateAppVariableMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateApiVariableMutation, CreateApiVariableMutationVariables>(CreateApiVariableDocument, options);
+        return Apollo.useMutation<CreateAppVariableMutation, CreateAppVariableMutationVariables>(CreateAppVariableDocument, options);
       }
-export type CreateApiVariableMutationHookResult = ReturnType<typeof useCreateApiVariableMutation>;
-export type CreateApiVariableMutationResult = Apollo.MutationResult<CreateApiVariableMutation>;
-export type CreateApiVariableMutationOptions = Apollo.BaseMutationOptions<CreateApiVariableMutation, CreateApiVariableMutationVariables>;
-export const DeleteApiVariableDocument = gql`
-    mutation DeleteApiVariable($projectId: ObjectId!, $variableId: ObjectId!) {
-  deleteApiVariable(projectId: $projectId, variableId: $variableId)
+export type CreateAppVariableMutationHookResult = ReturnType<typeof useCreateAppVariableMutation>;
+export type CreateAppVariableMutationResult = Apollo.MutationResult<CreateAppVariableMutation>;
+export type CreateAppVariableMutationOptions = Apollo.BaseMutationOptions<CreateAppVariableMutation, CreateAppVariableMutationVariables>;
+export const DeleteAppVariableDocument = gql`
+    mutation DeleteAppVariable($projectId: ObjectId!, $variableId: ObjectId!) {
+  deleteAppVariable(projectId: $projectId, variableId: $variableId)
 }
     `;
-export type DeleteApiVariableMutationFn = Apollo.MutationFunction<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
+export type DeleteAppVariableMutationFn = Apollo.MutationFunction<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>;
 
 /**
- * __useDeleteApiVariableMutation__
+ * __useDeleteAppVariableMutation__
  *
- * To run a mutation, you first call `useDeleteApiVariableMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteApiVariableMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useDeleteAppVariableMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteAppVariableMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [deleteApiVariableMutation, { data, loading, error }] = useDeleteApiVariableMutation({
+ * const [deleteAppVariableMutation, { data, loading, error }] = useDeleteAppVariableMutation({
  *   variables: {
  *      projectId: // value for 'projectId'
  *      variableId: // value for 'variableId'
  *   },
  * });
  */
-export function useDeleteApiVariableMutation(baseOptions?: Apollo.MutationHookOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>) {
+export function useDeleteAppVariableMutation(baseOptions?: Apollo.MutationHookOptions<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>) {
         const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>(DeleteApiVariableDocument, options);
+        return Apollo.useMutation<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>(DeleteAppVariableDocument, options);
       }
-export type DeleteApiVariableMutationHookResult = ReturnType<typeof useDeleteApiVariableMutation>;
-export type DeleteApiVariableMutationResult = Apollo.MutationResult<DeleteApiVariableMutation>;
-export type DeleteApiVariableMutationOptions = Apollo.BaseMutationOptions<DeleteApiVariableMutation, DeleteApiVariableMutationVariables>;
+export type DeleteAppVariableMutationHookResult = ReturnType<typeof useDeleteAppVariableMutation>;
+export type DeleteAppVariableMutationResult = Apollo.MutationResult<DeleteAppVariableMutation>;
+export type DeleteAppVariableMutationOptions = Apollo.BaseMutationOptions<DeleteAppVariableMutation, DeleteAppVariableMutationVariables>;
 export const CreateAssetFolderDocument = gql`
     mutation CreateAssetFolder($projectId: ObjectId!, $folderName: String!) {
   createAssetFolder(projectId: $projectId, folderName: $folderName)
@@ -3345,8 +3396,9 @@ export const GetProjectDocument = gql`
         name
       }
     }
-    appConfig {
-      appEntryComponentId
+    serverConfig {
+      ec2InstanceId
+      ec2PublicDns
       apiConfig {
         sandboxEndpoint
         liveEndpoint
@@ -3396,11 +3448,6 @@ export const GetProjectDocument = gql`
         queries
         mutations
         subscriptions
-        variables {
-          _id
-          name
-          type
-        }
       }
       authConfig {
         requiresAuth
@@ -3423,6 +3470,14 @@ export const GetProjectDocument = gql`
         tableId
         usernameFieldId
         passwordFieldId
+      }
+    }
+    appConfig {
+      appEntryComponentId
+      variables {
+        _id
+        name
+        type
       }
     }
   }
@@ -3530,8 +3585,8 @@ export type ListProjectsQueryHookResult = ReturnType<typeof useListProjectsQuery
 export type ListProjectsLazyQueryHookResult = ReturnType<typeof useListProjectsLazyQuery>;
 export type ListProjectsQueryResult = Apollo.QueryResult<ListProjectsQuery, ListProjectsQueryVariables>;
 export const PublishApiDocument = gql`
-    mutation PublishApi($projectId: ObjectId!, $sandbox: Boolean!) {
-  publishApi(projectId: $projectId, sandbox: $sandbox)
+    mutation PublishApi($projectId: ObjectId!, $sandbox: Boolean!, $version: String!) {
+  publishApi(projectId: $projectId, sandbox: $sandbox, version: $version)
 }
     `;
 export type PublishApiMutationFn = Apollo.MutationFunction<PublishApiMutation, PublishApiMutationVariables>;
@@ -3551,6 +3606,7 @@ export type PublishApiMutationFn = Apollo.MutationFunction<PublishApiMutation, P
  *   variables: {
  *      projectId: // value for 'projectId'
  *      sandbox: // value for 'sandbox'
+ *      version: // value for 'version'
  *   },
  * });
  */
@@ -3627,6 +3683,109 @@ export function useUpdateAuthMutation(baseOptions?: Apollo.MutationHookOptions<U
 export type UpdateAuthMutationHookResult = ReturnType<typeof useUpdateAuthMutation>;
 export type UpdateAuthMutationResult = Apollo.MutationResult<UpdateAuthMutation>;
 export type UpdateAuthMutationOptions = Apollo.BaseMutationOptions<UpdateAuthMutation, UpdateAuthMutationVariables>;
+export const GetDockerhubVersionsDocument = gql`
+    query GetDockerhubVersions($projectId: ObjectId!) {
+  getDockerhubVersions(projectId: $projectId)
+}
+    `;
+
+/**
+ * __useGetDockerhubVersionsQuery__
+ *
+ * To run a query within a React component, call `useGetDockerhubVersionsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetDockerhubVersionsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetDockerhubVersionsQuery({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *   },
+ * });
+ */
+export function useGetDockerhubVersionsQuery(baseOptions: Apollo.QueryHookOptions<GetDockerhubVersionsQuery, GetDockerhubVersionsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetDockerhubVersionsQuery, GetDockerhubVersionsQueryVariables>(GetDockerhubVersionsDocument, options);
+      }
+export function useGetDockerhubVersionsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetDockerhubVersionsQuery, GetDockerhubVersionsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetDockerhubVersionsQuery, GetDockerhubVersionsQueryVariables>(GetDockerhubVersionsDocument, options);
+        }
+export type GetDockerhubVersionsQueryHookResult = ReturnType<typeof useGetDockerhubVersionsQuery>;
+export type GetDockerhubVersionsLazyQueryHookResult = ReturnType<typeof useGetDockerhubVersionsLazyQuery>;
+export type GetDockerhubVersionsQueryResult = Apollo.QueryResult<GetDockerhubVersionsQuery, GetDockerhubVersionsQueryVariables>;
+export const LaunchInstanceDocument = gql`
+    mutation LaunchInstance($projectId: ObjectId!, $instanceType: String!, $availabilityZone: String!) {
+  launchInstance(
+    projectId: $projectId
+    instanceType: $instanceType
+    availabilityZone: $availabilityZone
+  )
+}
+    `;
+export type LaunchInstanceMutationFn = Apollo.MutationFunction<LaunchInstanceMutation, LaunchInstanceMutationVariables>;
+
+/**
+ * __useLaunchInstanceMutation__
+ *
+ * To run a mutation, you first call `useLaunchInstanceMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLaunchInstanceMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [launchInstanceMutation, { data, loading, error }] = useLaunchInstanceMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      instanceType: // value for 'instanceType'
+ *      availabilityZone: // value for 'availabilityZone'
+ *   },
+ * });
+ */
+export function useLaunchInstanceMutation(baseOptions?: Apollo.MutationHookOptions<LaunchInstanceMutation, LaunchInstanceMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LaunchInstanceMutation, LaunchInstanceMutationVariables>(LaunchInstanceDocument, options);
+      }
+export type LaunchInstanceMutationHookResult = ReturnType<typeof useLaunchInstanceMutation>;
+export type LaunchInstanceMutationResult = Apollo.MutationResult<LaunchInstanceMutation>;
+export type LaunchInstanceMutationOptions = Apollo.BaseMutationOptions<LaunchInstanceMutation, LaunchInstanceMutationVariables>;
+export const UpdateServerVersionDocument = gql`
+    mutation UpdateServerVersion($projectId: ObjectId!, $sandbox: Boolean!, $version: String!) {
+  updateServerVersion(projectId: $projectId, sandbox: $sandbox, version: $version)
+}
+    `;
+export type UpdateServerVersionMutationFn = Apollo.MutationFunction<UpdateServerVersionMutation, UpdateServerVersionMutationVariables>;
+
+/**
+ * __useUpdateServerVersionMutation__
+ *
+ * To run a mutation, you first call `useUpdateServerVersionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateServerVersionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateServerVersionMutation, { data, loading, error }] = useUpdateServerVersionMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      sandbox: // value for 'sandbox'
+ *      version: // value for 'version'
+ *   },
+ * });
+ */
+export function useUpdateServerVersionMutation(baseOptions?: Apollo.MutationHookOptions<UpdateServerVersionMutation, UpdateServerVersionMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateServerVersionMutation, UpdateServerVersionMutationVariables>(UpdateServerVersionDocument, options);
+      }
+export type UpdateServerVersionMutationHookResult = ReturnType<typeof useUpdateServerVersionMutation>;
+export type UpdateServerVersionMutationResult = Apollo.MutationResult<UpdateServerVersionMutation>;
+export type UpdateServerVersionMutationOptions = Apollo.BaseMutationOptions<UpdateServerVersionMutation, UpdateServerVersionMutationVariables>;
 export const ChangePasswordDocument = gql`
     mutation ChangePassword($oldPassword: String!, $newPassword: String!) {
   changePassword(oldPassword: $oldPassword, newPassword: $newPassword)

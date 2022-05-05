@@ -8,7 +8,7 @@ import {
   useGetProjectQuery,
 } from '../../../../generated/graphql'
 import DataBinder, { DataStructure, MenuStructure } from './DataBinder'
-import TextInputBinding from '../../../Shared/TextInputBinding'
+import TextInputBinding, { Component } from '../../../Shared/TextInputBinding'
 import { OutlinedButton } from '../../../Shared/primitives/Button'
 import styled from '@emotion/styled'
 import { LabeledSelect } from '../../../Shared/primitives/LabeledSelect'
@@ -33,6 +33,7 @@ import {
   DropResult,
 } from 'react-beautiful-dnd'
 import { DragIndicator } from '@mui/icons-material'
+import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
 
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
@@ -95,6 +96,8 @@ interface RegistrationProps {
 }
 interface ChangeInputProps {
   type: 'CHANGE_INPUT'
+  input: string
+  props: { [key: string]: any }
   onSucess?: ActionProps[]
   onFail?: ActionProps[]
 }
@@ -620,10 +623,10 @@ const CreateEditor = (props: {
   const { data } = useGetProjectQuery({
     variables: { projectId },
   })
-  if (!data || !data.getProject.appConfig) {
+  if (!data || !data.getProject.serverConfig) {
     return <div>loading...</div>
   }
-  const models = data.getProject.appConfig.apiConfig.models
+  const models = data.getProject.serverConfig.apiConfig.models
   return (
     <div>
       <LabeledSelect
@@ -723,13 +726,14 @@ const UpdateEditor = (props: {
   if (!data || !data.getProject.appConfig) {
     return <div>loading...</div>
   }
-  const models = data.getProject.appConfig.apiConfig.models
+  const models = data.getProject.serverConfig.apiConfig.models
   return (
     <div>
       <EntitySelector
+        entities={[]}
         componentId={props.componentId}
         selectedLabel={props.params.updateElement?.label}
-        onSelect={(entity, value) => {
+        onChange={() => {
           throw new Error('THIS NEEDS FIXING')
           // const newParams = { ...props.params }
           // newParams.updateElement = {
@@ -807,14 +811,78 @@ const ForgotPasswordEditor = (props: {
     </div>
   )
 }
-const ChangeInputEditor = (props: {
+const ChangeInputEditor = ({
+  componentId,
+  params,
+  onUpdate,
+}: {
   componentId: string
   params: ChangeInputProps
   onUpdate: (newValue: ChangeInputProps) => void
 }) => {
+  const [modelStructures, setModelStructures] = useState<{
+    [key: string]: DataStructure
+  }>({})
+  const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
+  const { structuredComponents: components } = useProjectComponents()
+  useEffect(() => {
+    if (components) {
+      const structure = [] as MenuStructure[]
+
+      structure.push({
+        type: 'INPUT',
+        label: 'Inputs',
+        hasSubMenu: true,
+        entity: 'InputObject',
+        source: 'InputObject',
+      })
+      const modelStructure = {} as { [key: string]: DataStructure }
+      modelStructure.InputObject = {
+        _id: 'InputObject',
+        name: 'Inputs',
+        fields: components.map(c => ({
+          type: 'INPUT',
+          entity: c._id,
+          hasSubMenu: !!(c.children && c.children.length > 0),
+          source: c._id,
+          label: c.name,
+        })),
+      }
+
+      const search = (c: Component) => {
+        modelStructure[c._id] = {
+          _id: c._id,
+          name: c.name,
+          fields: [],
+        }
+        c.children?.forEach(ch => {
+          modelStructure[c._id].fields.push({
+            type: 'INPUT',
+            source: ch._id,
+            entity: ch._id,
+            label: ch.name,
+            hasSubMenu: !!(ch.children && ch.children.length > 0),
+          })
+        })
+        if (c.children) {
+          c.children.forEach(ch => search(ch))
+        }
+      }
+      components.forEach(c => search(c))
+      setDataStructure(structure)
+      setModelStructures(modelStructure || {})
+    }
+  }, [components])
+
   return (
     <div>
-      <div>Chane Input</div>
+      <EntitySelector
+        componentId={componentId}
+        entities={dataStructure}
+        dataStructure={modelStructures}
+        onChange={e => {}}
+        selectedLabel={params.input}
+      />
     </div>
   )
 }
@@ -831,11 +899,11 @@ const RegisterEditor = (props: {
     return null
   }
 
-  const { appConfig } = data.getProject
+  const { serverConfig } = data.getProject
   return (
     <div>
-      {appConfig.apiConfig.models
-        .find(m => m._id === appConfig.authConfig.tableId)
+      {serverConfig.apiConfig.models
+        .find(m => m._id === serverConfig.authConfig.tableId)
         ?.fields.map(field => (
           <React.Fragment key={field._id}>
             <div>
@@ -918,9 +986,10 @@ const DeleteEditor = (props: {
   return (
     <div>
       <EntitySelector
+        entities={[]}
         componentId={props.componentId}
         selectedLabel={props.params.deleteElement?.label}
-        onSelect={(path, label) => {
+        onChange={() => {
           throw new Error('THIS NEEDS FIXING')
           // props.onUpdate({
           //   ...props.params,
@@ -968,10 +1037,11 @@ const NavigateEditor = ({
       if (target.parameters && target.parameters.length > 0) {
         return target.parameters.map(p => (
           <EntitySelector
+            entities={[]}
             entityId={p.entityType}
             componentId={componentId}
             selectedLabel={params.parameters && params.parameters[p._id]?.label}
-            onSelect={(entityId, value) => {
+            onChange={() => {
               throw new Error('THIS NEEDS FIXING')
               // onUpdate({
               //   ...params,

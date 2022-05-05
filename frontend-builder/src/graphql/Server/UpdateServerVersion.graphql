@@ -1,0 +1,11 @@
+mutation UpdateServerVersion(
+  $projectId: ObjectId!
+  $sandbox: Boolean!
+  $version: String!
+) {
+  updateServerVersion(
+    projectId: $projectId
+    sandbox: $sandbox
+    version: $version
+  )
+}

@@ -5,6 +5,8 @@ import {
   MONGO_DB_URL,
   SESSION_SECRET,
   REDIS_PORT,
+  S3_ACCESS_KEY,
+  S3_SECRET,
 } from "./utils/config";
 import Redis from "ioredis";
 import { connect } from "mongoose";
@@ -26,14 +28,14 @@ import cookies from "cookie-parser";
 import { COOKIE_NAME } from "./consts";
 import https from "https";
 import { Container } from "typedi";
-import { EntityModelResolver } from "./Projects/AppConfig/Api/Models/EntityModel.resolver";
-import { DataFieldResolver } from "./Projects/AppConfig/Api/Fields/DataField.resolver";
-import { ApiResolver } from "./Projects/AppConfig/Api/Api.resolver";
+import { EntityModelResolver } from "./Projects/ServerConfig/Api/Models/EntityModel.resolver";
+import { DataFieldResolver } from "./Projects/ServerConfig/Api/Fields/DataField.resolver";
+import { ApiResolver } from "./Projects/ServerConfig/Api/Api.resolver";
 import fs from "fs";
 import { RedisPubSub } from "graphql-redis-subscriptions";
 import { execute, subscribe } from "graphql";
 import { SubscriptionServer } from "subscriptions-transport-ws";
-import { AuthResolver } from "./Projects/AppConfig/Auth/Auth.resolver";
+import { AuthResolver } from "./Projects/ServerConfig/Auth/Auth.resolver";
 import { ComponentResolver } from "./Projects/AppConfig/Components/Component.resolver";
 import { LabelLibraryResolver } from "./Projects/AppConfig/Libraries/LabelLibrary/LabelLibrary.resolver";
 import { GraphQLJSONObject } from "graphql-type-json";
@@ -46,11 +48,18 @@ import { graphqlUploadExpress } from "graphql-upload";
 import { S3Uploader } from "./utils/s3-uploader";
 import { AssetResolver } from "./Projects/AppConfig/Libraries/ImageLibrary/ImageFile/Asset.resolver";
 import { InvitationResolver } from "./Invitations/Invitation.resolver";
+import AWS from "aws-sdk";
+import { ServerResolver } from "./Projects/ServerConfig/Server.resolver";
 
 const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
 
 (async () => {
+  
+  const credentials = new AWS.Credentials(S3_ACCESS_KEY, S3_SECRET);
+  AWS.config.credentials = credentials;
+  AWS.config.region = "ca-central-1";
+  
   const redisStore = connectRedis(session);
   const redis = new Redis(`${REDIS_URL}:${REDIS_PORT}`);
 
@@ -84,6 +93,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       AssetLibraryResolver,
       AssetResolver,
       InvitationResolver,
+      ServerResolver
     ],
     emitSchemaFile: path.resolve(__dirname, "schema.graphql"),
     globalMiddlewares: [TypegooseMiddleware],

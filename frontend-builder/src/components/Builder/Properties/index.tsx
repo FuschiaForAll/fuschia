@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Paper from '@mui/material/Paper'
 import Editor from './Editors/Editor'
 import {
@@ -29,7 +29,11 @@ import {
   useProjectComponents,
   StructuredComponent,
 } from '../../../utils/hooks/useProjectComponents'
-import { NavMenu } from '../../Shared/CascadingMenu'
+import {
+  DataStructure,
+  MenuStructure,
+  NavMenu,
+} from '../../Shared/CascadingMenu'
 import { FunctionWrapper, ActionWrapper } from './Editors/FunctionEditor'
 import { OutlinedButton } from '../../Shared/primitives/Button'
 import {
@@ -41,6 +45,8 @@ import {
 } from 'react-beautiful-dnd'
 import { DragIndicator } from '@mui/icons-material'
 import { LexoRankHelper } from '../../../utils/lexoRankHelper'
+import { EntitySelector } from '../../Shared/EntitySelector'
+import { SourceType } from '../../../utils/draftJsConverters'
 
 const TabHeader = styled.span`
   font-weight: 600;
@@ -274,6 +280,12 @@ function Properties({
 }) {
   let { projectId } = useParams<{ projectId: string }>()
   const [value, setValue] = useState(0)
+  const [dataSourceModelStructure, setDataSourceModelStructure] = useState<
+    MenuStructure[]
+  >([])
+  const [dataSourceDataStructure, setDataSourceDataStructure] = useState<{
+    [key: string]: DataStructure
+  }>({})
   const [name, setName] = useState(component.name)
   const { updateComponent, updateComponentProps } = useUpdateComponent()
   const { data: projectData } = useGetProjectQuery({
@@ -298,6 +310,93 @@ function Properties({
       },
     ],
   })
+
+  useEffect(() => {
+    if (componentData) {
+      const modelStructure = {} as { [key: string]: DataStructure }
+      const structure = [] as MenuStructure[]
+
+      const dataContextBuilder = [] as Array<{
+        type: SourceType
+        entity: string
+        label: string
+        source: string
+      }>
+      const buildRecusiveParentData = (c: any) => {
+        const parent = componentData.getComponents.find(p => p._id === c.parent)
+        if (parent) {
+          if (parent.fetched) {
+            dataContextBuilder.push({
+              entity: `DC+${parent._id}`,
+              label: parent.name,
+              source: parent._id,
+              type: 'DATA_CONTEXT',
+            })
+            modelStructure[`DC+${parent._id}`] = {
+              _id: parent._id,
+              name: parent.name,
+              fields: parent.fetched
+                .filter(fd => !!fd.entityType.entityMap)
+                .map(fetchedData => ({
+                  type: fetchedData.entityType.entityMap[0].data[0].type,
+                  source: fetchedData.entityType.entityMap[0].data[0].value,
+                  entity: fetchedData.entityType.entityMap[0].data[0].value,
+                  label: `${parent.name}'s ${fetchedData.entityType.entityMap[0].data[0].label}`,
+                  hasSubMenu: true,
+                })),
+            }
+          }
+          buildRecusiveParentData(parent)
+        }
+      }
+
+      structure.push({
+        type: 'DATA_CONTEXT',
+        label: 'Data Context',
+        hasSubMenu: true,
+        entity: 'DataContext',
+        source: 'DataContext',
+      })
+      if (component) {
+        if (component.fetched) {
+          dataContextBuilder.push({
+            entity: `DC+${component._id}`,
+            label: `My ${component.name}`,
+            source: component._id,
+            type: 'DATA_CONTEXT',
+          })
+          modelStructure[`DC+${component._id}`] = {
+            _id: component._id,
+            name: component.name,
+            fields: component.fetched
+              .filter((fd: any) => !!fd.entityType.entityMap)
+              .map((fetchedData: any) => ({
+                type: fetchedData.entityType.entityMap[0].data[0].type,
+                source: fetchedData.entityType.entityMap[0].data[0].value,
+                entity: fetchedData.entityType.entityMap[0].data[0].value,
+                label: `${component.name}'s ${fetchedData.entityType.entityMap[0].data[0].label}`,
+                hasSubMenu: true,
+              })),
+          }
+        }
+        buildRecusiveParentData(component)
+        modelStructure.DataContext = {
+          _id: 'DataContext',
+          name: 'Data Context',
+          fields: dataContextBuilder.map(subKey => ({
+            type: subKey.type,
+            entity: subKey.entity,
+            hasSubMenu: true,
+            source: subKey.source,
+            label: subKey.label,
+          })),
+        }
+      }
+      setDataSourceModelStructure(structure)
+      setDataSourceDataStructure(modelStructure || {})
+    }
+  }, [component, componentData])
+
   function getReference(name: string) {
     if (schema.definitions) {
       return schema.definitions[name.substring('#/definitions/'.length)]
@@ -426,6 +525,28 @@ function Properties({
           }}
         />
       )}
+      {schema.type === 'array' && (
+        <div>
+          <div>What is the source of the data?</div>
+          <EntitySelector
+            componentId={component._id}
+            isList={false}
+            onChange={e => {
+              updateComponentProps(
+                elementId,
+                {
+                  ...component.props,
+                  dataSource: e,
+                },
+                component.props
+              )
+            }}
+            entities={dataSourceModelStructure}
+            dataStructure={dataSourceDataStructure}
+            selectedLabel={component.props.dataSource}
+          />
+        </div>
+      )}
       <div
         style={{
           marginTop: '10px',
@@ -464,19 +585,15 @@ function Properties({
             Layers
           </TabHeader>
         )}
-        {component.componentType === 'Screen' && (
-          <>
-            <TabHeader
-              onClick={() => setValue(5)}
-              style={{
-                color: value === 5 ? 'var(--accent)' : '#808080',
-                borderColor: value === 5 ? 'var(--accent)' : 'transparent',
-              }}
-            >
-              Data
-            </TabHeader>
-          </>
-        )}
+        <TabHeader
+          onClick={() => setValue(5)}
+          style={{
+            color: value === 5 ? 'var(--accent)' : '#808080',
+            borderColor: value === 5 ? 'var(--accent)' : 'transparent',
+          }}
+        >
+          Data
+        </TabHeader>
       </div>
       {HeaderTypes.map((header, index) => {
         if ((schema as ObjectSchema).properties[header.value]) {
@@ -511,7 +628,7 @@ function Properties({
       })}
       <TabPanel value={value} index={5}>
         <DataSources
-          models={projectData?.getProject.appConfig.apiConfig.models || []}
+          models={projectData?.getProject.serverConfig.apiConfig.models || []}
           componentId={elementId}
           component={component}
         />

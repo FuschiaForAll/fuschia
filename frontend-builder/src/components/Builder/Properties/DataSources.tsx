@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import {
   GetComponentDocument,
+  PackageComponentType,
   useAddParameterMutation,
   useGetEntityModelQuery,
   useRemoveParameterMutation,
@@ -19,6 +20,7 @@ import { gql } from '@apollo/client'
 import { EntitySelector } from '../../Shared/EntitySelector'
 import { Filter, AndFilter, OrFilter, NotFilter } from '@fuchsia/types'
 import { useUpdateComponent } from '../../../utils/hooks'
+import { convertToRaw, EditorState } from 'draft-js'
 
 interface Fields {
   _id: any
@@ -235,19 +237,17 @@ export function ModelInputFilter({
 
 export function FilterBuilder({
   componentId,
-  entityModelId,
+  entityModel,
   models,
   filter,
   onDelete,
   onFilterUpdate,
 }: {
   componentId: string
-  entityModelId: string
+  entityModel: { value: string; label: string; type: string }
   models: Array<{ _id: string; name: string }>
   filter: {
-    entityType: string
-    label: string
-    path: string
+    entityPath: any
     variables: Filter[]
   }
   onDelete: () => {}
@@ -257,7 +257,7 @@ export function FilterBuilder({
   const { data: entityModelData } = useGetEntityModelQuery({
     variables: {
       projectId,
-      entityModelId,
+      entityModelId: entityModel.value,
     },
   })
   if (!entityModelData || !entityModelData.getEntityModel) {
@@ -265,12 +265,22 @@ export function FilterBuilder({
   }
   return (
     <div>
-      <span title={filter.label.split('.').join(' > ')}>
-        {filter.label.split('.').pop()}
-      </span>
-      <IconButton onClick={onDelete}>
-        <DeleteIcon />
-      </IconButton>
+      <EntitySelector
+        onDelete={onDelete}
+        componentId={componentId}
+        isList={true}
+        onChange={e => {
+          // todo
+        }}
+        entities={models.map(modelType => ({
+          entity: modelType._id,
+          hasSubMenu: false,
+          label: modelType.name,
+          source: modelType._id,
+          type: 'SERVER_DATA',
+        }))}
+        selectedLabel={entityModel.label}
+      />
       {filter.variables.map((variable, index) => (
         <ModelInputFilter
           componentId={componentId}
@@ -306,6 +316,25 @@ export function FilterBuilder({
   )
 }
 
+function extractEntity(entity: any) {
+  console.log(entity)
+  if (entity.entityMap) {
+    const dataArray = entity.entityMap[0].data as Array<{
+      value: string
+      label: string
+      type: string
+    }>
+    if (dataArray) {
+      return dataArray[0]
+    }
+  }
+  return {
+    value: 'not here',
+    label: 'not here',
+    type: 'not here',
+  }
+}
+
 function ContainerParameterEditor({
   componentId,
   parameters,
@@ -315,15 +344,12 @@ function ContainerParameterEditor({
   componentId: string
   parameters: Array<{ _id: string; entityId: string; name: string }>
   fetched: Array<{
-    entityType: string
-    label: string
-    path: string
+    entityType: any
     variables: Filter[]
   }>
   models: Array<{ _id: string; name: string }>
 }) {
-  const [newDataSource, setNewDataSource] =
-    useState<{ label: string; path: string; entity: string }>()
+  const [newDataSource, setNewDataSource] = useState<any>()
   const [updateComponent] = useUpdateComponentMutation()
   return (
     <div>
@@ -334,7 +360,8 @@ function ContainerParameterEditor({
       {fetched.map((f, index) => (
         <FilterBuilder
           componentId={componentId}
-          entityModelId={f.entityType}
+          entityModel={extractEntity(f.entityType)}
+          // @ts-ignore
           filter={{ ...f }}
           models={models}
           key={index}
@@ -348,8 +375,6 @@ function ContainerParameterEditor({
                 componentInput: {
                   fetched: newFetched.map(f => ({
                     entityType: f.entityType,
-                    path: f.path,
-                    label: f.label,
                     variables: f.variables,
                   })),
                 },
@@ -366,8 +391,6 @@ function ContainerParameterEditor({
                 componentInput: {
                   fetched: newFetched.map(f => ({
                     entityType: f.entityType,
-                    path: f.path,
-                    label: f.label,
                     variables: f.variables,
                   })),
                 },
@@ -376,27 +399,6 @@ function ContainerParameterEditor({
           }}
         />
       ))}
-      <EntitySelector
-        componentId={componentId}
-        isList={true}
-        onSelect={(entity, value) => {
-          throw new Error('THIS IS BROKEN')
-          // const source = {
-          //   label,
-          //   entity,
-          //   path,
-          // }
-          // setNewDataSource(source)
-        }}
-        additionalEntities={models.map(modelType => ({
-          entity: modelType._id,
-          hasSubMenu: true,
-          label: modelType.name,
-          source: modelType._id,
-          type: 'SERVER_DATA',
-        }))}
-        selectedLabel={newDataSource?.label}
-      />
 
       <OutlinedButton
         onClick={async () => {
@@ -408,14 +410,12 @@ function ContainerParameterEditor({
                   fetched: [
                     ...fetched.map(f => ({
                       entityType: f.entityType,
-                      path: f.path,
-                      label: f.label,
                       variables: f.variables,
                     })),
                     {
-                      entityType: newDataSource.entity,
-                      path: newDataSource.path,
-                      label: newDataSource.label,
+                      entityType: convertToRaw(
+                        EditorState.createEmpty().getCurrentContent()
+                      ),
                       variables: [],
                     },
                   ],
@@ -522,7 +522,7 @@ function RootParameterEditor({
       <EntitySelector
         componentId={componentId}
         isList={false}
-        onSelect={(entity, value) => {
+        onChange={() => {
           throw new Error('THIS IS BROKEN')
           // const source = {
           //   label,
@@ -531,7 +531,7 @@ function RootParameterEditor({
           // }
           // setNewDataSource(source)
         }}
-        additionalEntities={models.map(modelType => ({
+        entities={models.map(modelType => ({
           entity: modelType._id,
           hasSubMenu: true,
           label: modelType.name,
@@ -577,7 +577,8 @@ const DataSources = function DataSources({
   }
   return (
     <div>
-      {component.isRootElement && (
+      {(component.componentType === PackageComponentType.Screen ||
+        component.componentType === PackageComponentType.Stack) && (
         <RootParameterEditor
           models={models}
           componentId={componentId}
@@ -586,14 +587,12 @@ const DataSources = function DataSources({
           requiresAuth={component.requiresAuth}
         />
       )}
-      {!component.isRootElement && component.isContainer && (
-        <ContainerParameterEditor
-          models={models}
-          componentId={componentId}
-          parameters={component.parameters || []}
-          fetched={JSON.parse(JSON.stringify(component.fetched || []))}
-        />
-      )}
+      <ContainerParameterEditor
+        models={models}
+        componentId={componentId}
+        parameters={component.parameters || []}
+        fetched={JSON.parse(JSON.stringify(component.fetched || []))}
+      />
     </div>
   )
 }

@@ -9,6 +9,7 @@ import { v4 as uuid } from "uuid";
 import { Component } from "./AppConfig/Components/Component.entity";
 import { LabelLibrary } from "./AppConfig/Libraries/LabelLibrary/LabelLibrary.entity";
 import { AssetLibrary } from "./AppConfig/Libraries/ImageLibrary/AssetLibrary.entity";
+import { ServerConfig } from "./ServerConfig/ServerConfig.entity";
 
 @ObjectType()
 export class Project {
@@ -30,6 +31,10 @@ export class Project {
   @Field((type) => AppConfig)
   @Property({ type: () => AppConfig, required: true })
   appConfig!: AppConfig;
+
+  @Field((type) => ServerConfig)
+  @Property({ type: () => ServerConfig, required: true })
+  serverConfig!: ServerConfig;
 
   @Field((type) => LabelLibrary)
   @Property({ type: () => LabelLibrary })

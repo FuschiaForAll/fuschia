@@ -10,23 +10,21 @@ type Api {
   queries: [String!]!
   sandboxEndpoint: String
   subscriptions: [String!]!
-  variables: [ApiVariable!]!
-}
-
-type ApiVariable {
-  _id: ObjectId!
-  name: String!
-  type: String!
 }
 
 type AppConfig {
-  apiConfig: Api!
   appEntryComponentId: ObjectId
-  authConfig: Auth!
+  variables: [AppVariable!]!
 }
 
 input AppConfigInput {
   appEntryComponentId: ObjectId
+}
+
+type AppVariable {
+  _id: ObjectId!
+  name: String!
+  type: String!
 }
 
 type Asset {
@@ -179,16 +177,12 @@ input DataFieldInput {
 }
 
 type DataSource {
-  entityType: String!
-  label: String!
-  path: String!
+  entityType: JSONObject!
   variables: [JSONObject!]!
 }
 
 input DataSourceInput {
-  entityType: String!
-  label: String!
-  path: String!
+  entityType: JSONObject!
   variables: [JSONObject!]!
 }
 
@@ -269,7 +263,7 @@ type Mutation {
   acceptInvitaion(invitationId: ObjectId!): Boolean!
   addParameter(componentId: ObjectId!, parameterInput: RequiredParameterInput!): Boolean!
   changePassword(newPassword: String!, oldPassword: String!): Boolean!
-  createApiVariable(name: String!, projectId: ObjectId!, type: String!): ApiVariable!
+  createAppVariable(name: String!, projectId: ObjectId!, type: String!): AppVariable!
   createAssetFolder(folderName: String!, projectId: ObjectId!): Boolean!
   createComponent(componentInput: ComponentInput!, projectId: ObjectId!): Component!
   createDataField(dataField: DataFieldInput!, entityModelId: ObjectId!, projectId: ObjectId!): DataField
@@ -285,7 +279,7 @@ type Mutation {
   createSubscription: Boolean
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
-  deleteApiVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
+  deleteAppVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
   deleteAsset(imageId: ObjectId!, projectId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
@@ -300,9 +294,10 @@ type Mutation {
   duplicateComponent(componentId: ObjectId!, projectId: ObjectId!): Boolean!
   forgotPassword(email: String!): Boolean!
   inviteMember(email: String!, organizationId: ObjectId!, sendInvite: Boolean): Invitation!
+  launchInstance(availabilityZone: String!, instanceType: String!, projectId: ObjectId!): Boolean!
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
-  publishApi(projectId: ObjectId!, sandbox: Boolean!): Boolean!
+  publishApi(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
   publishPackageComponents(componentInput: [PackageComponentInput!]!): [PackageComponent!]!
   register(email: String!, password: String!): UserResponse!
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!
@@ -322,6 +317,7 @@ type Mutation {
   updateProject(project: UpdateProjectInput!, projectId: ObjectId!): Project!
   updateQuery: Boolean
   updateRelationship: Boolean
+  updateServerVersion(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
   updateSubscription: Boolean
   updateTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   uploadAsset(file: Upload!, folder: String!, projectId: ObjectId!): Boolean!
@@ -415,6 +411,7 @@ type Project {
   labelLibrary: LabelLibrary!
   organization: Organization!
   projectName: String!
+  serverConfig: ServerConfig!
 }
 
 input ProjectInput {
@@ -428,6 +425,7 @@ type Query {
   getComponent(componentId: ObjectId!): Component
   getComponents(projectId: ObjectId!): [Component!]!
   getDataContext(componentId: ObjectId!): [DataContext!]!
+  getDockerhubVersions(projectId: ObjectId!): [String!]!
   getEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): EntityModel
   getLabelLibrary(projectId: ObjectId!): LabelLibrary
   getPackageComponent(packageComponentId: ObjectId!): PackageComponent
@@ -463,6 +461,14 @@ input RequiredParameterInput {
   entityType: ObjectId!
   label: String!
   path: String!
+}
+
+type ServerConfig {
+  apiConfig: Api!
+  authConfig: Auth!
+  ec2InstanceId: String
+  ec2PublicDns: String
+  version: String!
 }
 
 type Subscription {
