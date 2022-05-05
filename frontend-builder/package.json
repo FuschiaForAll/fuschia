@@ -42,8 +42,9 @@
     "web-vitals": "^2.1.0"
   },
   "scripts": {
-    "start": "REACT_APP_GQL_ENDPOINT=https://localhost:4003 react-app-rewired start",
-    "build": "REACT_APP_GQL_ENDPOINT=https://fuchsia.pragmaflowservers.com react-app-rewired build",
+    "start": "yarn check-env && REACT_APP_GQL_ENDPOINT=$(grep REACT_APP_GQL_ENDPOINT .env | cut -d '=' -f2) react-app-rewired start",
+    "build": "yarn check-env && REACT_APP_GQL_ENDPOINT=$(grep REACT_APP_GQL_ENDPOINT .env | cut -d '=' -f2) react-app-rewired build",
+    "check-env": "./setup-env.sh",
     "test": "react-app-rewired test --passWithNoTests",
     "lint": "eslint src --max-warnings=0 --ext .ts --ext .tsx",
     "prettier": "prettier --write src/*.ts src/*.tsx \"src/**/*.ts\" \"src/**/*.tsx\"",

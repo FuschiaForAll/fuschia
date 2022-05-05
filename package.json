@@ -8,7 +8,7 @@
     "frontend-builder",
     "backend-runner",
     "types",
-    "package-manager",
-    "frontend-deployment"
+    "frontend-deployment",
+    "component-primitives"
   ]
 }
