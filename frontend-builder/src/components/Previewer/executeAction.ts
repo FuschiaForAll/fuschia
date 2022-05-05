@@ -10,7 +10,8 @@ export function executeAction(
     entityState: any,
     localState: any,
     dataContext: any,
-    projectId: any
+    projectId: any,
+    authTableId: any
   ) => string,
   inputState: any,
   entityState: any,
@@ -42,7 +43,8 @@ export function executeAction(
             entityState,
             localState,
             dataContext,
-            project._id
+            project._id,
+            project.appConfig.authConfig.tableId
           )
           payload[key] = normalizedText
         })
@@ -69,7 +71,8 @@ export function executeAction(
             entityState,
             localState,
             dataContext,
-            project._id
+            project._id,
+            project.appConfig.authConfig.tableId
           ),
           password: convertDraftJSBindings(
             action.password,
@@ -77,10 +80,10 @@ export function executeAction(
             entityState,
             localState,
             dataContext,
-            project._id
+            project._id,
+            project.appConfig.authConfig.tableId
           ),
         }
-        debugger
         if (entityState[project.appConfig.authConfig.tableId]) {
           const user = entityState[project.appConfig.authConfig.tableId].find(
             (e: any) => {
@@ -159,7 +162,8 @@ export function executeAction(
           entityState,
           localState,
           dataContext,
-          project._id
+          project._id,
+          project.appConfig.authConfig.tableId
         )
       )
       break
@@ -174,7 +178,8 @@ export function executeAction(
               entityState,
               localState,
               dataContext,
-              project._id
+              project._id,
+              project.appConfig.authConfig.tableId
             )
             payload[key] = normalizedText
           }
@@ -216,7 +221,8 @@ export function executeAction(
                   entityState,
                   localState,
                   dataContext,
-                  project._id
+                  project._id,
+                  project.appConfig.authConfig.tableId
                 )
               }
             })

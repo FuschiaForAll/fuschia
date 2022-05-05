@@ -16,14 +16,16 @@ export function Text(props) {
         textAlign: style?.font?.textAlign,
         textTransform: style?.font?.textTransform,
       }}
-      onPress={(e) => {
-        if (editor?.inEditMode) {
-          e.stopPropagation();
-          editor?.onSelect(editor?.id);
-        } else {
-          actions?.onPress();
-        }
-      }}
+      onPress={
+        editor?.inEditMode
+          ? (e) => {
+              if (editor?.inEditMode) {
+                e.stopPropagation();
+                editor?.onSelect(editor?.id);
+              }
+            }
+          : undefined
+      }
       ref={editor?.ref}
     >
       {properties?.text}

@@ -88,44 +88,44 @@ class BindingContext {
   menu!: MenuStructure[];
 }
 
-async function getParentRecursive(
-  componentId: string,
-  acc: DataContext[]
-): Promise<DataContext[]> {
-  const component = await ComponentModel.findById(componentId);
-  let ret = [...acc];
-  if (!component) {
-    throw new Error(`Component with id ${componentId} does not exist`);
-  }
-  if (component.parent) {
-    ret = [
-      ...ret,
-      ...(await getParentRecursive(component.parent.toString(), [...acc])),
-    ];
-  }
-  if (component.componentType === PackageComponentType.Screen) {
-    return [
-      ...ret,
-      {
-        componentId: component._id.toString(),
-        name: component.name,
-        dataSources:
-          component.parameters?.map((p) => p.entityType.toString()) || [],
-      },
-    ];
-  }
-  if (component.componentType === PackageComponentType.Container) {
-    return [
-      ...ret,
-      {
-        componentId: component._id.toString(),
-        name: component.name,
-        dataSources: component.fetched?.map((f) => f.entityType) || [],
-      },
-    ];
-  }
-  return ret;
-}
+// async function getParentRecursive(
+//   componentId: string,
+//   acc: DataContext[]
+// ): Promise<DataContext[]> {
+//   const component = await ComponentModel.findById(componentId);
+//   let ret = [...acc];
+//   if (!component) {
+//     throw new Error(`Component with id ${componentId} does not exist`);
+//   }
+//   if (component.parent) {
+//     ret = [
+//       ...ret,
+//       ...(await getParentRecursive(component.parent.toString(), [...acc])),
+//     ];
+//   }
+//   if (component.componentType === PackageComponentType.Screen) {
+//     return [
+//       ...ret,
+//       {
+//         componentId: component._id.toString(),
+//         name: component.name,
+//         dataSources:
+//           component.parameters?.map((p) => p.entityType.toString()) || [],
+//       },
+//     ];
+//   }
+//   if (component.componentType === PackageComponentType.Container) {
+//     return [
+//       ...ret,
+//       {
+//         componentId: component._id.toString(),
+//         name: component.name,
+//         dataSources: component.fetched?.map((f) => f.entityType) || [],
+//       },
+//     ];
+//   }
+//   return ret;
+// }
 
 @Service()
 @Resolver(Component)
@@ -169,7 +169,7 @@ export class ComponentResolver {
     console.error(
       `SECURITY WARNING: Validate that the user has access to get ComponentId`
     );
-    return getParentRecursive(componentId.toString(), []);
+    return [];
   }
 
   @Query((returns) => BindingContext)

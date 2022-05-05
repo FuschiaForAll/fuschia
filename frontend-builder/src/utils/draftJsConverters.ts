@@ -5,6 +5,7 @@ export type SourceType =
   | 'PRIMITIVE'
   | 'ASSET'
   | 'VARIABLE'
+  | 'DATA_CONTEXT'
 
 export interface EntityData {
   value: string
@@ -52,7 +53,8 @@ export function DraftJSPreviewerConverter(
   entityState: any,
   localState: any,
   dataContext: any,
-  projectId: any
+  projectId: any,
+  authTableId: any
 ) {
   if (!value) {
     return ``
@@ -76,11 +78,12 @@ export function DraftJSPreviewerConverter(
                   case 'ASSET':
                     const arr = [...entityData]
                     arr.shift()
-                    return `${
+                    replacementText = `${
                       process.env.REACT_APP_GQL_ENDPOINT
                     }/project-files/${projectId}/${arr
                       .map(a => a.value)
                       .join('/')}`
+                    break
                   case 'INPUT':
                     replacementText =
                       inputState[entityData[entityData.length - 1].value]
@@ -90,6 +93,33 @@ export function DraftJSPreviewerConverter(
                     // if (path) {
                     //   replacementText = localState[path]
                     // }
+                    const data = value.entityMap[range.key].data as Array<{
+                      label: string
+                      value: string
+                      type: SourceType
+                    }>
+                    const currentValue = data.reduce((acc, d) => {
+                      switch (d.type) {
+                        case 'LOCAL_DATA':
+                          if (d.value === 'CurrentUser') {
+                            return entityState[authTableId].find(
+                              (r: any) => r._id === localState.CurrentUser
+                            )
+                          }
+                          break
+                        case 'SERVER_DATA': {
+                          return acc[d.value]
+                        }
+                      }
+                      return 'unknown'
+                    }, {} as any)
+                    console.log(`currentValue`)
+                    console.log(currentValue)
+                    if (typeof currentValue === 'object') {
+                      replacementText = currentValue._id
+                    } else {
+                      replacementText = currentValue
+                    }
                     break
                   case 'SERVER_DATA':
                     // const path = entityData.entityPath?.split('.').pop()
@@ -98,6 +128,20 @@ export function DraftJSPreviewerConverter(
                     //     replacementText = dataContext[path]
                     //   }
                     // }
+                    replacementText = 'SERVER_DATA'
+                    break
+                  case 'DATA_CONTEXT':
+                    if (dataContext.mappedData) {
+                      replacementText =
+                        dataContext.mappedData[
+                          entityData[entityData.length - 1].value
+                        ]
+                    } else {
+                      replacementText = 'no data'
+                    }
+                    break
+                  default:
+                    replacementText = 'AHHHHH'
                     break
                 }
               }
@@ -120,7 +164,8 @@ export function DraftJSPreviewerConverter(
           entityState,
           localState,
           dataContext,
-          projectId
+          projectId,
+          authTableId
         )
         return acc
       }, {} as any)

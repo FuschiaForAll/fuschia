@@ -10,6 +10,8 @@ import { Project } from "./Project.entity";
 import { ProjectInput, UpdateProjectInput } from "./Project.input";
 import { ObjectId } from "mongoose";
 import { ProjectService } from "./Project.service";
+import { ServerConfig } from "./ServerConfig/ServerConfig.entity";
+import crypto from "crypto";
 
 @Service()
 @Resolver(Project)
@@ -59,11 +61,14 @@ export class ProjectResolver {
       project.organizationId,
       ctx.req.session.userId
     );
-
+    const serverConfig = new ServerConfig();
+    serverConfig.liveJwtSecret = crypto.randomBytes(20).toString("hex");
+    serverConfig.sandboxJwtSecret = crypto.randomBytes(20).toString("hex");
     const newProject = await new ProjectModel({
       projectName: project.projectName,
       organization,
       appConfig: new AppConfig(),
+      serverConfig,
     }).save();
 
     await OrganizationModel.findByIdAndUpdate(project.organizationId, {

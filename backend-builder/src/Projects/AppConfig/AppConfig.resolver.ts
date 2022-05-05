@@ -6,6 +6,7 @@ import { ProjectModel } from "../../Models";
 import { Context } from "../../types";
 import { ObjectIdScalar } from "../../utils/object-id.scalar";
 import { ProjectService } from "../Project.service";
+import { AppVariable } from "./AppConfig.entity";
 import { AppConfigInput } from "./AppConfig.input";
 
 @Service()
@@ -41,6 +42,64 @@ export class AppConfigResolver {
     );
     console.log(`after project`);
     console.log(project);
+    return true;
+  }
+
+  @Mutation(() => AppVariable)
+  async createAppVariable(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("name") name: string,
+    @Arg("type") type: string,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    const newProject = await ProjectModel.findByIdAndUpdate(
+      projectId,
+      {
+        $push: {
+          "serverConfig.apiConfig.variables": {
+            name,
+            type,
+          },
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
+    return newProject?.appConfig.variables[
+      newProject?.appConfig.variables.length - 1
+    ];
+  }
+
+  @Mutation(() => Boolean)
+  async deleteAppVariable(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("variableId", (type) => ObjectIdScalar) variableId: ObjectId,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+    const newProject = await ProjectModel.findByIdAndUpdate(
+      projectId,
+      {
+        $pull: {
+          "appConfig.variables": { _id: variableId },
+        },
+      },
+      {
+        returnDocument: "after",
+      }
+    );
     return true;
   }
 }

@@ -243,7 +243,7 @@ export function AuthConfig({ projectId }: { projectId: string }) {
                 selectedValue={authConfigData.getAuth.tableId}
                 options={[
                   { label: 'Undefined', value: '' },
-                  ...(data?.getProject.appConfig.apiConfig.models.map(
+                  ...(data?.getProject.serverConfig.apiConfig.models.map(
                     model => ({
                       label: model.name,
                       value: model._id,
@@ -275,10 +275,10 @@ export function AuthConfig({ projectId }: { projectId: string }) {
                 {!authConfigData.getAuth.usernameFieldId && (
                   <option value="">Undefined</option>
                 )}
-                {data?.getProject.appConfig.apiConfig.models.find(
+                {data?.getProject.serverConfig.apiConfig.models.find(
                   model => model._id === authConfigData.getAuth!.tableId
                 ) &&
-                  data?.getProject.appConfig.apiConfig.models
+                  data?.getProject.serverConfig.apiConfig.models
                     .find(
                       model => model._id === authConfigData.getAuth!.tableId
                     )!
@@ -302,10 +302,10 @@ export function AuthConfig({ projectId }: { projectId: string }) {
                 {!authConfigData.getAuth.passwordFieldId && (
                   <option value="">Undefined</option>
                 )}
-                {data?.getProject.appConfig.apiConfig.models.find(
+                {data?.getProject.serverConfig.apiConfig.models.find(
                   model => model._id === authConfigData.getAuth!.tableId
                 ) &&
-                  data?.getProject.appConfig.apiConfig.models
+                  data?.getProject.serverConfig.apiConfig.models
                     .find(
                       model => model._id === authConfigData.getAuth!.tableId
                     )!

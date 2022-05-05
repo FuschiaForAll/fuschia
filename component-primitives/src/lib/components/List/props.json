@@ -14,25 +14,51 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "number",
-          "default": 175
+          "type": "string",
+          "default": "150px"
         },
         "width": {
           "title": "Width",
-          "type": "number",
-          "default": 350
-        },
-        "color": {
-          "title": "Text Color",
           "type": "string",
-          "format": "color",
-          "default": "#000000"
+          "default": "150px"
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "string",
+          "default": "5px"
         },
         "backgroundColor": {
           "title": "Background Color",
           "type": "string",
           "default": "#303030",
           "format": "color"
+        },
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "position": {
+          "title": "Position",
+          "type": "string",
+          "default": "initial"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string",
+          "default": "1"
         }
       }
     }

@@ -32,11 +32,9 @@ export interface StructuredComponent {
   props?: { [key: string]: any } | null
   layout?: { [key: string]: any } | null
   children?: StructuredComponent[]
-  parentId?: string
+  parent?: StructuredComponent
   fetched?: Array<{
     entityType: string
-    path: string
-    label: string
     variables: Array<{
       key: string
       value: RawDraftContentState
@@ -72,28 +70,26 @@ export const ProjectComponentProvider = ({
       const rootElements = components.filter(c => !c.parent)
       const remappedEntities = rootElements.map(root => {
         const recursiveChildren = (
-          component: Component
+          component: Component,
+          parent?: StructuredComponent
         ): StructuredComponent => {
           const remappedComponent = { ...component }
           const findChildren = components.filter(
             c => c.parent === component._id
           )
-          return {
-            ...remappedComponent,
-            // @ts-ignore
-            children: findChildren
-              .map(child => recursiveChildren(child))
-              .sort((a, b) => a.layerSort.localeCompare(b.layerSort)),
-          }
+          const newComponent = { ...remappedComponent } as StructuredComponent
+          newComponent.children = findChildren
+            .map(child => recursiveChildren(child, parent))
+            .sort((a, b) => a.layerSort.localeCompare(b.layerSort))
+          newComponent.parent = parent
+          return newComponent
         }
         const findChildren = components.filter(c => c.parent === root._id)
-        return {
-          ...root,
-          // @ts-ignore
-          children: findChildren
-            .map(child => recursiveChildren(child))
-            .sort((a, b) => a.layerSort.localeCompare(b.layerSort)),
-        }
+        const parent = { ...root } as StructuredComponent
+        parent.children = findChildren
+          .map(child => recursiveChildren(child, parent))
+          .sort((a, b) => a.layerSort.localeCompare(b.layerSort))
+        return parent
       }) as StructuredComponent[]
       setStructuredComponent(remappedEntities)
     }

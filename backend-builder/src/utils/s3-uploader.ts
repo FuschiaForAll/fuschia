@@ -8,9 +8,6 @@ import { Response } from "express-serve-static-core";
 export class S3Uploader {
   private s3: AWS.S3;
   constructor() {
-    const credentials = new AWS.Credentials(S3_ACCESS_KEY, S3_SECRET);
-    AWS.config.credentials = credentials;
-    AWS.config.region = "ca-central-1";
     this.s3 = new AWS.S3();
   }
 

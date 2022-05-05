@@ -17,12 +17,8 @@ export class RequiredParameterInput {
 
 @InputType()
 export class DataSourceInput {
-  @Field()
-  entityType!: string;
-  @Field()
-  path!: string;
-  @Field()
-  label!: string;
+  @Field((type) => Object)
+  entityType!: Object;
 
   @Field((type) => [Object])
   variables!: Object[];

@@ -16,8 +16,6 @@ fragment ComponentFragment on Component {
   }
   fetched {
     entityType
-    path
-    label
     variables
   }
   props
