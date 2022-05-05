@@ -4,7 +4,6 @@ import styled from '@emotion/styled'
 import { useSelection, useDragDrop } from '../../../../utils/hooks'
 import {
   PackageComponentType,
-  useGetPackageComponentQuery,
   useUpdateComponentMutation,
 } from '../../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../../generated/graphql'

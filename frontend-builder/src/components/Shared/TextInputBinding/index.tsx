@@ -18,15 +18,11 @@ import DataBinder, {
 import { useParams } from 'react-router-dom'
 import {
   useGetProjectQuery,
-  useGetDataContextQuery,
   useListAssetFolderQuery,
   useGetComponentsQuery,
 } from '../../../generated/graphql'
 import { useGetPackagesQuery } from '../../../generated/graphql'
-import {
-  StructuredComponent,
-  useProjectComponents,
-} from '../../../utils/hooks/useProjectComponents'
+import { useProjectComponents } from '../../../utils/hooks/useProjectComponents'
 import { Schema } from '@fuchsia/types'
 import { SourceType } from '../../../utils/draftJsConverters'
 

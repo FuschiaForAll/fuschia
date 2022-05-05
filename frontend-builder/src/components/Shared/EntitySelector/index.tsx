@@ -1,9 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useParams } from 'react-router-dom'
-import {
-  useGetProjectQuery,
-  useGetDataContextQuery,
-} from '../../../generated/graphql'
+import React, { useRef, useState } from 'react'
 import DataBinder from '../../Builder/Properties/Editors/DataBinder'
 import { DataStructure, MenuStructure } from '../CascadingMenu'
 import styled from '@emotion/styled'

@@ -824,7 +824,6 @@ const ChangeInputEditor = ({
     [key: string]: DataStructure
   }>({})
   const [dataStructure, setDataStructure] = useState<MenuStructure[]>([])
-  const { projectId } = useParams<{ projectId: string }>()
   const { structuredComponents: components } = useProjectComponents()
   useEffect(() => {
     if (components) {
