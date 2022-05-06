@@ -1,4 +1,4 @@
-import { Project } from './types'
+import { Project } from "../../Projects/Project.entity"
 
 const {
   ModelIDInput,
@@ -136,14 +136,14 @@ export function generateServerSchema(project: Project) {
   const schemaBuilder = []
   const queryBuilder = ['type Query {']
   const mutationBuilder = ['type Mutation {']
-  if (project.appConfig.authConfig.requiresAuth) {
+  if (project.serverConfig.authConfig.requiresAuth) {
     mutationBuilder.push(
       `  login(username: String!, password: String!): String`
     )
     mutationBuilder.push(`  logout: Boolean!`)
-    const authTable = project.appConfig.apiConfig.models.find(
+    const authTable = project.serverConfig.apiConfig.models.find(
       model =>
-        model._id.toString() === project.appConfig.authConfig.tableId.toString()
+        model._id.toString() === project.serverConfig.authConfig.tableId.toString()
     )
     if (authTable) {
       const name = authTable.name.replaceAll(' ', '')
@@ -158,7 +158,7 @@ export function generateServerSchema(project: Project) {
   const deleteInputsBuilder = []
   const filtersBuilder = []
   const conditionalBuilder = []
-  project.appConfig.apiConfig.models.forEach(model => {
+  project.serverConfig.apiConfig.models.forEach(model => {
     const name = model.name.replaceAll(' ', '')
     tableAndFieldNameMap[name] = {
       id: model._id.toString(),
@@ -169,7 +169,7 @@ export function generateServerSchema(project: Project) {
       fields: {},
     }
   })
-  project.appConfig.apiConfig.models.forEach(model => {
+  project.serverConfig.apiConfig.models.forEach(model => {
     const name = model.name.replaceAll(' ', '')
     queryBuilder.push(`"A Single ${name}"`)
     queryBuilder.push(`  get${name}(_id: ID!): ${name}`)

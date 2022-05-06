@@ -2,8 +2,10 @@ import { ApolloError } from "apollo-server";
 import { ObjectId } from "mongoose";
 import { Arg, Ctx, Mutation, Query, Resolver } from "type-graphql";
 import { Service } from "typedi";
-import { ProjectModel } from "../../Models";
+import { AppBuilderService } from "../../CodeGen/app-builder";
+import { ComponentModel, PackageModel, ProjectModel } from "../../Models";
 import { Context } from "../../types";
+import { DOCKERHUB_PASSWORD, DOCKERHUB_USERNAME, GITHUB_API_KEY } from "../../utils/config";
 import { ObjectIdScalar } from "../../utils/object-id.scalar";
 import { ProjectService } from "../Project.service";
 import { AppVariable } from "./AppConfig.entity";
@@ -12,7 +14,9 @@ import { AppConfigInput } from "./AppConfig.input";
 @Service()
 @Resolver()
 export class AppConfigResolver {
-  constructor(private projectService: ProjectService) {}
+  constructor(
+    private projectService: ProjectService,
+    private appBuilderService: AppBuilderService) {}
 
   @Mutation((returns) => Boolean)
   async updateAppConfig(
@@ -100,6 +104,39 @@ export class AppConfigResolver {
         returnDocument: "after",
       }
     );
+    return true;
+  }
+
+  @Mutation(() => Boolean)
+  async publishApp(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("sandbox") sandbox: boolean,
+    @Arg("version") version: string,
+    @Ctx() ctx: Context
+  ) {
+    if (
+      !ctx.req.session.userId ||
+      !this.projectService.checkAccess(projectId, ctx.req.session.userId)
+    ) {
+      throw new ApolloError("Unauthorized");
+    }
+
+    const project = await ProjectModel.findById(projectId);
+    const components = await ComponentModel.find({
+      projectId
+    });
+    const packages = await PackageModel.find()
+    if (project) {
+      this.appBuilderService.KickoffNewBuild(
+        project.toJSON() as any,
+        components.map(c => c.toJSON()) as any,
+        packages.map(p => p.toJSON()) as any,
+        version,
+        GITHUB_API_KEY,
+        DOCKERHUB_USERNAME,
+        DOCKERHUB_PASSWORD
+      )
+    }
     return true;
   }
 }

@@ -9,7 +9,9 @@ import {
   generateFilterInput,
   generateUpdateInput,
 } from './generators'
-import { Field, JsonInputFile, Model } from './types'
+import { Project } from '../../Projects/Project.entity'
+import { EntityModel } from '../../Projects/ServerConfig/Api/Models/EntityModel.entity'
+import { DataField } from '../../Projects/ServerConfig/Api/Fields/DataField.entity'
 
 function checkTypeForPrimitive(type: string) {
   switch (type) {
@@ -75,8 +77,8 @@ export function convertImports(imports: Import) {
 }
 
 function generateIndexFile(
-  payload: JsonInputFile,
-  models: Model[],
+  payload: Project,
+  models: EntityModel[],
   projectId: string
 ) {
   const importsBuilder: Import = {}
@@ -166,7 +168,7 @@ function generateIndexFile(
   importsBuilder['./utils/s3-uploader'] = {
     S3Uploader: { type: 'single' },
   }
-  if (payload.authConfig.requiresAuth) {
+  if (payload.serverConfig.authConfig.requiresAuth) {
     importsBuilder['./Authentication/Authentication.resolver'] = {
       AuthenticationResolver: { type: 'single' },
     }
@@ -193,7 +195,7 @@ function generateIndexFile(
   `)
   classBuilder.push(`  const schema = await buildSchema({`)
   classBuilder.push(`    resolvers: [`)
-  if (payload.authConfig.requiresAuth) {
+  if (payload.serverConfig.authConfig.requiresAuth) {
     classBuilder.push(`      AuthenticationResolver,`)
   }
   models.forEach(m => {
@@ -324,7 +326,7 @@ function generateIndexFile(
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-function getModelName(dataType: string, models: Model[]) {
+function getModelName(dataType: string, models: EntityModel[]) {
   const model = models.find(m => m._id.toString() === dataType)
   if (!model) {
     return dataType
@@ -332,7 +334,7 @@ function getModelName(dataType: string, models: Model[]) {
   return model.name
 }
 
-async function generateEntityFile(model: Model, models: Model[]) {
+async function generateEntityFile(model: EntityModel, models: EntityModel[]) {
   const importsBuilder: Import = {}
   importsBuilder['mongoose'] = {
     ObjectId: { type: 'single' },
@@ -380,7 +382,7 @@ async function generateEntityFile(model: Model, models: Model[]) {
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-async function generateInputFile(model: Model, models: Model[]) {
+async function generateInputFile(model: EntityModel, models: EntityModel[]) {
   const importsBuilder: Import = {}
   importsBuilder['type-graphql'] = {
     Field: { type: 'single' },
@@ -447,7 +449,7 @@ async function generateInputFile(model: Model, models: Model[]) {
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-async function generateModelFile(models: Model[]) {
+async function generateModelFile(models: EntityModel[]) {
   const importsBuilder = [
     `import { getModelForClass } from "@typegoose/typegoose";`,
   ]
@@ -463,7 +465,7 @@ async function generateModelFile(models: Model[]) {
   return importsBuilder.concat(exportsBuilder).join('\n')
 }
 
-async function generateResolver(model: Model, models: Model[]) {
+async function generateResolver(model: EntityModel, models: EntityModel[]) {
   const importBuilder: Import = {}
   importBuilder['apollo-server'] = {
     ApolloError: { type: 'single' },
@@ -671,7 +673,7 @@ class ${model.name}SubscriptionPayload {
   return convertImports(importBuilder).concat(classBuilder.join('\n'))
 }
 
-async function generateEntityField(field: Field, models: Model[]) {
+async function generateEntityField(field: DataField, models: EntityModel[]) {
   const fieldBuilder = [] as string[]
   let modelName: string = ''
   const isPrimitive = checkTypeForPrimitive(field.dataType)
@@ -711,7 +713,7 @@ async function generateEntityField(field: Field, models: Model[]) {
 }
 
 async function createProjectStructure(
-  payload: JsonInputFile,
+  payload: Project,
   projectId: string,
   version: string
 ) {
@@ -719,11 +721,11 @@ async function createProjectStructure(
     `import { getModelForClass } from "@typegoose/typegoose";`,
   ]
   const modelsBuilder = [] as string[]
-  const workdir = path.join('/tmp', projectId)
+  const workdir = path.join('/tmp', `${projectId}-server`)
   fs.rmSync(workdir, { recursive: true, force: true })
   const srcdir = path.join(workdir, 'src')
   const biolerplatedir = path.join(__dirname, 'boilerplate')
-  const models = payload.apiConfig.models
+  const models = payload.serverConfig.apiConfig.models
   await fs.ensureDir(workdir)
   await fs.writeFile(
     path.join(workdir, 'package.json'),
@@ -974,7 +976,7 @@ export interface Context {
 }
       `
   )
-  if (payload.authConfig.requiresAuth) {
+  if (payload.serverConfig.authConfig.requiresAuth) {
     const modelFolder = path.join(srcdir, 'Authentication')
     await fs.ensureDir(modelFolder)
     await fs.writeFile(
@@ -1038,13 +1040,13 @@ function generatePackageJson(projectId: string, version: string): any {
   }`
 }
 function generateAuthenticationResolver(
-  payload: JsonInputFile,
-  models: Model[]
+  payload: Project,
+  models: EntityModel[]
 ): any {
   const importsBuilder: Import = {}
   const classBuilder = [] as string[]
   const authModel = models.find(
-    m => m._id.toString() === payload.authConfig.tableId.toString()
+    m => m._id.toString() === payload.serverConfig.authConfig.tableId.toString()
   )
   if (authModel) {
     importsBuilder['apollo-server'] = {
@@ -1094,10 +1096,10 @@ function generateAuthenticationResolver(
     }
 
     const usernameField = authModel.fields.find(
-      f => f._id.toString() === payload.authConfig.usernameFieldId.toString()
+      f => f._id.toString() === payload.serverConfig.authConfig.usernameFieldId.toString()
     )
     const passwordField = authModel.fields.find(
-      f => f._id.toString() === payload.authConfig.passwordFieldId.toString()
+      f => f._id.toString() === payload.serverConfig.authConfig.passwordFieldId.toString()
     )
     if (!usernameField || !passwordField) {
       throw new Error('Misconfigured')
@@ -1130,7 +1132,7 @@ function generateAuthenticationResolver(
     classBuilder.push(`  ) {`)
     classBuilder.push(
       `    const user = await ${authModel.name}Model.findOne({ email: ${
-        payload.authConfig.usernameCaseSensitive
+        payload.serverConfig.authConfig.usernameCaseSensitive
           ? usernameField.fieldName
           : `${usernameField.fieldName}.toLowerCase()`
       } });`
@@ -1201,6 +1203,6 @@ function generateAuthenticationResolver(
   return convertImports(importsBuilder).concat(classBuilder.join('\n'))
 }
 
-export async function GenerateCode(payload: JsonInputFile, projectId: string, version: string) {
+export async function GenerateCode(payload: Project, projectId: string, version: string) {
   await createProjectStructure(payload, projectId, version)
 }

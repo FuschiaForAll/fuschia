@@ -17,15 +17,19 @@ import {
   MultipleHookVariable,
 } from './utils'
 import { ActionProps, ObjectSchema, Schema } from '@fuchsia/types'
-import { Component, Package, Project } from './types'
 import { baseApp } from './boilerplate/App'
 import { generateServerSchema } from './schema.builder'
 import { exec } from 'child_process'
 import { apolloClient } from './boilerplate/apollo-client'
+import { Component } from '../../Projects/AppConfig/Components/Component.entity'
+import { Project } from '../../Projects/Project.entity'
+import { Package } from '../../Packages/Package.entity'
 
-const workdir = path.join(__dirname, '../workdir')
-const srcdir = path.join(workdir, 'src')
-const starterdir = path.join(__dirname, '../StarterProject')
+const starterdir = path.join(__dirname, './StarterProject')
+
+interface StructuredComponent extends Component {
+  children: Component[]
+}
 
 const specialTypeStructure = {
   'margin': {
@@ -50,7 +54,7 @@ const specialTypeStructure = {
   }
 }
 
-async function copyWorkDir() {
+async function copyStarterToWorkDir(workdir: string) {
   console.log('copy started')
   const files = fs.readdirSync(starterdir)
   await Promise.all(
@@ -70,12 +74,12 @@ const MAX_DEPTH = 50
 function buildChildStructure(
   parent: Component,
   depth: number,
-  components: Component[]
-): Component {
+  components: StructuredComponent[]
+): StructuredComponent {
   if (depth === MAX_DEPTH) {
     throw new Error('Probably recursive component')
   }
-  const children = components.filter(c => c.parent === parent._id)
+  const children = components.filter(c => c.parent && c.parent.toString() === parent._id.toString())
   const branches = children.map(child => buildChildStructure(child, depth + 1, components))
   return {
     ...parent,
@@ -90,7 +94,7 @@ async function getProjectStructure(components: Component[], project: Project) {
     return rootElements.map(c => buildChildStructure(c, 0, components))
 }
 
-function getImports(imports: Import, parent: Component) {
+function getImports(imports: Import, parent: StructuredComponent) {
   const newImports = { ...imports }
   if (!newImports[parent.package]) {
     newImports[parent.package] = { [parent.type]: 'single' }
@@ -98,15 +102,16 @@ function getImports(imports: Import, parent: Component) {
     newImports[parent.package][parent.type] = 'single'
   }
   if (parent.children) {
-    parent.children.forEach(c => getImports(newImports, c))
+    parent.children.forEach(c => getImports(newImports, c as StructuredComponent))
   }
   return newImports
 }
 
 async function buildScreen(
-  rootComponent: Component,
+  srcdir: string,
+  rootComponent: StructuredComponent,
   packages: Package[],
-  rootComponents: Component[],
+  rootComponents: StructuredComponent[],
   projectInfo: Project
 ) {
   const hooksBuilder = {} as Hooks
@@ -117,7 +122,7 @@ async function buildScreen(
   const functionsBuilder = [] as string[]
   const bableBuilder = [] as string[]
 
-  function buildChild(component: Component, indentation: number) {
+  function buildChild(component: StructuredComponent, indentation: number) {
     const propsBuilder = [] as string[]
     const _package = packages.find(p => p.packageName === component.package)
     if (_package) {
@@ -132,7 +137,7 @@ async function buildScreen(
               const entityType = f.entityType as any
               if (entityType && entityType.blocks) {
                 
-                const fetchedModel = projectInfo.appConfig.apiConfig.models.find(
+                const fetchedModel = projectInfo.serverConfig.apiConfig.models.find(
                   m => m._id.toString() === entityType.entityMap[0].data[0].value)
                   if (fetchedModel) {
                     // need import for fetch
@@ -316,67 +321,70 @@ async function buildScreen(
           return acc
         }
         // @ts-ignore
-        const props = convertSchemaProps(
-          component.props,
-          // @ts-ignore
-          packageComponent.schema.properties,
-          {}
-        )
-        Object.keys(props).forEach(prop => {
-          propsBuilder.push(`${prop}={${JSON.stringify(props[prop])}}`)
+        if (component.props) {
+          const props = convertSchemaProps(
+            component.props,
+            // @ts-ignore
+            packageComponent.schema.properties,
+            {}
+          )
+          Object.keys(props).forEach(prop => {
+            propsBuilder.push(`${prop}={${JSON.stringify(props[prop])}}`)
+  
+            // // @ts-ignore
+            // const structure = packageComponent.schema.properties[prop]
+            // if (structure) {
+            //   console.log(structure)
+            //   switch (structure.type) {
+            //     case 'function':
+            //       // functions need to be converted to function rather than configuration strings
+            //       propsBuilder.push(`${prop}={async () => {`)
+            //       ;(component.props[prop] as ActionProps[]).forEach(action => {
+            //         functionBuilder(
+            //           action,
+            //           importsBuilder,
+            //           hooksBuilder,
+            //           rootComponents,
+            //           propsBuilder,
+            //           projectInfo,
+            //           packages
+            //         )
+            //       })
+            //       propsBuilder.push(`} }`)
+            //       break
+            //     case 'string':
+            //       console.log(`STRING`)
+            //       console.log(component.props[prop])
+            //       propsBuilder.push(
+            //         `${prop}={\`${draftJsStuff(
+            //           component.props[prop],
+            //           rootComponents,
+            //           projectInfo,
+            //           packages
+            //         )}\`}`
+            //       )
+            //       break
+            //     case 'object':
+            //       propsBuilder.push(
+            //         `${prop}={${JSON.stringify(component.props[prop])}}`
+            //       )
+            //       break
+            //     case 'array':
+            //       break
+            //     default:
+            //       // the rest need to be stripped of DraftJS if applicable
+            //       propsBuilder.push(`${prop}={${component.props[prop]}}`)
+            //       break
+            //   }
+            // }
+          })
 
-          // // @ts-ignore
-          // const structure = packageComponent.schema.properties[prop]
-          // if (structure) {
-          //   console.log(structure)
-          //   switch (structure.type) {
-          //     case 'function':
-          //       // functions need to be converted to function rather than configuration strings
-          //       propsBuilder.push(`${prop}={async () => {`)
-          //       ;(component.props[prop] as ActionProps[]).forEach(action => {
-          //         functionBuilder(
-          //           action,
-          //           importsBuilder,
-          //           hooksBuilder,
-          //           rootComponents,
-          //           propsBuilder,
-          //           projectInfo,
-          //           packages
-          //         )
-          //       })
-          //       propsBuilder.push(`} }`)
-          //       break
-          //     case 'string':
-          //       console.log(`STRING`)
-          //       console.log(component.props[prop])
-          //       propsBuilder.push(
-          //         `${prop}={\`${draftJsStuff(
-          //           component.props[prop],
-          //           rootComponents,
-          //           projectInfo,
-          //           packages
-          //         )}\`}`
-          //       )
-          //       break
-          //     case 'object':
-          //       propsBuilder.push(
-          //         `${prop}={${JSON.stringify(component.props[prop])}}`
-          //       )
-          //       break
-          //     case 'array':
-          //       break
-          //     default:
-          //       // the rest need to be stripped of DraftJS if applicable
-          //       propsBuilder.push(`${prop}={${component.props[prop]}}`)
-          //       break
-          //   }
-          // }
-        })
+        }
         if (component.children && component.children.length > 0) {
           propsBuilder.push('>')
           bableBuilder.push(propsBuilder.join(' '))
           component.children.forEach(child =>
-            buildChild(child, indentation + 3)
+            buildChild(child as StructuredComponent, indentation + 3)
           )
           bableBuilder.push(
             `${''.padStart(indentation, ' ')}</${component.type}>`
@@ -398,7 +406,7 @@ async function buildScreen(
   await fs.createFile(file)
   const fileBuilder = []
   if (rootComponent.children) {
-    rootComponent.children.forEach(child => buildChild(child, 9))
+    rootComponent.children.forEach(child => buildChild(child as StructuredComponent, 9))
   }
   if (rootComponent.requiresAuth) {
     // need import for fetch
@@ -425,7 +433,7 @@ async function buildScreen(
       importsBuilder['./generated/graphql'] = {}
     }
     rootComponent.parameters.forEach(p => {
-      const parameterModel = projectInfo.appConfig.apiConfig.models.find(
+      const parameterModel = projectInfo.serverConfig.apiConfig.models.find(
         m => m._id.toString() === p.entityType.toString()
       )
       if (parameterModel) {
@@ -482,8 +490,21 @@ async function buildScreen(
 }
 
 export async function CreateProject(project: Project, appComponents: Component[], schema: Package[], version: string) {
+  const workdir = path.join('/tmp', `${project._id.toString()}-app`)
+  const srcdir = path.join(workdir, 'src')
+  fs.rmSync(workdir, { recursive: true, force: true })
+  try {
+    fs.ensureDir(workdir)
+    fs.ensureDir(srcdir)
+
+  } catch {
+    throw new Error('happened here')
+  }
+  if (!project.appConfig.appEntryComponentId) {
+    throw new Error('No entry point defined')
+  }
   // move starterproject to workdir
-  await copyWorkDir()
+  await copyStarterToWorkDir(workdir)
   const structuredAppComponents = await getProjectStructure(appComponents, project)
   // create server schema
   await fs.writeFile(
@@ -511,12 +532,12 @@ export async function CreateProject(project: Project, appComponents: Component[]
 
   await fs.writeFile(
     path.join(srcdir, 'RootNavigator.tsx'),
-    generateRootNavigator(structuredAppComponents, project.appConfig.appEntryComponentId),
+    generateRootNavigator(structuredAppComponents, project.appConfig.appEntryComponentId.toString()),
     { flag: 'w' }
   )
   await fs.writeFile(path.join(srcdir, 'App.tsx'), baseApp)
   await fs.writeFile(path.join(srcdir, 'apollo-client.tsx'), apolloClient)
   await Promise.all(structuredAppComponents.map(component =>
-    buildScreen(component, schema, structuredAppComponents, project)
+    buildScreen(srcdir, component, schema, structuredAppComponents, project)
   ))
 }

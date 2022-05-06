@@ -32,7 +32,8 @@ const uploadToRepo = async (
   coursePath: string,
   org: string,
   repo: string,
-  branch: string = `develop`
+  branch: string = `develop`,
+  additionalFiles: string[]
 ) => {
   // gets commit's AND its tree's SHA
   const currentCommit = await getCurrentCommit(octo, org, repo, branch)
@@ -40,11 +41,13 @@ const uploadToRepo = async (
   const filesBlobs = await Promise.all(
     filesPaths.map(createBlobForFile(octo, org, repo))
   )
-  filesBlobs.push(await createBlobForFile(octo, org, repo)(`${coursePath}/.github/workflows/deploy_test_server.yaml`))
+  await Promise.all(additionalFiles.map(async file => filesBlobs.push(await createBlobForFile(octo, org, repo)(file))))
+  
   const pathsForBlobs = filesPaths.map(fullPath =>
     path.relative(coursePath, fullPath)
   )
-  pathsForBlobs.push(path.relative(coursePath, `${coursePath}/.github/workflows/deploy_test_server.yaml`))
+  additionalFiles.forEach(file => pathsForBlobs.push(path.relative(coursePath, file)))
+  
   const newTree = await createNewTree(
     octo,
     org,
@@ -204,7 +207,8 @@ export async function CheckGithub(
   projectid: string,
   dockerhubUsername: string,
   dockerhubPassword: string,
-  projectType: string
+  projectType: string,
+  additionalFiles: string[]
 ) {
   const octokit = await AuthenticateWithGithub(token)
   const REPO = `${projectid}-${projectType}`
@@ -231,5 +235,5 @@ export async function CheckGithub(
     dockerhubUsername,
     dockerhubPassword
   })
-  await uploadToRepo(octokit, `/tmp/${projectid}`, ORGANIZATION, REPO)
+  await uploadToRepo(octokit, `/tmp/${projectid}-${projectType}`, ORGANIZATION, REPO, 'develop', additionalFiles)
 }

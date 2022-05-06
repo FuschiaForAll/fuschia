@@ -7,6 +7,7 @@ import {
   useGetProjectQuery,
   useLaunchInstanceMutation,
   usePublishApiMutation,
+  usePublishAppMutation,
   useUpdateServerVersionMutation,
 } from '../../../generated/graphql'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
@@ -70,8 +71,10 @@ function UpdateServerInstance({
   projectId: string
   ec2url?: string | null
 }) {
-  const [version, setVersion] = useState('')
+  const [serverVersion, setServerVersion] = useState('')
+  const [appVersion, setAppVersion] = useState('')
   const [publishApi] = usePublishApiMutation()
+  const [publishApp] = usePublishAppMutation()
   const [updateServerVersion] = useUpdateServerVersionMutation()
   const { data: versionData } = useGetDockerhubVersionsQuery({
     variables: {
@@ -85,10 +88,10 @@ function UpdateServerInstance({
         fontSize="1rem"
         label="New Version number"
         type="text"
-        defaultValue={version}
+        defaultValue={serverVersion}
         onBlur={e => {
           const v = e.currentTarget.value
-          setVersion(v)
+          setServerVersion(v)
         }}
       />
       <button
@@ -97,7 +100,7 @@ function UpdateServerInstance({
             variables: {
               projectId,
               sandbox: false,
-              version,
+              version: serverVersion,
             },
           })
         }}
@@ -140,6 +143,32 @@ function UpdateServerInstance({
               <button onClick={() => {}}>Deploy on Live Server</button>
             </div>
           ))}
+      </div>
+      <div>
+        <LabeledTextInput
+          title="New Version number"
+          fontSize="1rem"
+          label="New Version number"
+          type="text"
+          defaultValue={appVersion}
+          onBlur={e => {
+            const v = e.currentTarget.value
+            setAppVersion(v)
+          }}
+        />
+        <button
+          onClick={() => {
+            publishApp({
+              variables: {
+                projectId,
+                sandbox: false,
+                version: appVersion,
+              },
+            })
+          }}
+        >
+          Publish
+        </button>
       </div>
     </div>
   )

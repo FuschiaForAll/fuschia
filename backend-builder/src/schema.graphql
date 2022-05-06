@@ -298,6 +298,7 @@ type Mutation {
   login(email: String!, password: String!): UserResponse!
   logout: Boolean!
   publishApi(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
+  publishApp(projectId: ObjectId!, sandbox: Boolean!, version: String!): Boolean!
   publishPackageComponents(componentInput: [PackageComponentInput!]!): [PackageComponent!]!
   register(email: String!, password: String!): UserResponse!
   removeParameter(componentId: ObjectId!, parameterId: ObjectId!): Boolean!

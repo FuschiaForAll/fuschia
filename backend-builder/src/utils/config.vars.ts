@@ -32,5 +32,6 @@ export const requiredConfigVars: {
         { value: "OAuth2", dependencies: ["EMAIL_USER", "EMAIL_CLIENT_ID", "EMAIL_CLIENT_SECRET", "EMAIL_REFRESH_TOKEN", "EMAIL_EXPIRES"] },
         { value: "Simple", dependencies: ["EMAIL_HOST", "EMAIL_PORT", "EMAIL_USER", "EMAIL_PASS"] }
       ]
-    }
+    },
+    { key: "BUILD_MANAGER_ENDPOINT" }
   ];

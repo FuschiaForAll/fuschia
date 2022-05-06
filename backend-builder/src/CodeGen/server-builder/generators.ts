@@ -1,3 +1,5 @@
+import { DataField } from "../../Projects/ServerConfig/Api/Fields/DataField.entity"
+
 function checkTypeForPrimitive(type: string) {
   switch (type) {
     case 'ID':
@@ -41,12 +43,14 @@ export function generateCreateInput({
   keys,
 }: {
   typename: string
-  keys: Key[]
+  keys: DataField[]
 }) {
   const builder = []
   builder.push(`@InputType()`)
   builder.push(`export class Create${typename}Input {`)
   keys.forEach(key => {
+    console.log(`key`)
+    console.log(key)
     const isPrimitive = checkTypeForPrimitive(key.dataType)
     if (isPrimitive) {
       builder.push(`  @Field({ nullable: ${key.nullable} })`)
@@ -80,7 +84,7 @@ export function generateUpdateInput({
   keys,
 }: {
   typename: string
-  keys: Key[]
+  keys: DataField[]
 }) {
   const builder = []
   builder.push(`@InputType()`)
@@ -108,7 +112,7 @@ export function generateConditionalInput({
   keys,
 }: {
   typename: string
-  keys: Key[]
+  keys: DataField[]
 }) {
   const builder = []
   builder.push(`@InputType()`)

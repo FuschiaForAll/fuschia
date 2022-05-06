@@ -333,6 +333,7 @@ export type Mutation = {
   login: UserResponse;
   logout: Scalars['Boolean'];
   publishApi: Scalars['Boolean'];
+  publishApp: Scalars['Boolean'];
   publishPackageComponents: Array<PackageComponent>;
   register: UserResponse;
   removeParameter: Scalars['Boolean'];
@@ -530,6 +531,13 @@ export type MutationLoginArgs = {
 
 
 export type MutationPublishApiArgs = {
+  projectId: Scalars['ObjectId'];
+  sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
+};
+
+
+export type MutationPublishAppArgs = {
   projectId: Scalars['ObjectId'];
   sandbox: Scalars['Boolean'];
   version: Scalars['String'];
@@ -1489,6 +1497,15 @@ export type PublishApiMutationVariables = Exact<{
 
 
 export type PublishApiMutation = { __typename?: 'Mutation', publishApi: boolean };
+
+export type PublishAppMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  sandbox: Scalars['Boolean'];
+  version: Scalars['String'];
+}>;
+
+
+export type PublishAppMutation = { __typename?: 'Mutation', publishApp: boolean };
 
 export type UpdateAppConfigMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -3617,6 +3634,39 @@ export function usePublishApiMutation(baseOptions?: Apollo.MutationHookOptions<P
 export type PublishApiMutationHookResult = ReturnType<typeof usePublishApiMutation>;
 export type PublishApiMutationResult = Apollo.MutationResult<PublishApiMutation>;
 export type PublishApiMutationOptions = Apollo.BaseMutationOptions<PublishApiMutation, PublishApiMutationVariables>;
+export const PublishAppDocument = gql`
+    mutation PublishApp($projectId: ObjectId!, $sandbox: Boolean!, $version: String!) {
+  publishApp(projectId: $projectId, sandbox: $sandbox, version: $version)
+}
+    `;
+export type PublishAppMutationFn = Apollo.MutationFunction<PublishAppMutation, PublishAppMutationVariables>;
+
+/**
+ * __usePublishAppMutation__
+ *
+ * To run a mutation, you first call `usePublishAppMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `usePublishAppMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [publishAppMutation, { data, loading, error }] = usePublishAppMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      sandbox: // value for 'sandbox'
+ *      version: // value for 'version'
+ *   },
+ * });
+ */
+export function usePublishAppMutation(baseOptions?: Apollo.MutationHookOptions<PublishAppMutation, PublishAppMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<PublishAppMutation, PublishAppMutationVariables>(PublishAppDocument, options);
+      }
+export type PublishAppMutationHookResult = ReturnType<typeof usePublishAppMutation>;
+export type PublishAppMutationResult = Apollo.MutationResult<PublishAppMutation>;
+export type PublishAppMutationOptions = Apollo.BaseMutationOptions<PublishAppMutation, PublishAppMutationVariables>;
 export const UpdateAppConfigDocument = gql`
     mutation UpdateAppConfig($projectId: ObjectId!, $appConfig: AppConfigInput!) {
   updateAppConfig(projectId: $projectId, appConfig: $appConfig)

@@ -1,11 +1,17 @@
 import { Schema, ActionProps } from '@fuchsia/types'
 import { ObjectId } from 'mongodb'
-import { Component, Package, Project } from './types'
 import { RawDraftContentState } from 'draft-js'
 import fs, { CopyOptions } from 'fs-extra'
 import path from 'path'
+import { Component } from '../../Projects/AppConfig/Components/Component.entity'
+import { Project } from '../../Projects/Project.entity'
+import { Package } from '../../Packages/Package.entity'
 export interface Import {
   [packageName: string]: { [componentName: string]: 'default' | 'single' }
+}
+
+interface StructuredComponent extends Component {
+  children: Component[]
 }
 
 export interface HookVariable {
@@ -44,13 +50,13 @@ export interface Hooks {
 
 function findNestedComponent(
   componentId: string,
-  project: Component[]
-): Component | undefined {
+  project: StructuredComponent[]
+): StructuredComponent | undefined {
   for (const p of project) {
     if (p._id.toString() === componentId) {
       return p
     } else if (p.children) {
-      const nested = findNestedComponent(componentId, p.children)
+      const nested = findNestedComponent(componentId, p.children as StructuredComponent[])
       if (nested) {
         return nested
       }
@@ -74,7 +80,7 @@ export interface EntityData {
 
 export const draftJsStuff = (
   value: any,
-  rootComponents: Component[],
+  rootComponents: StructuredComponent[],
   projectInfo: Project,
   packages: Package[]
 ) => {
@@ -105,7 +111,7 @@ export const draftJsStuff = (
                     entityData.length - 1
                   ].value.split('+') as string[]
                   const bits = parts.split('.')
-                  let currentComponent: Component | null = null
+                  let currentComponent: StructuredComponent | null = null
                   bits.forEach(bit => {
                     if (!currentComponent) {
                       const comp = rootComponents.find(p => p._id.toString() === bit)
@@ -118,7 +124,7 @@ export const draftJsStuff = (
                           p => p._id.toString() === bit
                         )
                         if (comp) {
-                          currentComponent = comp
+                          currentComponent = comp as StructuredComponent
                         }
                       }
                     }
@@ -304,10 +310,13 @@ export function convertImports(imports: Import) {
 
 export function generateRootNavigator(
   components: Component[],
-  entryComponentId: ObjectId
+  entryComponentId: string
 ) {
   const entryComponent = components.find(
-    c => c._id.toString() === entryComponentId.toString()
+    c => {
+      console.log(c)
+      return c._id.toString() === entryComponentId
+    }
   )
   if (!entryComponent) {
     throw new Error('No entry component specified!')
@@ -369,9 +378,9 @@ mutation Login($username: String!, $password: String!) {
   `,
     { flag: 'w' }
   )
-  const authTable = projectInfo.appConfig.apiConfig.models.find(
+  const authTable = projectInfo.serverConfig.apiConfig.models.find(
     m =>
-      m._id.toString() === projectInfo.appConfig.authConfig.tableId.toString()
+      m._id.toString() === projectInfo.serverConfig.authConfig.tableId.toString()
   )
   if (authTable) {
     fs.writeFile(
@@ -408,7 +417,7 @@ export async function generateEntityModelGraphqlFiles(
   // this is done from function before, making this error prone if refactored
   // await fs.mkdir(path.join(srcdir, 'graphql'))
   await Promise.all(
-    projectInfo.appConfig.apiConfig.models.map(async m => {
+    projectInfo.serverConfig.apiConfig.models.map(async m => {
       // every model gets a Get, List, Create, Delete, Update
 
       await fs.writeFile(
@@ -528,7 +537,7 @@ export function functionBuilder(
     }
   },
   hooksBuilder: Hooks,
-  rootComponents: Component[],
+  rootComponents: StructuredComponent[],
   propsBuilder: string[],
   projectInfo: Project,
   packages: Package[]
@@ -554,13 +563,15 @@ export function functionBuilder(
         if (action.parameters) {
           if (targetScreen.parameters) {
             targetScreen.parameters.forEach(p => {
-              const actionParam = action.parameters![p._id.toString()]
-              const targetEntity = projectInfo.appConfig.apiConfig.models.find(
-                m => m._id.toString() === p.entityType.toString()
-              )
-              if (actionParam) {
-                // this only works for ARRAY param props
-                propsBuilder.push(`${targetEntity?.name}Id: item._id`)
+              if (p._id) {
+                const actionParam = action.parameters![p._id.toString()]
+                const targetEntity = projectInfo.serverConfig.apiConfig.models.find(
+                  m => m._id.toString() === p.entityType.toString()
+                )
+                if (actionParam) {
+                  // this only works for ARRAY param props
+                  propsBuilder.push(`${targetEntity?.name}Id: item._id`)
+                }
               }
             })
           }
@@ -670,10 +681,10 @@ export function functionBuilder(
         value: 'register',
       })
 
-      const authModel = projectInfo.appConfig.apiConfig.models.find(
+      const authModel = projectInfo.serverConfig.apiConfig.models.find(
         m =>
           m._id.toString() ===
-          projectInfo.appConfig.authConfig.tableId.toString()
+          projectInfo.serverConfig.authConfig.tableId.toString()
       )
       if (authModel) {
         const authPartBuilder = [] as string[]
@@ -745,7 +756,7 @@ export function functionBuilder(
       // generate graphql file if needed
       if (action.dataType && action.fields) {
         const actionFields = action.fields
-        const model = projectInfo.appConfig.apiConfig.models.find(
+        const model = projectInfo.serverConfig.apiConfig.models.find(
           m => m._id.toString() === action.dataType
         )
         if (model) {
@@ -886,7 +897,7 @@ export function functionBuilder(
     case 'UPDATE':
       if (action.updateElement && action.fields) {
         const actionFields = action.fields
-        const model = projectInfo.appConfig.apiConfig.models.find(
+        const model = projectInfo.serverConfig.apiConfig.models.find(
           m => m._id.toString() === action.updateElement?.entity
         )
         if (model) {
