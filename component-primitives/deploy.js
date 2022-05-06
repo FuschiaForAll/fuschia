@@ -1,12 +1,16 @@
-/**
- * 1. load bundled file
- * 2.
- *
- */
 const axios = require("axios");
 const jsonPackage = require("./package.json");
 const path = require("path");
 const fs = require("fs");
+
+require('dotenv').config();
+const useEndpoint = (process.env['GQL_ENDPOINT'] ? process.env['GQL_ENDPOINT'] : "http://localhost:4002/graphql");
+
+function consoleLog(message) {
+  if (process.env.NODE_ENV === "development") {
+    console.log(message);
+  }
+}
 
 function getDefaultProps(schema, acc) {
   if (
@@ -15,7 +19,7 @@ function getDefaultProps(schema, acc) {
     schema.type === "layout-component" ||
     schema.type === "array"
   ) {
-    console.log(schema);
+    //console.log(schema);
     return Object.keys(schema.properties).reduce((obj, key) => {
       obj[key] = getDefaultProps(schema.properties[key], { [key]: {} });
       return obj;
@@ -70,8 +74,8 @@ function getPackage() {
 
 (async () => {
   try {
-    console.log(getPackage());
-    const response = await axios.post("http://localhost:4002/graphql", {
+    //console.log(getPackage());
+    const response = await axios.post(useEndpoint, {
       operationName: "CreatePackage",
       query: `mutation CreatePackage($packageInput: PackageInput!) {
         createPackage(packageInput: $packageInput) {
@@ -82,12 +86,13 @@ function getPackage() {
         packageInput: getPackage(),
       },
     });
-    console.log(response);
-    console.log(JSON.stringify(response.data, null, 2));
+    consoleLog(response);
+    consoleLog(JSON.stringify(response.data, null, 2));
   } catch (e) {
-    console.log(e);
+    consoleLog(e);
     throw e;
   }
 })()
-  .catch((error) => console.error(`error: ${error}`))
-  .then(() => console.log(`completed`));
+  .then(() => console.log(`Deploy Successful`))
+  .catch((error) => console.error(`Error: ${error}`))
+  .finally(() => console.log('Run Complete'));

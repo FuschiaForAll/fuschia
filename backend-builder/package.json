@@ -8,7 +8,8 @@
     "start": "ts-node src/index.ts",
     "start:dev": "NODE_TLS_REJECT_UNAUTHORIZED='0' DEBUG=express-session nodemon --watch src -e ts --exec \"yarn start\"",
     "start:docker": "./docker-startup.sh && yarn start:dev",
-    "generate-env": "ts-node generate-env-sample.ts"
+    "generate-env": "ts-node generate-env.ts env=live interactive",
+    "generate-env:sample": "ts-node generate-env.ts"
   },
   "dependencies": {
     "@typegoose/typegoose": "^9.6.2",

@@ -122,3 +122,4 @@ web-build/
 *.swp
 
 cert/
+component-primitives/public/bundle.js

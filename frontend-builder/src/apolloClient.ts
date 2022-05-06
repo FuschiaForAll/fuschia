@@ -27,8 +27,14 @@ const appLink = createHttpLink({
   credentials: 'include',
 })
 
+//extract the sub link from the REACT_APP_GQL_ENDPOINT
+const subLink = process.env.REACT_APP_GQL_ENDPOINT!.replace(
+  /^http(s?):\/\//i,
+  ''
+)
+
 const wsLink = new WebSocketLink({
-  uri: `wss://localhost:4003/subscriptions`,
+  uri: `wss://${subLink}/subscriptions`,
   options: {
     reconnect: true,
     lazy: true,

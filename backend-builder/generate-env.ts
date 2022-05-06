@@ -1,6 +1,7 @@
 import { requiredConfigVars } from './src/utils/config.vars';
 import fs from 'fs';
 import * as readline from 'readline';
+require('dotenv').config();
 
 function askQuestion(query: string) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -27,8 +28,8 @@ if (args["env"] && args["env"] === "live") {
 (async () => {
     let proceed = false;
     if (fs.existsSync(`./${outputFilename}`) && !args['force']) {
-        const answer = await askQuestion(`The file \`${outputFilename}\` already exists. Would you like to overwrite? [y/N]`);
-        proceed = (answer && answer.trim() === "y" ? true : false);
+        const answer = await askQuestion(`The file \`${outputFilename}\` already exists. Would you like to overwrite? [y/N] `);
+        proceed = (answer && answer.trim().toLowerCase() === "y" ? true : false);
     } else {
         proceed = true;
     }
@@ -41,17 +42,22 @@ if (args["env"] && args["env"] === "live") {
     let inputValues: { [key: string]: string } = {};
     if (args["interactive"]) {
         for (const item of requiredConfigVars) {
-            let question = `Value for ${item.key}` + (item.note ? ` (${item.note})` : '') + (item.options ? `. Allowed values: \"${item.options.map(opt => opt.value).join("\", \"")}\"` : '') + ": ";
+            let thisDefault: string = (process.env[item.key] ? process.env[item.key]! : (item.default ? item.default! : ""));
+            let question = `Value for ${item.key}` + (item.note ? ` (${item.note})` : '') + (item.options ? `. Allowed values: \"${item.options.map(opt => opt.value).join("\", \"")}\"` : '') + (thisDefault ? ` [${thisDefault}]` : "") + ": ";
 
-            const answer = (await askQuestion(question)).trim();
+            let answer = (await askQuestion(question)).trim();
+            if ((!answer || answer === "") && thisDefault) answer = thisDefault;
             inputValues[item.key] = answer;
 
             if (item.options) {
-                const check = item.options.filter(item => item.value === answer);
+                const check = item.options.filter(item => item.value.toLowerCase() === answer.toLowerCase());
                 if (check.length) {
                     if (check[0].dependencies) {
                         for (const dependency of check[0].dependencies) {
-                            const answer = (await askQuestion(`Value for ${dependency}: `)).trim();
+                            let thisDefault: string = (process.env[dependency] ? process.env[dependency]! : "");
+                            let answer = (await askQuestion(`Value for ${dependency} [${thisDefault}]: `)).trim();
+
+                            if ((!answer || answer === "") && thisDefault) answer = thisDefault;
                             inputValues[dependency] = answer;
                         }
                     }
@@ -63,20 +69,16 @@ if (args["env"] && args["env"] === "live") {
     const writeOutput: string[] = [];
     requiredConfigVars.forEach(item => {
         let output: string = `${item.key}=${(inputValues[item.key] ? inputValues[item.key] : "")}`;
-        if (item.note) {
-            output += ` #${item.note}`;
-        }
         if (!item.options) {
             writeOutput.push(output);
             return;
         }
-        output += `#Allowed values: ${item.options.map(opt => opt.value).join(", ")}`;
         writeOutput.push(output);
 
         item.options.forEach(subopt => {
             if (subopt.dependencies) {
                 subopt.dependencies.forEach(dependency => {
-                    writeOutput.push(`${dependency}=${(inputValues[dependency] ? inputValues[dependency] : "")} #Only required when using ${item.key}=${subopt.value}`);
+                    writeOutput.push(`${dependency}=${(inputValues[dependency] ? inputValues[dependency] : "")}`);
                 });
             }
         });
@@ -84,7 +86,7 @@ if (args["env"] && args["env"] === "live") {
 
     try {
         console.log(`Writing ${outputFilename}...`);
-        fs.writeFile(`./${outputFilename}`, writeOutput.join("\r\n"), "utf8", (err) => {
+        fs.writeFile(`./${outputFilename}`, writeOutput.join("\n"), "utf8", (err) => {
             if (err) {
                 throw err;
             }
