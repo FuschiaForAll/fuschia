@@ -3,8 +3,6 @@ import fs from 'fs';
 import * as readline from 'readline';
 require('dotenv').config();
 
-console.log("\n\x1b[31mBy default, `yarn generate-env` will generate an .env-sample file you can use as a template to create your own .env file. Using argument env=live will generate a blank .env file. Use argument interactive to fill out the required fields and generate the .env file.\x1b[0m");
-
 function askQuestion(query: string) {
     const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
     return new Promise<string>(resolve => rl.question(query, ans => { rl.close(); resolve(ans); }));
@@ -44,13 +42,11 @@ if (args["env"] && args["env"] === "live") {
     let inputValues: { [key: string]: string } = {};
     if (args["interactive"]) {
         for (const item of requiredConfigVars) {
-            let thisDefault = (process.env[item.key] ? process.env[item.key] : (item.default ? item.default : ""));
+            let thisDefault: string = (process.env[item.key] ? process.env[item.key]! : (item.default ? item.default! : ""));
             let question = `Value for ${item.key}` + (item.note ? ` (${item.note})` : '') + (item.options ? `. Allowed values: \"${item.options.map(opt => opt.value).join("\", \"")}\"` : '') + (thisDefault ? ` [${thisDefault}]` : "") + ": ";
 
             let answer = (await askQuestion(question)).trim();
-            if ((!answer || answer === "") && thisDefault) {
-                answer = thisDefault;
-            }
+            if ((!answer || answer === "") && thisDefault) answer = thisDefault;
             inputValues[item.key] = answer;
 
             if (item.options) {
@@ -58,7 +54,10 @@ if (args["env"] && args["env"] === "live") {
                 if (check.length) {
                     if (check[0].dependencies) {
                         for (const dependency of check[0].dependencies) {
-                            const answer = (await askQuestion(`Value for ${dependency}: `)).trim();
+                            let thisDefault: string = (process.env[dependency] ? process.env[dependency]! : "");
+                            let answer = (await askQuestion(`Value for ${dependency} [${thisDefault}]: `)).trim();
+
+                            if ((!answer || answer === "") && thisDefault) answer = thisDefault;
                             inputValues[dependency] = answer;
                         }
                     }
@@ -87,7 +86,7 @@ if (args["env"] && args["env"] === "live") {
 
     try {
         console.log(`Writing ${outputFilename}...`);
-        fs.writeFile(`./${outputFilename}`, writeOutput.join("\r\n"), "utf8", (err) => {
+        fs.writeFile(`./${outputFilename}`, writeOutput.join("\n"), "utf8", (err) => {
             if (err) {
                 throw err;
             }
