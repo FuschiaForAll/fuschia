@@ -8,7 +8,9 @@
   "scripts": {
     "build": "rm -rf dist && NODE_ENV=production babel src/lib --out-dir dist --copy-files",
     "package": "webpack build --config ./webpack.config.js --stats verbose --mode production --entry ./src/lib/index.js",
-    "deploy": "yarn package && node ./deploy"
+    "deploy": "yarn check-env && yarn package && node ./deploy",
+    "deploy:debug": "yarn check-env && yarn package && NODE_ENV=development node ./deploy",
+    "check-env": "./setup-env.sh"
   },
   "devDependencies": {
     "@babel/cli": "^7.17.6",
