@@ -5,7 +5,7 @@ import { Service } from "typedi";
 import { AppBuilderService } from "../../CodeGen/app-builder";
 import { ComponentModel, PackageModel, ProjectModel } from "../../Models";
 import { Context } from "../../types";
-import { DOCKERHUB_PASSWORD, DOCKERHUB_USERNAME, GITHUB_API_KEY } from "../../utils/config";
+import { DOCKERHUB_PASSWORD, DOCKERHUB_USERNAME, EXPO_TOKEN, GITHUB_API_KEY } from "../../utils/config";
 import { ObjectIdScalar } from "../../utils/object-id.scalar";
 import { ProjectService } from "../Project.service";
 import { AppVariable } from "./AppConfig.entity";
@@ -133,8 +133,7 @@ export class AppConfigResolver {
         packages.map(p => p.toJSON()) as any,
         version,
         GITHUB_API_KEY,
-        DOCKERHUB_USERNAME,
-        DOCKERHUB_PASSWORD
+        EXPO_TOKEN
       )
     }
     return true;

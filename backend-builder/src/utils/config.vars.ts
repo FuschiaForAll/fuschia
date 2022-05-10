@@ -33,5 +33,6 @@ export const requiredConfigVars: {
         { value: "Simple", dependencies: ["EMAIL_HOST", "EMAIL_PORT", "EMAIL_USER", "EMAIL_PASS"] }
       ]
     },
-    { key: "BUILD_MANAGER_ENDPOINT" }
+    { key: "BUILD_MANAGER_ENDPOINT" },
+    { key: "EXPO_TOKEN" }
   ];

@@ -25,8 +25,6 @@ import { Component } from '../../Projects/AppConfig/Components/Component.entity'
 import { Project } from '../../Projects/Project.entity'
 import { Package } from '../../Packages/Package.entity'
 
-const starterdir = path.join(__dirname, './StarterProject')
-
 interface StructuredComponent extends Component {
   children: Component[]
 }
@@ -54,21 +52,6 @@ const specialTypeStructure = {
   }
 }
 
-async function copyStarterToWorkDir(workdir: string) {
-  console.log('copy started')
-  const files = fs.readdirSync(starterdir)
-  await Promise.all(
-    files.map(file => {
-      if (file === 'node_modules') {
-        return
-      }
-      fs.copy(path.join(starterdir, file), path.join(workdir, file))
-    })
-  )
-
-  console.log('copy finished')
-}
-
 const MAX_DEPTH = 50
 
 function buildChildStructure(
@@ -91,7 +74,7 @@ async function getProjectStructure(components: Component[], project: Project) {
     // get root components
     const rootElements = components.filter(c => !c.parent)
     // recursively build entiry tree structure
-    return rootElements.map(c => buildChildStructure(c, 0, components))
+    return rootElements.map(c => buildChildStructure(c, 0, components as StructuredComponent[]))
 }
 
 function getImports(imports: Import, parent: StructuredComponent) {
@@ -503,8 +486,6 @@ export async function CreateProject(project: Project, appComponents: Component[]
   if (!project.appConfig.appEntryComponentId) {
     throw new Error('No entry point defined')
   }
-  // move starterproject to workdir
-  await copyStarterToWorkDir(workdir)
   const structuredAppComponents = await getProjectStructure(appComponents, project)
   // create server schema
   await fs.writeFile(

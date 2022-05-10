@@ -87,3 +87,4 @@ export const DOCKERHUB_USERNAME = process.env.DOCKERHUB_USERNAME!;
 export const DOCKERHUB_PASSWORD = process.env.DOCKERHUB_PASSWORD!;
 export const GITHUB_API_KEY = process.env.GITHUB_API_KEY!;
 export const BUILD_MANAGER_ENDPOINT = process.env.BUILD_MANAGER_ENDPOINT!;
+export const EXPO_TOKEN = process.env.EXPO_TOKEN!;
