@@ -356,6 +356,7 @@ async function generateEntityFile(model: EntityModel, models: EntityModel[]) {
   }
   model.fields
     .filter(f => !checkTypeForPrimitive(f.dataType))
+    .filter(f => (getModelName(f.dataType, models) !== model.name))
     .forEach(f => {
       const modelName = getModelName(f.dataType, models)
       importsBuilder[`../${modelName}/${modelName}.entity`] = {
