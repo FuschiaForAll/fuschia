@@ -342,6 +342,8 @@ async function generateEntityFile(model: EntityModel, models: EntityModel[]) {
   importsBuilder['type-graphql'] = {
     ObjectType: { type: 'single' },
     Field: { type: 'single' },
+    //Primitives
+    Int: { type: 'single' },
   }
   importsBuilder['@typegoose/typegoose'] = {
     prop: { type: 'single', rename: 'Property' },
@@ -564,17 +566,13 @@ class ${model.name}SubscriptionPayload {
   classBuilder.push('')
   classBuilder.push(`  @Mutation(returns => ${model.name})`)
   classBuilder.push(`  async create${model.name}(
-    @Arg('input', type => Create${model.name}Input) input: Create${
-    model.name
-  }Input, 
-    @Arg('condition', type => Model${
-      model.name
-    }ConditionalInput, { nullable: true }) condition: Model${
-    model.name
-  }ConditionalInput,
-    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${
-    model.name
-  }SubscriptionPayload>,
+    @Arg('input', type => Create${model.name}Input) input: Create${model.name
+    }Input, 
+    @Arg('condition', type => Model${model.name
+    }ConditionalInput, { nullable: true }) condition: Model${model.name
+    }ConditionalInput,
+    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${model.name
+    }SubscriptionPayload>,
     @Ctx() ctx: Context) {`)
   classBuilder.push(`    const newItem = await ${model.name}Model.create({`)
   classBuilder.push(`      ...input,`)
@@ -595,17 +593,13 @@ class ${model.name}SubscriptionPayload {
   classBuilder.push('')
   classBuilder.push(`  @Mutation(returns => ${model.name}, { nullable: true })`)
   classBuilder.push(`  async delete${model.name}(
-    @Arg('input', type => Delete${model.name}Input) input: Delete${
-    model.name
-  }Input, 
-    @Arg('condition', type => Model${
-      model.name
-    }ConditionalInput, { nullable: true }) condition: Model${
-    model.name
-  }ConditionalInput,
-    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${
-    model.name
-  }SubscriptionPayload>,
+    @Arg('input', type => Delete${model.name}Input) input: Delete${model.name
+    }Input, 
+    @Arg('condition', type => Model${model.name
+    }ConditionalInput, { nullable: true }) condition: Model${model.name
+    }ConditionalInput,
+    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${model.name
+    }SubscriptionPayload>,
     @Ctx() ctx: Context) {`)
   classBuilder.push(
     `    const deletedItem = await ${model.name}Model.findByIdAndDelete(input._id)`
@@ -621,17 +615,13 @@ class ${model.name}SubscriptionPayload {
   // Update Query
   classBuilder.push(`  @Mutation(returns => ${model.name}, { nullable: true })`)
   classBuilder.push(`  async update${model.name}(
-    @Arg('input', type => Update${model.name}Input) input: Update${
-    model.name
-  }Input, 
-    @Arg('condition', type => Model${
-      model.name
-    }ConditionalInput, { nullable: true }) condition: Model${
-    model.name
-  }ConditionalInput,
-    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${
-    model.name
-  }SubscriptionPayload>,
+    @Arg('input', type => Update${model.name}Input) input: Update${model.name
+    }Input, 
+    @Arg('condition', type => Model${model.name
+    }ConditionalInput, { nullable: true }) condition: Model${model.name
+    }ConditionalInput,
+    @PubSub("${model.name.toUpperCase()}_CHANGE") publish: Publisher<${model.name
+    }SubscriptionPayload>,
     @Ctx() ctx: Context) {`)
   classBuilder.push(`    const updatedItem = await ${model.name}Model.findOneAndUpdate(FilterParser()(condition) || {}, 
     { 
@@ -655,9 +645,8 @@ class ${model.name}SubscriptionPayload {
 
   // subscriptions
   classBuilder.push('')
-  classBuilder.push(`  @Subscription(returns => ${
-    model.name
-  }SubscriptionPayload, {
+  classBuilder.push(`  @Subscription(returns => ${model.name
+    }SubscriptionPayload, {
     topics: "${model.name.toUpperCase()}_CHANGE"
   })`)
   classBuilder.push(`  async on${model.name}Change(
@@ -682,8 +671,7 @@ async function generateEntityField(field: DataField, models: EntityModel[]) {
   }
   if (!field.isHashed) {
     fieldBuilder.push(
-      `  @Field(type => ${field.isList ? '[' : ''}${
-        isPrimitive ? field.dataType : modelName
+      `  @Field(type => ${field.isList ? '[' : ''}${isPrimitive ? field.dataType : modelName
       }${field.isList ? ']' : ''}, { nullable: ${field.nullable} })`
     )
   }
@@ -705,8 +693,7 @@ async function generateEntityField(field: DataField, models: EntityModel[]) {
       .join(', ')} })`
   )
   fieldBuilder.push(
-    `  ${field.fieldName}!: ${
-      isPrimitive ? field.dataType.toLowerCase() : `Ref<${modelName}>`
+    `  ${field.fieldName}!: ${isPrimitive ? (field.dataType.toLowerCase() === "int" ? "number" : field.dataType.toLowerCase()) : `Ref<${modelName}>`
     }${field.isList ? '[]' : ''}`
   )
   return fieldBuilder.join('\n')
@@ -754,7 +741,7 @@ async function createProjectStructure(
   await fs.ensureDir(srcdir)
   await fs.ensureDir(path.join(workdir, '.github'))
   await fs.ensureDir(path.join(workdir, '.github', 'workflows'))
-  
+
   await fs.copyFile(
     path.join(biolerplatedir, 'deploy_test_server.yaml'),
     path.join(workdir, '.github', 'workflows', 'deploy_test_server.yaml')
@@ -1131,10 +1118,9 @@ function generateAuthenticationResolver(
     classBuilder.push(`    @Ctx() ctx: Context`)
     classBuilder.push(`  ) {`)
     classBuilder.push(
-      `    const user = await ${authModel.name}Model.findOne({ email: ${
-        payload.serverConfig.authConfig.usernameCaseSensitive
-          ? usernameField.fieldName
-          : `${usernameField.fieldName}.toLowerCase()`
+      `    const user = await ${authModel.name}Model.findOne({ email: ${payload.serverConfig.authConfig.usernameCaseSensitive
+        ? usernameField.fieldName
+        : `${usernameField.fieldName}.toLowerCase()`
       } });`
     )
     classBuilder.push(`    if (!user) {`)
