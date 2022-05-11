@@ -1,5 +1,5 @@
 #!/bin/bash
-# This is not meant to be a final setup script, just a quick initial setup script to help developers setup a local dev environment
+# This is not meant to be a final setup script, just a quick initial setup script to help setup a local dev environment on WSL2 / Ubuntu
 HORIZONTALLINE="-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-"
 clear
 echo -e "\n$HORIZONTALLINE\n"

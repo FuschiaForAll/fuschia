@@ -7,6 +7,11 @@ import {
   REDIS_PORT,
   S3_ACCESS_KEY,
   S3_SECRET,
+  S3_REGION,
+  HTTP_PORT,
+  HTTPS_PORT,
+  DATABASE_NAME,
+  APP_ENDPOINT
 } from "./utils/config";
 import Redis from "ioredis";
 import { connect } from "mongoose";
@@ -21,7 +26,6 @@ import { ApolloServer } from "apollo-server-express";
 import { OrganizationResolver } from "./Organizations/Organization.resolver";
 import { ProjectResolver } from "./Projects/Project.resolver";
 import express, { json } from "express";
-import { UserModel } from "./Models";
 import cors from "cors";
 import { v4 as uuid } from "uuid";
 import cookies from "cookie-parser";
@@ -55,15 +59,15 @@ const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
 const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
 
 (async () => {
-  
+
   const credentials = new AWS.Credentials(S3_ACCESS_KEY, S3_SECRET);
   AWS.config.credentials = credentials;
-  AWS.config.region = "ca-central-1";
-  
+  AWS.config.region = S3_REGION;
+
   const redisStore = connectRedis(session);
   const redis = new Redis(`${REDIS_URL}:${REDIS_PORT}`);
 
-  const mongoose = await connect(MONGO_DB_URL, { dbName: "fuschia" });
+  const mongoose = await connect(MONGO_DB_URL, { dbName: DATABASE_NAME });
   const options = {
     host: REDIS_URL,
     port: REDIS_PORT,
@@ -113,7 +117,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
   app.use(json({ limit: "2mb" }));
   app.use(
     cors({
-      origin: "http://localhost:3000",
+      origin: APP_ENDPOINT,
       credentials: true,
     })
   );
@@ -165,13 +169,13 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
   apolloServer.applyMiddleware({
     app,
     cors: {
-      origin: "http://localhost:3000",
+      origin: APP_ENDPOINT,
       credentials: true,
     },
   });
   const server = https.createServer({ key: key, cert: cert }, app);
-  server.listen(4003, () => {
-    console.log(`Server is running on port 4003`);
+  server.listen(HTTPS_PORT, () => {
+    console.log(`\x1b[36m[Express]\x1b[0m >> HTTPS Server is running on port ${HTTPS_PORT}`);
     new SubscriptionServer(
       {
         execute,
@@ -179,11 +183,10 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
         schema,
         onConnect: async (connectionParams: string) => {
           const userSession = await redis.get(`sess:${connectionParams}`);
-          console.log(userSession);
+          //console.log(userSession);
           if (userSession) {
             const payload = JSON.parse(userSession);
-            console.log(payload);
-
+            //console.log(payload);
             return { userId: payload.userId };
           }
           return null;
@@ -195,7 +198,7 @@ const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
       }
     );
   });
-  app.listen(4002, () => {
-    console.log(`Server is running on port 4002`);
+  app.listen(HTTP_PORT, () => {
+    console.log(`\x1b[36m[Express]\x1b[0m >> HTTP Server is running on port ${HTTP_PORT}`);
   });
 })().catch((err) => console.error(err));
