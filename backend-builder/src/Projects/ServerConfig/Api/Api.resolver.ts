@@ -11,6 +11,9 @@ import { spawn } from "child_process";
 import portfinder from "portfinder";
 import AWS from "aws-sdk";
 import {
+  BUILD_MANAGER_ENDPOINT,
+  DOCKERHUB_PASSWORD,
+  DOCKERHUB_USERNAME,
   GITHUB_API_KEY,
   MONGO_DB_URL,
   S3_ACCESS_KEY,
@@ -19,6 +22,7 @@ import {
 import axios from "axios";
 import kill from "tree-kill";
 import { Matches } from "class-validator";
+import { ServerBuilderService } from "../../../CodeGen/server-builder";
 
 interface AWSGetRequest {
   endpoint: string;
@@ -75,7 +79,8 @@ export class ApiResolver {
   processes: { [projectId: string]: pid } = {};
   constructor(
     private apiService: ApiService,
-    private projectService: ProjectService
+    private projectService: ProjectService,
+    private serverBuilderService: ServerBuilderService
   ) {}
   @Mutation(() => Boolean)
   async publishApi(
@@ -98,17 +103,13 @@ export class ApiResolver {
       { returnDocument: "after" }
     );
     if (project) {
-      // connect with Github and AWS
-      const projectConfig = JSON.stringify(project.serverConfig);
-      spawnInstance(
-        sandbox ? "test" : "prod",
-        projectConfig,
+      this.serverBuilderService.KickoffNewBuild(
+        project.toJSON() as any,
+        version,
         GITHUB_API_KEY,
-        S3_ACCESS_KEY,
-        S3_SECRET,
-        projectId.toString(),
-        project.serverConfig.version || "0.0.1"
-      );
+        DOCKERHUB_USERNAME,
+        DOCKERHUB_PASSWORD
+      )
     }
     return true;
   }

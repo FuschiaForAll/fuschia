@@ -1,0 +1,7 @@
+mutation PublishApp(
+  $projectId: ObjectId!
+  $sandbox: Boolean!
+  $version: String!
+) {
+  publishApp(projectId: $projectId, sandbox: $sandbox, version: $version)
+}

@@ -117,6 +117,9 @@ function VariableConfiguration({
   if (!data) {
     return <div>no data</div>
   }
+  if (selectedPage !== pageIndex) {
+    return null
+  }
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
       {data.getProject.appConfig.variables.map(variable => (
@@ -195,6 +198,9 @@ function ServerConfiguration({
   selectedPage: number
   pageIndex: number
 }) {
+  if (selectedPage !== pageIndex) {
+    return null
+  }
   return (
     <div
       style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}
@@ -251,145 +257,156 @@ function DatabaseConfiguration({
   if (!projectId) {
     return <div>missing project id</div>
   }
+  if (selectedPage !== pageIndex) {
+    return null
+  }
   return (
-    <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
-      {isLocal ? (
-        <div />
-      ) : (
+    <div
+      style={{
+        overflow: 'hidden',
+      }}
+    >
+      <div>
+        {isLocal ? (
+          <div />
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'auto auto',
+              justifyContent: 'end',
+              gap: '0.5rem',
+            }}
+          >
+            <StatusChip
+              label="Sandbox"
+              status={sandboxServerStatusData?.getServerStatus}
+            />
+            <StatusChip
+              label="Live"
+              status={liveServerStatusData?.getServerStatus}
+            />
+          </div>
+        )}
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: 'auto auto',
-            justifyContent: 'end',
-            gap: '0.5rem',
+            gridTemplateColumns: '250px 1fr',
+            gap: '1.5rem',
+            overflow: 'hidden',
           }}
         >
-          <StatusChip
-            label="Sandbox"
-            status={sandboxServerStatusData?.getServerStatus}
-          />
-          <StatusChip
-            label="Live"
-            status={liveServerStatusData?.getServerStatus}
-          />
-        </div>
-      )}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '250px 1fr',
-          gap: '1.5rem',
-          overflow: 'hidden',
-        }}
-      >
-        <div style={{ overflow: 'auto' }}>
-          {data?.getProject && (
-            <div>
-              {data.getProject.serverConfig.apiConfig.models
-                .filter(m => m.isLocal === isLocal)
-                .map(model => (
-                  <Accordion
-                    key={model._id}
-                    expanded={expanded === model._id.toString()}
-                    onChange={handleAccordianChange(model._id.toString())}
-                    elevation={0}
-                  >
-                    <AccordionSummary
-                      expandIcon={<ExpandMore />}
-                      sx={{
-                        margin: '0.25rem',
-                        background: '#F7F6F6',
-                        color:
-                          expanded === model._id.toString()
-                            ? '#DD1C74'
-                            : 'black',
-                        borderStyle: 'dashed',
-                        borderWidth: '1px',
-                        borderColor:
-                          expanded === model._id.toString()
-                            ? '#F24726'
-                            : 'black',
-                        borderRadius: 5,
-                      }}
+          <div style={{ overflow: 'auto' }}>
+            {data?.getProject && (
+              <div>
+                {data.getProject.serverConfig.apiConfig.models
+                  .filter(m => m.isLocal === isLocal)
+                  .map(model => (
+                    <Accordion
+                      key={model._id}
+                      expanded={expanded === model._id.toString()}
+                      onChange={handleAccordianChange(model._id.toString())}
+                      elevation={0}
                     >
-                      {model.name}
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <EntityModel
-                        projectId={projectId!}
-                        model={model}
-                        models={data.getProject.serverConfig.apiConfig.models}
+                      <AccordionSummary
+                        expandIcon={<ExpandMore />}
+                        sx={{
+                          margin: '0.25rem',
+                          background: '#F7F6F6',
+                          color:
+                            expanded === model._id.toString()
+                              ? '#DD1C74'
+                              : 'black',
+                          borderStyle: 'dashed',
+                          borderWidth: '1px',
+                          borderColor:
+                            expanded === model._id.toString()
+                              ? '#F24726'
+                              : 'black',
+                          borderRadius: 5,
+                        }}
+                      >
+                        {model.name}
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <EntityModel
+                          projectId={projectId!}
+                          model={model}
+                          models={data.getProject.serverConfig.apiConfig.models}
+                        />
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                <Accordion
+                  expanded={expanded === 'new'}
+                  onChange={handleAccordianChange('new')}
+                  elevation={0}
+                  sx={{
+                    margin: '0.25rem',
+                    background: '#F7F6F6',
+                    color: '#DD1C74',
+                    border: 'dashed 1px #F24726',
+                    borderRadius: 5,
+                  }}
+                >
+                  <AccordionSummary sx={{}}>
+                    <div className="spaced-and-centered">
+                      <span>Create New Data Collection</span>
+                      <span style={{ color: 'black' }}>
+                        <Add />
+                      </span>
+                    </div>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <div>
+                      <LabeledTextInput
+                        label="Collection Name"
+                        type="text"
+                        value={newModelName}
+                        onChange={e => {
+                          const name = e.currentTarget.value
+                          if (name === '' || variableNameRegex.test(name)) {
+                            setNewModelName(name)
+                          }
+                        }}
                       />
-                    </AccordionDetails>
-                  </Accordion>
-                ))}
-              <Accordion
-                expanded={expanded === 'new'}
-                onChange={handleAccordianChange('new')}
-                elevation={0}
-                sx={{
-                  margin: '0.25rem',
-                  background: '#F7F6F6',
-                  color: '#DD1C74',
-                  border: 'dashed 1px #F24726',
-                  borderRadius: 5,
-                }}
-              >
-                <AccordionSummary sx={{}}>
-                  <div className="spaced-and-centered">
-                    <span>Create New Data Collection</span>
-                    <span style={{ color: 'black' }}>
-                      <Add />
-                    </span>
-                  </div>
-                </AccordionSummary>
-                <AccordionDetails>
-                  <div>
-                    <LabeledTextInput
-                      label="Collection Name"
-                      type="text"
-                      value={newModelName}
-                      onChange={e => {
-                        const name = e.currentTarget.value
-                        if (name === '' || variableNameRegex.test(name)) {
-                          setNewModelName(name)
-                        }
-                      }}
-                    />
-                    <button
-                      className="outlined-accent-button"
-                      onClick={async () => {
-                        await createNewEntityModel({
-                          variables: {
-                            name: newModelName,
-                            isLocal,
-                            projectId,
-                          },
-                        })
-                        setNewModelName('')
-                      }}
-                    >
-                      Create New Model
-                    </button>
-                  </div>
-                </AccordionDetails>
-              </Accordion>
-            </div>
-          )}
-        </div>
-        <div style={{ overflow: 'auto' }}>
-          {data && (
-            <DataEditor
-              model={data.getProject.serverConfig.apiConfig.models.find(
-                model => model._id.toString() === expanded
-              )}
-              models={data.getProject.serverConfig.apiConfig.models}
-              sandboxEndpoint={
-                data.getProject.serverConfig.apiConfig.sandboxEndpoint
-              }
-              liveEndpoint={data.getProject.serverConfig.apiConfig.liveEndpoint}
-            />
-          )}
+                      <button
+                        className="outlined-accent-button"
+                        onClick={async () => {
+                          await createNewEntityModel({
+                            variables: {
+                              name: newModelName,
+                              isLocal,
+                              projectId,
+                            },
+                          })
+                          setNewModelName('')
+                        }}
+                      >
+                        Create New Model
+                      </button>
+                    </div>
+                  </AccordionDetails>
+                </Accordion>
+              </div>
+            )}
+          </div>
+          <div style={{ overflow: 'auto' }}>
+            {data && (
+              <DataEditor
+                model={data.getProject.serverConfig.apiConfig.models.find(
+                  model => model._id.toString() === expanded
+                )}
+                models={data.getProject.serverConfig.apiConfig.models}
+                sandboxEndpoint={
+                  data.getProject.serverConfig.apiConfig.sandboxEndpoint
+                }
+                liveEndpoint={
+                  data.getProject.serverConfig.apiConfig.liveEndpoint
+                }
+              />
+            )}
+          </div>
         </div>
       </div>
     </div>
