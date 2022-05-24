@@ -6,10 +6,10 @@ const PaddingEditor = function StringEditor(props: PaddingEditorProps) {
   const padding = props.initialValue
     ? props.initialValue
     : {
-        left: '0px',
-        right: '0px',
-        top: '0px',
-        bottom: '0px',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
       }
   return (
     <div>
@@ -40,7 +40,7 @@ const PaddingEditor = function StringEditor(props: PaddingEditorProps) {
             componentId={props.componentId}
             initialValue={padding.left}
             onChange={value => {
-              padding.left = value
+              padding.left = { ...value, type: 'number' }
               props.updateValue(padding, true)
             }}
           />
@@ -58,7 +58,7 @@ const PaddingEditor = function StringEditor(props: PaddingEditorProps) {
             componentId={props.componentId}
             initialValue={padding.right}
             onChange={value => {
-              padding.right = value
+              padding.right = { ...value, type: 'number' }
               props.updateValue(padding, true)
             }}
           />
@@ -76,7 +76,7 @@ const PaddingEditor = function StringEditor(props: PaddingEditorProps) {
             componentId={props.componentId}
             initialValue={padding.top}
             onChange={value => {
-              padding.top = value
+              padding.top = { ...value, type: 'number' }
               props.updateValue(padding, true)
             }}
           />
@@ -95,7 +95,7 @@ const PaddingEditor = function StringEditor(props: PaddingEditorProps) {
             componentId={props.componentId}
             initialValue={padding.bottom}
             onChange={value => {
-              padding.bottom = value
+              padding.bottom = { ...value, type: 'number' }
               props.updateValue(padding, true)
             }}
           />

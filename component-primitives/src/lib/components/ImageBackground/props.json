@@ -14,18 +14,18 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "string",
-          "default": "150px"
+          "type": "number",
+          "default": 150
         },
         "width": {
           "title": "Width",
-          "type": "string",
-          "default": "150px"
+          "type": "number",
+          "default": 150
         },
         "borderRadius": {
           "title": "Border Radius",
-          "type": "string",
-          "default": "5px"
+          "type": "number",
+          "default": 5
         },
         "backgroundColor": {
           "title": "Background Color",

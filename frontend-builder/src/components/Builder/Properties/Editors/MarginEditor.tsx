@@ -6,10 +6,10 @@ const MarginEditor = function StringEditor(props: MarginEditorProps) {
   const margin = props.initialValue
     ? props.initialValue
     : {
-        left: '0px',
-        right: '0px',
-        top: '0px',
-        bottom: '0px',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
       }
   return (
     <div>
@@ -40,7 +40,7 @@ const MarginEditor = function StringEditor(props: MarginEditorProps) {
             componentId={props.componentId}
             initialValue={margin.left}
             onChange={value => {
-              margin.left = value
+              margin.left = { ...value, type: 'number' }
               props.updateValue(margin, true)
             }}
           />
@@ -58,7 +58,7 @@ const MarginEditor = function StringEditor(props: MarginEditorProps) {
             componentId={props.componentId}
             initialValue={margin.right}
             onChange={value => {
-              margin.right = value
+              margin.right = { ...value, type: 'number' }
               props.updateValue(margin, true)
             }}
           />
@@ -76,7 +76,7 @@ const MarginEditor = function StringEditor(props: MarginEditorProps) {
             componentId={props.componentId}
             initialValue={margin.top}
             onChange={value => {
-              margin.top = value
+              margin.top = { ...value, type: 'number' }
               props.updateValue(margin, true)
             }}
           />
@@ -95,7 +95,7 @@ const MarginEditor = function StringEditor(props: MarginEditorProps) {
             componentId={props.componentId}
             initialValue={margin.bottom}
             onChange={value => {
-              margin.bottom = value
+              margin.bottom = { ...value, type: 'number' }
               props.updateValue(margin, true)
             }}
           />

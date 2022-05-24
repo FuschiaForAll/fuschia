@@ -3,13 +3,7 @@ import { TextInput as RNTextInput, Text } from "react-native";
 
 export function TextInput(props) {
   const { properties, style, actions, editor } = props;
-  const [rerender, setRerender] = useState(0);
-  useEffect(() => {
-    setRerender((r) => r + 1);
-  }, []);
   return (
-    <>
-      <Text>{rerender}</Text>
       <RNTextInput
         style={style}
         placeholder={properties.placeholder}
@@ -25,6 +19,5 @@ export function TextInput(props) {
         }}
         ref={editor?.ref}
       />
-    </>
   );
 }

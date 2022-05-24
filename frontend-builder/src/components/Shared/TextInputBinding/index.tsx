@@ -74,7 +74,7 @@ function convertInitialContent(content: any) {
   return {
     blocks: [
       {
-        text: content || '',
+        text: `${content}` || '',
         type: 'unstyled',
       },
     ],

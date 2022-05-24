@@ -9,6 +9,8 @@ import {
 import { ObjectIdScalar } from "../../../../utils/object-id.scalar";
 import { Asset } from "./ImageFile/AssetFile.entity";
 
+
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class AssetLibrary {
   @Field((type) => ObjectIdScalar)

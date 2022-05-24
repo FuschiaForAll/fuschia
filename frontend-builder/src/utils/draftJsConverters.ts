@@ -36,6 +36,10 @@ export function DraftJSEditorConverter(value: any, projectId?: string) {
           }
         }
       }
+      // coherse value if needed
+      if (value.type === 'number') {
+        return parseInt(value.blocks.map((block: any) => block.text).join('\n'))
+      }
       return value.blocks.map((block: any) => block.text).join('\n')
     }
     return Object.keys(value).reduce((acc, key) => {

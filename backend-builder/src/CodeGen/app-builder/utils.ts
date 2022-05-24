@@ -92,7 +92,6 @@ export const draftJsStuff = (
     if (value.blocks) {
       let textParts = [] as string[]
       const draft = value as RawDraftContentState
-      console.log(draft.blocks)
       draft.blocks.forEach(block => {
         let currentText = block.text
         ;[...block.entityRanges].reverse().forEach(range => {
@@ -314,7 +313,6 @@ export function generateRootNavigator(
 ) {
   const entryComponent = components.find(
     c => {
-      console.log(c)
       return c._id.toString() === entryComponentId
     }
   )
@@ -513,13 +511,16 @@ mutation Update${m.name}($input: Update${m.name}Input!, $condition: Model${
       await fs.writeFile(
         path.join(srcdir, 'graphql', `On${m.name}Change.graphql`),
         `
-subscription On${m.name}Change {
-  on${m.name}Change {
-    _id
-    ${m.fields
-      .filter(f => !f.connection && !f.isHashed)
-      .map(f => f.fieldName)
-      .join('\n')}
+subscription On${m.name}Change($filter: Model${m.name}FilterInput) {
+  on${m.name}Change(filter: $filter) {
+    type
+    _ids
+    items {
+      ${m.fields
+        .filter(f => !f.connection && !f.isHashed)
+        .map(f => f.fieldName)
+        .join('\n')}
+    }
   }
 }
       `,
@@ -706,7 +707,6 @@ export function functionBuilder(
         })
         authPartBuilder.push(authFieldsBuilder.join(','))
         authPartBuilder.push(`} } }`)
-        console.log(authPartBuilder.join(''))
         propsBuilder.push(
           `const success = await register(${authPartBuilder.join('')});`
         )
@@ -806,7 +806,6 @@ export function functionBuilder(
           })
           createPartBuilder.push(createFieldsBuilder.join(','))
           createPartBuilder.push(`} } }`)
-          console.log(createPartBuilder.join(''))
           propsBuilder.push(
             `const success = await create${model.name}(${createPartBuilder.join(
               ''
@@ -957,7 +956,6 @@ export function functionBuilder(
           // TODO: This is the wrong assumption
           updatePartBuilder.push(`_id: item._id`)
           updatePartBuilder.push(`} } }`)
-          console.log(updatePartBuilder.join(''))
           propsBuilder.push(
             `const success = await update${model.name}(${updatePartBuilder.join(
               ''

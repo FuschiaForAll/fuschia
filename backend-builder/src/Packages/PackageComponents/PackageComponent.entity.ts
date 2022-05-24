@@ -1,9 +1,10 @@
 import { ObjectType, Field } from "type-graphql";
 import { ObjectId } from "mongoose";
 import { ObjectIdScalar } from "../../utils/object-id.scalar";
-import { prop as Property } from "@typegoose/typegoose";
+import { modelOptions, prop as Property, Severity } from "@typegoose/typegoose";
 import { PackageComponentType } from "./PackageComponentType.enum";
 
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class PackageComponent {
   @Field((type) => ObjectIdScalar)
