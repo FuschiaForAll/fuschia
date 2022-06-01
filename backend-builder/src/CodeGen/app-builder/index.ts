@@ -9,22 +9,33 @@ import fs from 'fs-extra'
 import path from "path"
 
 const defaultDevPackages = [
-  '@graphql-codegen/cli',
-  '@graphql-codegen/typescript',
-  '@graphql-codegen/typescript-operations',
-  '@graphql-codegen/typescript-react-apollo',
-  '@graphql-codegen/typescript-urql',
-  'prettier'
+  { packageName: '@babel/core', version: '7.12.9' },
+  { packageName: '@graphql-codegen/cli', version: '2.6.2' },
+  { packageName: '@graphql-codegen/typescript', version: '2.4.11' },
+  { packageName: '@graphql-codegen/typescript-operations', version: '2.4.0' },
+  { packageName: '@graphql-codegen/typescript-react-apollo', version: '3.2.14' },
+  { packageName: '@graphql-codegen/typescript-urql', version: '3.5.10' },
+  { packageName: '@graphql-codegen/typescript-urql', version: '3.5.10' },
+  { packageName: '@types/react', version: '17.0.21' },
+  { packageName: '@types/react-native', version: '0.66.13' },
+  { packageName: 'prettier', version: '' },
+  { packageName: 'typescript', version: '4.3.5' }
 ]
 const defaultPackages = [
-  '@react-native-async-storage/async-storage',
-  '@react-navigation/native',
-  '@react-navigation/stack',
-  '@fuchsia-for-all/primitives',
-  '@apollo/client',
-  'core-js',
-  'react-native-gesture-handler',
-  'react-native-safe-area-context'
+  { packageName: "@apollo/client", version: "3.6.5" },
+  { packageName: "@fuchsia-for-all/primitives", version: "1.0.8" },
+  { packageName: "@react-native-async-storage/async-storage" , version: "1.17.3" },
+  { packageName: "@react-navigation/native", version:"6.0.10" },
+  { packageName: "@react-navigation/stack", version: "6.2.1" },
+  { packageName: "core-js", version: "3.22.7" },
+  { packageName: "expo", version: "45.0.0" },
+  { packageName: "expo-status-bar", version: "~1.3.0" },
+  { packageName: "react", version: "17.0.2" },
+  { packageName: "react-dom", version: "17.0.2" },
+  { packageName: "react-native", version: "0.68.2" },
+  { packageName: "react-native-gesture-handler", version: "2.2.1" },
+  { packageName: "react-native-safe-area-context", version: "4.2.4" },
+  { packageName: "react-native-web", version: "0.17.7" }
 ]
 
 @Service()
@@ -48,10 +59,6 @@ export class AppBuilderService {
       }
       console.log('executing expo init')
       execSync(`cd /tmp/ && expo init --name ${repositoryName} --no-install --template expo-template-blank-typescript`)
-      console.log('executing yarn import')
-      execSync(`cd /tmp/${repositoryName} && npm install ${defaultPackages.join(' ')} --package-lock-only`)
-      execSync(`cd /tmp/${repositoryName} && npm install ${defaultDevPackages.join(' ')} --package-lock-only --save-dev`)
-      execSync(`cd /tmp/${repositoryName} && npm install --package-lock-only; yarn import; rm package-lock.json`)
 
       // update app.json for Expo
       const expoAppJson = JSON.parse(fs.readFileSync(path.join(`/tmp`, repositoryName, 'app.json'), 'utf-8'))
@@ -73,9 +80,11 @@ export class AppBuilderService {
       packageJson.scripts.gen = "graphql-codegen --config codegen.yml"
       packageJson.scripts.lint = "eslint ."
       packageJson.scripts.format = "prettier --write '**/*.js'"
+      defaultPackages.forEach(p => packageJson.dependencies[p.packageName] = p.version)
+      defaultDevPackages.forEach(p => packageJson.devDependencies[p.packageName] = p.version)
       console.log('writing package.json')
       fs.writeFileSync(path.join(`/tmp`, repositoryName, 'package.json'), JSON.stringify(packageJson,  null, 2))
-      execSync(`cat /tmp/${repositoryName}/package.json`)
+      execSync(`cd /tmp/${repositoryName} && npm install --package-lock-only; yarn import; rm package-lock.json`)
       console.log('executing upload to repositrory')
       await fs.ensureDir(path.join(`/tmp`, repositoryName, '.github'))
       await fs.ensureDir(path.join(`/tmp`, repositoryName, '.github', 'workflows'))
