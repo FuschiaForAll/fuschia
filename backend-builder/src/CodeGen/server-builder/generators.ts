@@ -57,7 +57,7 @@ export function generateCreateInput({
       builder.push(
         `  ${key.fieldName}${
           key.nullable ? '?' : '!'
-        }: ${key.dataType.toLowerCase()}`
+        }: ${(key.dataType.toLowerCase() === "int" ? "number" : key.dataType.toLowerCase())}`
       )
     } else {
       switch (key.dataType) {
@@ -91,7 +91,7 @@ export function generateUpdateInput({
   builder.push(`export class Update${typename}Input {`)
   keys.forEach(key => {
     builder.push(`  @Field({ nullable: true })`)
-    builder.push(`  ${key.fieldName}?: ${key.dataType.toLowerCase()}`)
+    builder.push(`  ${key.fieldName}?: ${(key.dataType.toLowerCase() === "int" ? "number" : key.dataType.toLowerCase())}`)
   })
   builder.push(`}`)
   return builder.join('\n')

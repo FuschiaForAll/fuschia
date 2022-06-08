@@ -261,11 +261,7 @@ function DatabaseConfiguration({
     return null
   }
   return (
-    <div
-      style={{
-        overflow: 'hidden',
-      }}
-    >
+    <div>
       <div>
         {isLocal ? (
           <div />
@@ -426,6 +422,7 @@ const Database: React.FC = function Database() {
           display: 'grid',
           gridTemplateRows: 'auto auto 1fr',
           padding: '2em',
+          overflow: 'auto',
         }}
       >
         <TabWrapper>

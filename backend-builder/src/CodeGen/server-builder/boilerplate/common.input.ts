@@ -1,5 +1,5 @@
 import { ObjectId } from 'mongodb'
-import { Field, InputType, Int, registerEnumType } from 'type-graphql'
+import { Field, InputType, Int, Float, registerEnumType } from 'type-graphql'
 import { ObjectIdScalar } from './utils/object-id.scalar'
 
 @InputType()
@@ -17,6 +17,42 @@ export class ModelSizeInput {
   @Field(type => Int, { nullable: true })
   gt?: number
   @Field(type => [Int], { nullable: true })
+  between?: number[]
+}
+
+@InputType()
+export class ModelIntInput {
+  @Field(type => Int, { nullable: true })
+  ne?: number
+  @Field(type => Int, { nullable: true })
+  eq?: number
+  @Field(type => Int, { nullable: true })
+  le?: number
+  @Field(type => Int, { nullable: true })
+  lt?: number
+  @Field(type => Int, { nullable: true })
+  ge?: number
+  @Field(type => Int, { nullable: true })
+  gt?: number
+  @Field(type => [Int], { nullable: true })
+  between?: number[]
+}
+
+@InputType()
+export class ModelFloatInput {
+  @Field(type => Float, { nullable: true })
+  ne?: number
+  @Field(type => Float, { nullable: true })
+  eq?: number
+  @Field(type => Float, { nullable: true })
+  le?: number
+  @Field(type => Float, { nullable: true })
+  lt?: number
+  @Field(type => Float, { nullable: true })
+  ge?: number
+  @Field(type => Float, { nullable: true })
+  gt?: number
+  @Field(type => [Float], { nullable: true })
   between?: number[]
 }
 

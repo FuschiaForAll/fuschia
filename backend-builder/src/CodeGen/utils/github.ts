@@ -49,15 +49,17 @@ export class GithubRepository {
     // gets commit's AND its tree's SHA
     const currentCommit = await this.GetCurrentCommit(branch)
     const filesPaths = await globby(coursePath)
+    console.log(`\n\n\nHEREHEREHERE!!!!\n\n\n`);
+    console.log(coursePath);
     const filesBlobs = await Promise.all(
       filesPaths.map(file => this.createBlobForFile(file))
     )
-    await Promise.all(additionalFiles.map(async file => filesBlobs.push(await this.createBlobForFile(file))))
+    // await Promise.all(additionalFiles.map(async file => filesBlobs.push(await this.createBlobForFile(file))))
     
     const pathsForBlobs = filesPaths.map(fullPath =>
       path.relative(coursePath, fullPath)
     )
-    additionalFiles.forEach(file => pathsForBlobs.push(path.relative(coursePath, file)))
+    // additionalFiles.forEach(file => pathsForBlobs.push(path.relative(coursePath, file)))
     
     const newTree = await this.createNewTree(
       filesBlobs,

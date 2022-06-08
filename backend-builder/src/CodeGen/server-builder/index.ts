@@ -20,7 +20,7 @@ export class ServerBuilderService {
     await repository.AddGithubSecrets({ dockerhubUsername, dockerhubPassword })
   }
     await GenerateCode(project, project._id.toString(), version)
-    await repository.UploadToRepo(repositoryName, 'develop', [`/tmp/${project._id.toString()}-server/.github/workflows/deploy_test_server.yaml`])
+    await repository.UploadToRepo(`/tmp/${repositoryName}`, 'develop', [`/tmp/${project._id.toString()}-server/.github/workflows/deploy_test_server.yaml`])
     console.log('completed')
   }
 }
