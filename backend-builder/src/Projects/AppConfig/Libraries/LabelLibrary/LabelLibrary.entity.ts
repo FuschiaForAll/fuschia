@@ -8,7 +8,7 @@ import {
 } from "@typegoose/typegoose";
 import { ObjectIdScalar } from "../../../../utils/object-id.scalar";
 
-@modelOptions({ schemaOptions: { _id: false } })
+@modelOptions({ schemaOptions: { _id: false }, options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class Translation {
   @Field((type) => ObjectIdScalar)
@@ -20,6 +20,7 @@ export class Translation {
   value!: string[];
 }
 
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class LabelTag {
   @Field((type) => ObjectIdScalar)
@@ -34,6 +35,7 @@ export class LabelTag {
   numberOfStates!: number;
 }
 
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class Language {
   @Field((type) => ObjectIdScalar)

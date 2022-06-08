@@ -34,7 +34,7 @@ import {
 } from 'react-beautiful-dnd'
 import { DragIndicator } from '@mui/icons-material'
 import { useProjectComponents } from '../../../../utils/hooks/useProjectComponents'
-
+import { v4 as uuid } from 'uuid'
 export type FunctionEditorProps = Props<FunctionSchema, any>
 
 const FUNCTION_TYPES = [
@@ -57,7 +57,11 @@ const FUNCTION_TYPES = [
 type ComponentId = string
 type EntityId = string
 
-interface SwitchProps {
+interface BaseProps {
+  _id: string
+}
+
+interface SwitchProps extends BaseProps {
   type: 'SWITCH'
   switch: EditorState
   case?: Array<{
@@ -65,7 +69,7 @@ interface SwitchProps {
     actions: ActionProps[]
   }>
 }
-interface EmailProps {
+interface EmailProps extends BaseProps {
   type: 'EMAIL'
   serverside: boolean
   from?: string
@@ -74,13 +78,13 @@ interface EmailProps {
   html: string
 }
 
-interface TimerProps {
+interface TimerProps extends BaseProps {
   type: 'TIMER'
   timeout: number
   actions: ActionProps[]
 }
 
-interface LoginProps {
+interface LoginProps extends BaseProps {
   type: 'LOGIN'
   username?: string
   password?: string
@@ -88,13 +92,13 @@ interface LoginProps {
   onFail?: ActionProps[]
 }
 
-interface RegistrationProps {
+interface RegistrationProps extends BaseProps {
   type: 'REGISTER'
   fields: { [key: string]: string }
   onSucess?: ActionProps[]
   onFail?: ActionProps[]
 }
-interface ChangeInputProps {
+interface ChangeInputProps extends BaseProps {
   type: 'CHANGE_INPUT'
   input: string
   props: { [key: string]: any }
@@ -102,23 +106,23 @@ interface ChangeInputProps {
   onFail?: ActionProps[]
 }
 
-interface PasswordRecoveryProps {
+interface PasswordRecoveryProps extends BaseProps {
   type: 'PASSWORD_RECOVERY'
   message?: string
 }
 
-interface AlertProps {
+interface AlertProps extends BaseProps {
   type: 'ALERT'
   message?: string
 }
 
-interface NavigateProps {
+interface NavigateProps extends BaseProps {
   type: 'NAVIGATE'
   destination?: ComponentId
   parameters?: { [targetParameterId: string]: { path: string; label: string } }
 }
 
-interface CreateProps {
+interface CreateProps extends BaseProps {
   type: 'CREATE'
   dataType?: EntityId
   fields?: { [key: string]: string }
@@ -126,14 +130,14 @@ interface CreateProps {
   onFail?: ActionProps[]
 }
 
-interface DeleteProps {
+interface DeleteProps extends BaseProps {
   type: 'DELETE'
   deleteElement?: { path: string; label: string }
   onSucess?: ActionProps[]
   onFail?: ActionProps[]
 }
 
-interface UpdateProps {
+interface UpdateProps extends BaseProps {
   type: 'UPDATE'
   updateElement?: { entity: EntityId; path: string; label: string }
   fields?: { [key: string]: string }
@@ -141,7 +145,7 @@ interface UpdateProps {
   onFail?: ActionProps[]
 }
 
-interface ConditionalProps {
+interface ConditionalProps extends BaseProps {
   type: 'CONDITIONAL'
   if?: Filter
   then?: ActionProps[]
@@ -225,6 +229,7 @@ const SwitchEditor = (props: {
               //   actions: value,
               // })
             }}
+            droppableId={props.params._id}
           />
         </div>
       ))}
@@ -545,6 +550,7 @@ const ConditionalEditor = (props: {
             then: value,
           })
         }}
+        droppableId={props.params._id}
       />
       <ConfigureFunction
         title="Else..."
@@ -556,6 +562,7 @@ const ConditionalEditor = (props: {
             else: value,
           })
         }}
+        droppableId={props.params._id}
       />
     </div>
   )
@@ -598,6 +605,7 @@ const LoginEditor = (props: {
             onSucess: value,
           })
         }}
+        droppableId={props.params._id}
       />
       <ConfigureFunction
         title="On Failure"
@@ -609,6 +617,7 @@ const LoginEditor = (props: {
             onFail: value,
           })
         }}
+        droppableId={props.params._id}
       />
     </div>
   )
@@ -699,6 +708,7 @@ const CreateEditor = (props: {
             onSucess: value,
           })
         }}
+        droppableId={props.params._id}
       />
       <ConfigureFunction
         title="On Failure"
@@ -710,6 +720,7 @@ const CreateEditor = (props: {
             onFail: value,
           })
         }}
+        droppableId={props.params._id}
       />
     </div>
   )
@@ -936,6 +947,7 @@ const RegisterEditor = (props: {
             onSucess: value,
           })
         }}
+        droppableId={props.params._id}
       />
       <ConfigureFunction
         title="On Failure"
@@ -947,6 +959,7 @@ const RegisterEditor = (props: {
             onFail: value,
           })
         }}
+        droppableId={props.params._id}
       />
     </div>
   )
@@ -1099,6 +1112,7 @@ interface ConfigureFunctionProps {
   componentId: string
   Control?: JSX.Element
   updateValue: (newValue: any, isValue: boolean) => void
+  droppableId: string
 }
 
 function ConfigureFunction({
@@ -1107,6 +1121,7 @@ function ConfigureFunction({
   componentId,
   updateValue,
   Control,
+  droppableId,
 }: ConfigureFunctionProps) {
   const [functions, setFunctions] = useState<ActionProps[]>([])
   const editor = (
@@ -1237,18 +1252,18 @@ function ConfigureFunction({
       <span style={{ fontSize: '0.75em' }}>{title || 'undefined'}</span>
       <FunctionWrapper>
         {Control}
-        <Droppable droppableId="actionList" type="ACTIONS" direction="vertical">
+        <Droppable
+          droppableId={droppableId}
+          type="ACTIONS"
+          direction="vertical"
+        >
           {droppableActionsProvided => (
             <div
               ref={droppableActionsProvided.innerRef}
               {...droppableActionsProvided.droppableProps}
             >
               {functions.map((f, index) => (
-                <Draggable
-                  key={index}
-                  draggableId={`${Math.random()}`}
-                  index={index}
-                >
+                <Draggable key={index} draggableId={f._id} index={index}>
                   {(provided: DraggableProvided) => (
                     <ActionWrapper
                       ref={provided.innerRef}
@@ -1266,8 +1281,11 @@ function ConfigureFunction({
                           selectedValue={f.type}
                           onChange={e => {
                             const newFunctions = [...functions]
-                            // @ts-ignore
-                            newFunctions[index] = { type: e.target.value }
+                            newFunctions[index] = {
+                              ...newFunctions[index],
+                              // @ts-ignore
+                              type: e.target.value,
+                            }
                             updateValue(newFunctions, true)
                           }}
                           options={FUNCTION_TYPES.map(t => ({
@@ -1303,7 +1321,7 @@ function ConfigureFunction({
         </Droppable>
         <OutlinedButton
           onClick={() => {
-            updateValue([...functions, { type: 'CREATE' }], true)
+            updateValue([...functions, { type: 'CREATE', _id: uuid() }], true)
           }}
         >
           New Action
@@ -1313,8 +1331,39 @@ function ConfigureFunction({
   )
 }
 
+function reorderArray(arr: any[], startIndex: number, endIndex: number) {
+  const result = Array.from(arr)
+  const [removed] = result.splice(startIndex, 1)
+  result.splice(endIndex, 0, removed)
+
+  return result
+}
+
 const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
-  function handleDragEnd(e: DropResult) {}
+  function handleDragEnd(e: DropResult) {
+    const actions = props.initialValue as ActionProps[]
+    const { destination, source } = e
+    if (!destination) {
+      return
+    }
+    if (
+      destination.droppableId === source.droppableId &&
+      destination.index === source.index
+    ) {
+      return
+    }
+
+    if (source.droppableId === destination.droppableId) {
+      if (source.droppableId === 'root') {
+        const newActions = reorderArray(
+          actions,
+          source.index,
+          destination.index
+        )
+        props.updateValue(newActions, true)
+      }
+    }
+  }
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
@@ -1323,6 +1372,7 @@ const FunctionEditor = function FunctionEditor(props: FunctionEditorProps) {
         value={props.initialValue}
         title={props.schema.title}
         updateValue={props.updateValue}
+        droppableId="root"
       />
     </DragDropContext>
   )

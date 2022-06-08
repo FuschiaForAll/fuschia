@@ -1,7 +1,7 @@
 {
   "private": true,
   "scripts": {
-    "start": "(cd frontend-builder && yarn start) & (cd backend-builder && yarn start) & (cd package-manager && yarn start);"
+    "start": "echo You may want to run this in frontend-builder or backend-builder, not here!"
   },
   "workspaces": [
     "backend-builder",

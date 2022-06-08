@@ -1,11 +1,12 @@
 import { ObjectId } from "mongoose";
 import { ObjectType, Field } from "type-graphql";
-import { prop as Property, getModelForClass } from "@typegoose/typegoose";
+import { prop as Property, getModelForClass, modelOptions, Severity } from "@typegoose/typegoose";
 import { Ref } from "../utils/ref-type";
 import { User } from "../Users/User.entity";
 import { Project } from "../Projects/Project.entity";
 import { ObjectIdScalar } from "../utils/object-id.scalar";
 
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class Invitation {
   @Field((type) => ObjectIdScalar)

@@ -55,8 +55,7 @@ export function generateCreateInput({
     if (isPrimitive) {
       builder.push(`  @Field({ nullable: ${key.nullable} })`)
       builder.push(
-        `  ${key.fieldName}${
-          key.nullable ? '?' : '!'
+        `  ${key.fieldName}${key.nullable ? '?' : '!'
         }: ${(key.dataType.toLowerCase() === "int" ? "number" : key.dataType.toLowerCase())}`
       )
     } else {

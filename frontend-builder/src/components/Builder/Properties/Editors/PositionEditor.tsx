@@ -6,10 +6,10 @@ const PositionEditor = function StringEditor(props: PositionEditorProps) {
   const position = props.initialValue
     ? props.initialValue
     : {
-        left: '0px',
-        right: '0px',
-        top: '0px',
-        bottom: '0px',
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
       }
   return (
     <div>
@@ -40,7 +40,7 @@ const PositionEditor = function StringEditor(props: PositionEditorProps) {
             componentId={props.componentId}
             initialValue={position.left}
             onChange={value => {
-              position.left = value
+              position.left = { ...value, type: 'number' }
               props.updateValue(position, true)
             }}
           />
@@ -58,7 +58,7 @@ const PositionEditor = function StringEditor(props: PositionEditorProps) {
             componentId={props.componentId}
             initialValue={position.right}
             onChange={value => {
-              position.right = value
+              position.right = { ...value, type: 'number' }
               props.updateValue(position, true)
             }}
           />
@@ -76,7 +76,7 @@ const PositionEditor = function StringEditor(props: PositionEditorProps) {
             componentId={props.componentId}
             initialValue={position.top}
             onChange={value => {
-              position.top = value
+              position.top = { ...value, type: 'number' }
               props.updateValue(position, true)
             }}
           />
@@ -95,7 +95,7 @@ const PositionEditor = function StringEditor(props: PositionEditorProps) {
             componentId={props.componentId}
             initialValue={position.bottom}
             onChange={value => {
-              position.bottom = value
+              position.bottom = { ...value, type: 'number' }
               props.updateValue(position, true)
             }}
           />

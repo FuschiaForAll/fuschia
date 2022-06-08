@@ -26,13 +26,13 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "string",
-          "default": "35px"
+          "type": "number",
+          "default": 35
         },
         "width": {
           "title": "Width",
-          "type": "string",
-          "default": "175px"
+          "type": "number",
+          "default": 175
         },
         "backgroundColor": {
           "title": "Background Color",
@@ -42,8 +42,8 @@
         },
         "borderRadius": {
           "title": "Border Radius",
-          "type": "string",
-          "default": "5px"
+          "type": "number",
+          "default": 5
         },
         "display": {
           "title": "Display",

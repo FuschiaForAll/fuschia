@@ -78,6 +78,17 @@ function generateDeleteInput({ typename, keys }: GenerateParameters) {
   return builder.join('\n')
 }
 
+
+function generateSubscriptionPayload({ typename, keys }: GenerateParameters) {
+  const builder = []
+  builder.push(`type ${typename}SubscriptionPayload {`)
+  builder.push(`  type: String!`)
+  builder.push(`  _ids: [ObjectId!]!`)
+  builder.push(`  items: [${typename}!]!`)
+  builder.push(`}`)
+  return builder.join('\n')
+}
+
 function generateConditionalInput({ typename, keys }: GenerateParameters) {
   const builder = []
   builder.push(`input Model${typename}ConditionalInput {`)
@@ -158,6 +169,7 @@ export function generateServerSchema(project: Project) {
   const deleteInputsBuilder = []
   const filtersBuilder = []
   const conditionalBuilder = []
+  const subscriptionInputBuilder = []
   project.serverConfig.apiConfig.models.forEach(model => {
     const name = model.name.replaceAll(' ', '')
     tableAndFieldNameMap[name] = {
@@ -189,10 +201,8 @@ export function generateServerSchema(project: Project) {
     mutationBuilder.push(
       `  delete${name}(input: Delete${name}Input!, condition: Model${name}ConditionalInput): ${name}`
     )
-    subscriptionBuilder.push(`  onCreate${name}: ${name}`)
-    subscriptionBuilder.push(`  onUpdate${name}: ${name}`)
-    subscriptionBuilder.push(`  onDelete${name}: ${name}`)
-
+    subscriptionBuilder.push(`  on${name}Change(filter: Model${name}FilterInput): ${name}SubscriptionPayload`)
+    
     const modelBuilder = []
     modelBuilder.push(`\ntype ${name} {`)
     modelBuilder.push(`  _id: ID!`)
@@ -295,6 +305,7 @@ export function generateServerSchema(project: Project) {
       })
     )
     connectionsBuilder.push(generateConnections(name))
+    subscriptionInputBuilder.push(generateSubscriptionPayload({ typename: name, keys: [] }))
     schemaBuilder.push(modelBuilder.join('\n'))
   })
 
@@ -316,11 +327,15 @@ export function generateServerSchema(project: Project) {
   schemaBuilder.push(deleteInputsBuilder.join('\n'))
   connectionsBuilder.push('\n')
   schemaBuilder.push(connectionsBuilder.join('\n'))
+  subscriptionInputBuilder.push('\n')
+  schemaBuilder.push(subscriptionInputBuilder.join('\n'))
   schemaBuilder.push(ModelSizeInput)
   schemaBuilder.push(ModelAttributeTypes)
   schemaBuilder.push(ModelStringInput)
   schemaBuilder.push(ModelBooleanInput)
   schemaBuilder.push(ModelIDInput)
   schemaBuilder.push(ModelSortDirection)
+  schemaBuilder.push(`\nscalar ObjectId\n`)
+
   return schemaBuilder.join('\n')
 }

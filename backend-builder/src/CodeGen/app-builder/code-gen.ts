@@ -1,6 +1,6 @@
 // get the project structure
-import fs, { CopyOptions } from 'fs-extra'
-import path from 'path'
+import fs, { CopyOptions } from "fs-extra";
+import path from "path";
 import {
   ArrayHookVariable,
   convertHooks,
@@ -15,44 +15,44 @@ import {
   HookVariable,
   Import,
   MultipleHookVariable,
-} from './utils'
-import { ActionProps, ObjectSchema, Schema } from '@fuchsia/types'
-import { baseApp } from './boilerplate/App'
-import { generateServerSchema } from './schema.builder'
-import { exec } from 'child_process'
-import { apolloClient } from './boilerplate/apollo-client'
-import { Component } from '../../Projects/AppConfig/Components/Component.entity'
-import { Project } from '../../Projects/Project.entity'
-import { Package } from '../../Packages/Package.entity'
+} from "./utils";
+import { ActionProps, ObjectSchema, Schema } from "@fuchsia/types";
+import { baseApp } from "./boilerplate/App";
+import { generateServerSchema } from "./schema.builder";
+import { exec, execSync } from "child_process";
+import { apolloClient } from "./boilerplate/apollo-client";
+import { Component } from "../../Projects/AppConfig/Components/Component.entity";
+import { Project } from "../../Projects/Project.entity";
+import { Package } from "../../Packages/Package.entity";
 
 interface StructuredComponent extends Component {
-  children: Component[]
+  children: Component[];
 }
 
 const specialTypeStructure = {
-  'margin': {
-    'left': { type: 'string'},
-    'right': { type: 'string'},
-    'top': { type: 'string'},
-    'bottom': { type: 'string'}
+  margin: {
+    left: { type: "number" },
+    right: { type: "number" },
+    top: { type: "number" },
+    bottom: { type: "number" },
   },
-  'padding': {
-    'left': { type: 'string'},
-    'right': { type: 'string'},
-    'top': { type: 'string'},
-    'bottom': { type: 'string'}
+  padding: {
+    left: { type: "number" },
+    right: { type: "number" },
+    top: { type: "number" },
+    bottom: { type: "number" },
   },
-  'flexContainer': {
-    'size': { type: 'string'},
-    'style': { type: 'string'},
-    'weight': { type: 'string'},
-    'textAlign': { type: 'string'},
-    'textTransform': { type: 'string'},
-    'lineHeight': { type: 'string'}
-  }
-}
+  flexContainer: {
+    size: { type: "number" },
+    style: { type: "string" },
+    weight: { type: "string" },
+    textAlign: { type: "string" },
+    textTransform: { type: "string" },
+    lineHeight: { type: "number" },
+  },
+};
 
-const MAX_DEPTH = 50
+const MAX_DEPTH = 50;
 
 function buildChildStructure(
   parent: Component,
@@ -60,34 +60,42 @@ function buildChildStructure(
   components: StructuredComponent[]
 ): StructuredComponent {
   if (depth === MAX_DEPTH) {
-    throw new Error('Probably recursive component')
+    throw new Error("Probably recursive component");
   }
-  const children = components.filter(c => c.parent && c.parent.toString() === parent._id.toString())
-  const branches = children.map(child => buildChildStructure(child, depth + 1, components))
+  const children = components.filter(
+    (c) => c.parent && c.parent.toString() === parent._id.toString()
+  );
+  const branches = children.map((child) =>
+    buildChildStructure(child, depth + 1, components)
+  );
   return {
     ...parent,
     children: branches,
-  }
+  };
 }
 
 async function getProjectStructure(components: Component[], project: Project) {
-    // get root components
-    const rootElements = components.filter(c => !c.parent)
-    // recursively build entiry tree structure
-    return rootElements.map(c => buildChildStructure(c, 0, components as StructuredComponent[]))
+  // get root components
+  const rootElements = components.filter((c) => !c.parent);
+  // recursively build entiry tree structure
+  return rootElements.map((c) =>
+    buildChildStructure(c, 0, components as StructuredComponent[])
+  );
 }
 
 function getImports(imports: Import, parent: StructuredComponent) {
-  const newImports = { ...imports }
+  const newImports = { ...imports };
   if (!newImports[parent.package]) {
-    newImports[parent.package] = { [parent.type]: 'single' }
+    newImports[parent.package] = { [parent.type]: "single" };
   } else {
-    newImports[parent.package][parent.type] = 'single'
+    newImports[parent.package][parent.type] = "single";
   }
   if (parent.children) {
-    parent.children.forEach(c => getImports(newImports, c as StructuredComponent))
+    parent.children.forEach((c) =>
+      getImports(newImports, c as StructuredComponent)
+    );
   }
-  return newImports
+  return newImports;
 }
 
 async function buildScreen(
@@ -97,113 +105,115 @@ async function buildScreen(
   rootComponents: StructuredComponent[],
   projectInfo: Project
 ) {
-  const hooksBuilder = {} as Hooks
-  const importsBuilder = getImports({}, rootComponent)
+  const hooksBuilder = {} as Hooks;
+  const importsBuilder = getImports({}, rootComponent);
   importsBuilder.react = {
-    React: 'default',
-  }
-  const functionsBuilder = [] as string[]
-  const bableBuilder = [] as string[]
+    React: "default",
+  };
+  const functionsBuilder = [] as string[];
+  const bableBuilder = [] as string[];
 
   function buildChild(component: StructuredComponent, indentation: number) {
-    const propsBuilder = [] as string[]
-    const _package = packages.find(p => p.packageName === component.package)
+    const propsBuilder = [] as string[];
+    const _package = packages.find((p) => p.packageName === component.package);
     if (_package) {
       const packageComponent = _package.components.find(
-        c => c.name === component.type
-      )
+        (c) => c.name === component.type
+      );
       if (packageComponent) {
-        if (packageComponent.schema.type === 'array') {
+        if (packageComponent.schema.type === "array") {
           if (component.fetched) {
-            component.fetched.map(f => {
+            component.fetched.map((f) => {
               // convert to DraftJS
-              const entityType = f.entityType as any
+              const entityType = f.entityType as any;
               if (entityType && entityType.blocks) {
-                
-                const fetchedModel = projectInfo.serverConfig.apiConfig.models.find(
-                  m => m._id.toString() === entityType.entityMap[0].data[0].value)
-                  if (fetchedModel) {
-                    // need import for fetch
-                    if (!importsBuilder['./generated/graphql']) {
-                      importsBuilder['./generated/graphql'] = {}
-                    }
-                    importsBuilder['./generated/graphql'][
-                      `useList${fetchedModel.name}Query`
-                    ] = 'single'
-                    if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
-                      hooksBuilder[`useList${fetchedModel.name}Query`] = {
-                        hook: {
-                          type: 'destructed',
-                          value: {},
-                        },
-                      }
-                    }
-                    ;(
-                      hooksBuilder[`useList${fetchedModel.name}Query`]
-                        .hook as DestructedHookVariable
-                    ).value.data = {
-                      type: 'variable',
-                      value: `data`,
-                      renamed: `${fetchedModel.name}Data`,
-                    }
-                    // need hook for fetch
-                    // need data
-                    propsBuilder.push(`${''.padStart(indentation, ' ')}{
-                      ${fetchedModel.name}Data?.list${
-                      fetchedModel.name
-                    }?.items?.map((item, index) => (
-                    `)
-                    propsBuilder.push(
-                      `${''.padStart(indentation, ' ')}<${
-                        component.type
-                      } key={item._id} index={index}`
-                    )
+                const fetchedModel =
+                  projectInfo.serverConfig.apiConfig.models.find(
+                    (m) =>
+                      m._id.toString() === entityType.entityMap[0].data[0].value
+                  );
+                if (fetchedModel) {
+                  // need import for fetch
+                  if (!importsBuilder["./generated/graphql"]) {
+                    importsBuilder["./generated/graphql"] = {};
                   }
+                  importsBuilder["./generated/graphql"][
+                    `useList${fetchedModel.name}Query`
+                  ] = "single";
+                  if (!hooksBuilder[`useList${fetchedModel.name}Query`]) {
+                    hooksBuilder[`useList${fetchedModel.name}Query`] = {
+                      hook: {
+                        type: "destructed",
+                        value: {},
+                      },
+                    };
+                  }
+                  (
+                    hooksBuilder[`useList${fetchedModel.name}Query`]
+                      .hook as DestructedHookVariable
+                  ).value.data = {
+                    type: "variable",
+                    value: `data`,
+                    renamed: `${fetchedModel.name}Data`,
+                  };
+                  // need hook for fetch
+                  // need data
+                  propsBuilder.push(`${"".padStart(indentation, " ")}{
+                      ${fetchedModel.name}Data?.list${
+                    fetchedModel.name
+                  }?.items?.map((item, index) => (
+                    `);
+                  propsBuilder.push(
+                    `${"".padStart(indentation, " ")}<${
+                      component.type
+                    } key={item._id} index={index}`
+                  );
+                }
               }
-            })
+            });
           }
         } else {
           propsBuilder.push(
-            `${''.padStart(indentation, ' ')}<${component.type}`
-          )
+            `${"".padStart(indentation, " ")}<${component.type}`
+          );
         }
-        importsBuilder.react.useState = 'single'
+        importsBuilder.react.useState = "single";
 
         const dataComponents = [] as Array<{
-          name: string
-          type: string
-        }>
+          name: string;
+          type: string;
+        }>;
 
         // find all packages that emit data
         const findDataBound = (schema: Schema, propKey: string) => {
           switch (schema.type) {
-            case 'ui-component':
-            case 'layout-component':
-            case 'object':
+            case "ui-component":
+            case "layout-component":
+            case "object":
               if (!schema.properties) {
-                return
+                return;
               }
-              Object.keys(schema.properties).forEach(key => {
-                findDataBound(schema.properties[key], key)
-              })
-              break
-            case 'string':
-            case 'number':
-            case 'boolean':
+              Object.keys(schema.properties).forEach((key) => {
+                findDataBound(schema.properties[key], key);
+              });
+              break;
+            case "string":
+            case "number":
+            case "boolean":
               if (schema.dataBound) {
                 dataComponents.push({
                   name: propKey,
                   type: schema.type,
-                })
+                });
               }
-              break
+              break;
           }
-          return false
-        }
+          return false;
+        };
 
-        findDataBound(packageComponent.schema, '')
+        findDataBound(packageComponent.schema, "");
 
-        dataComponents.forEach(d => {
+        dataComponents.forEach((d) => {
           if (
             // @ts-ignore
             !hooksBuilder[`useState<${d.type}>`]
@@ -211,51 +221,51 @@ async function buildScreen(
             // @ts-ignore
             hooksBuilder[`useState<${d.type}>`] = {
               hook: {
-                type: 'multiple',
+                type: "multiple",
                 value: [],
               },
-            }
+            };
           }
-          ;(
+          (
             hooksBuilder[
               // @ts-ignore
               `useState<${d.type}>`
             ].hook as MultipleHookVariable
           ).value.push({
-            type: 'array',
+            type: "array",
             value: [
               {
-                type: 'variable',
+                type: "variable",
                 value: `${component.name}${d.name}`,
               },
               {
-                type: 'variable',
+                type: "variable",
                 value: `set${component.name}${d.name}`,
               },
             ],
-          })
+          });
           propsBuilder.push(
             // @ts-ignore
             `${d.name}={{ value: ${component.name}${d.name}, onChange: set${component.name}${d.name}}}`
-          )
-        })
+          );
+        });
         function convertSchemaProps(
           componentProps: {
-            [key: string]: any
+            [key: string]: any;
           },
           schemaProps: any,
           acc: any
         ) {
-          Object.keys(componentProps).forEach(prop => {
-            const structure = schemaProps[prop]
+          Object.keys(componentProps).forEach((prop) => {
+            const structure = schemaProps[prop];
             if (structure) {
               switch (structure.type) {
-                case 'function':
-                  acc[prop] = `${component.name}${prop}`
+                case "function":
+                  acc[prop] = `${component.name}${prop}`;
                   functionsBuilder.push(
                     `async function ${component.name}${prop}() {`
-                  )
-                  ;(componentProps[prop] as ActionProps[]).forEach(action => {
+                  );
+                  (componentProps[prop] as ActionProps[]).forEach((action) => {
                     functionBuilder(
                       action,
                       importsBuilder,
@@ -264,44 +274,66 @@ async function buildScreen(
                       functionsBuilder,
                       projectInfo,
                       packages
-                    )
-                  })
-                  functionsBuilder.push(`}`)
-                  break
-                case 'string':
-                  acc[prop] = draftJsStuff(
-                    componentProps[prop],
-                    rootComponents,
-                    projectInfo,
-                    packages
-                  )
-                  break
-                case 'object':
+                    );
+                  });
+                  functionsBuilder.push(`}`);
+                  break;
+                case "number":
+                  {
+                    const conversion = draftJsStuff(
+                      componentProps[prop],
+                      rootComponents,
+                      projectInfo,
+                      packages
+                    );
+                    if (!conversion) {
+                      // do nothing
+                    } else if (parseInt(conversion).toString() === conversion) {
+                      acc[prop] = parseInt(conversion);
+                    } else {
+                      acc[prop] = conversion;
+                    }
+                  }
+                  break;
+                case "string":
+                  {
+                    const conversion = draftJsStuff(
+                      componentProps[prop],
+                      rootComponents,
+                      projectInfo,
+                      packages
+                    );
+                    if (conversion) {
+                      acc[prop] = conversion;
+                    }
+                  }
+                  break;
+                case "object":
                   acc[prop] = convertSchemaProps(
                     componentProps[prop],
                     structure.properties,
                     {}
-                  )
-                  break
-                case 'flexContainer':
-                case 'margin':
-                case 'padding':
+                  );
+                  break;
+                case "flexContainer":
+                case "margin":
+                case "padding":
                   acc[prop] = convertSchemaProps(
                     componentProps[prop],
                     // @ts-ignore
                     specialTypeStructure[structure.type],
                     {}
-                  )
+                  );
 
-                  break
-                case 'array':
-                  break
+                  break;
+                case "array":
+                  break;
                 default:
-                  acc[prop] = componentProps[prop]
+                  acc[prop] = componentProps[prop];
               }
             }
-          })
-          return acc
+          });
+          return acc;
         }
         // @ts-ignore
         if (component.props) {
@@ -310,10 +342,10 @@ async function buildScreen(
             // @ts-ignore
             packageComponent.schema.properties,
             {}
-          )
-          Object.keys(props).forEach(prop => {
-            propsBuilder.push(`${prop}={${JSON.stringify(props[prop])}}`)
-  
+          );
+          Object.keys(props).forEach((prop) => {
+            propsBuilder.push(`${prop}={${JSON.stringify(props[prop])}}`);
+
             // // @ts-ignore
             // const structure = packageComponent.schema.properties[prop]
             // if (structure) {
@@ -360,82 +392,82 @@ async function buildScreen(
             //       break
             //   }
             // }
-          })
-
+          });
         }
         if (component.children && component.children.length > 0) {
-          propsBuilder.push('>')
-          bableBuilder.push(propsBuilder.join(' '))
-          component.children.forEach(child =>
+          propsBuilder.push(">");
+          bableBuilder.push(propsBuilder.join(" "));
+          component.children.forEach((child) =>
             buildChild(child as StructuredComponent, indentation + 3)
-          )
+          );
           bableBuilder.push(
-            `${''.padStart(indentation, ' ')}</${component.type}>`
-          )
+            `${"".padStart(indentation, " ")}</${component.type}>`
+          );
 
-          if (packageComponent.schema.type === 'array') {
-            bableBuilder.push(`))}`)
+          if (packageComponent.schema.type === "array") {
+            bableBuilder.push(`))}`);
           }
         } else {
-          propsBuilder.push('/>')
-          bableBuilder.push(propsBuilder.join(' '))
+          propsBuilder.push("/>");
+          bableBuilder.push(propsBuilder.join(" "));
         }
       }
     }
   }
 
-  console.log(`building screen for ${rootComponent.name}`)
-  const file = path.join(srcdir, `${rootComponent.name}.tsx`)
-  await fs.createFile(file)
-  const fileBuilder = []
+  const file = path.join(srcdir, `${rootComponent.name}.tsx`);
+  await fs.createFile(file);
+  const fileBuilder = [];
   if (rootComponent.children) {
-    rootComponent.children.forEach(child => buildChild(child as StructuredComponent, 9))
+    rootComponent.children.forEach((child) =>
+      buildChild(child as StructuredComponent, 9)
+    );
   }
   if (rootComponent.requiresAuth) {
     // need import for fetch
-    if (!importsBuilder['./generated/graphql']) {
-      importsBuilder['./generated/graphql'] = {}
+    if (!importsBuilder["./generated/graphql"]) {
+      importsBuilder["./generated/graphql"] = {};
     }
-    importsBuilder['./generated/graphql'][`useMeQuery`] = 'single'
+    importsBuilder["./generated/graphql"][`useMeQuery`] = "single";
     if (!hooksBuilder[`useMeQuery`]) {
       hooksBuilder[`useMeQuery`] = {
         hook: {
-          type: 'destructed',
+          type: "destructed",
           value: {},
         },
-      }
+      };
     }
-    ;(hooksBuilder[`useMeQuery`].hook as DestructedHookVariable).value.data = {
-      type: 'variable',
+    (hooksBuilder[`useMeQuery`].hook as DestructedHookVariable).value.data = {
+      type: "variable",
       value: `data`,
       renamed: `meData`,
-    }
+    };
   }
   if (rootComponent.parameters && rootComponent.parameters.length > 0) {
-    if (!importsBuilder['./generated/graphql']) {
-      importsBuilder['./generated/graphql'] = {}
+    if (!importsBuilder["./generated/graphql"]) {
+      importsBuilder["./generated/graphql"] = {};
     }
-    rootComponent.parameters.forEach(p => {
+    rootComponent.parameters.forEach((p) => {
       const parameterModel = projectInfo.serverConfig.apiConfig.models.find(
-        m => m._id.toString() === p.entityType.toString()
-      )
+        (m) => m._id.toString() === p.entityType.toString()
+      );
       if (parameterModel) {
-        importsBuilder['@react-navigation/native'][`useRoute`] = 'single'
+        importsBuilder["@react-navigation/native"][`useRoute`] = "single";
         if (!hooksBuilder[`useRoute`]) {
           hooksBuilder[`useRoute`] = {
             hook: {
-              type: 'variable',
-              value: 'route',
+              type: "variable",
+              value: "route",
             },
-          }
+          };
         }
-        importsBuilder['./generated/graphql'][
+        importsBuilder["./generated/graphql"][
           `useGet${parameterModel.name}Query`
-        ] = 'single'
+        ] = "single";
         if (!hooksBuilder[`useGet${parameterModel.name}Query`]) {
           hooksBuilder[`useGet${parameterModel.name}Query`] = {
             hook: {
-              type: 'destructed',
+              type: "destructed",
               value: {},
             },
             parameters: {
@@ -443,82 +475,86 @@ async function buildScreen(
                 _id: `route.params.${parameterModel.name}Id`,
               },
             },
-          }
+          };
         }
-        ;(
+        (
           hooksBuilder[`useGet${parameterModel.name}Query`]
             .hook as DestructedHookVariable
         ).value.data = {
-          type: 'variable',
+          type: "variable",
           value: `data`,
           renamed: `${parameterModel.name}Data`,
-        }
+        };
       }
-    })
+    });
   }
-  fileBuilder.push(`export function ${rootComponent.name} () {`)
-  fileBuilder.push(convertHooks(hooksBuilder))
-  fileBuilder.push(functionsBuilder.join('\n'))
-  fileBuilder.push(`   return (`)
-  fileBuilder.push(`      <${rootComponent.type}>`)
-  fileBuilder.push(bableBuilder.join('\n'))
-  fileBuilder.push()
-  fileBuilder.push(`      </${rootComponent.type}>`)
-  fileBuilder.push(`   )`)
-  fileBuilder.push(`}`)
-  await fs.appendFile(file, convertImports(importsBuilder))
-  await fs.appendFile(file, '\n')
-  await fs.appendFile(file, '\n')
-  await fs.appendFile(file, fileBuilder.join('\n'))
+  fileBuilder.push(`export function ${rootComponent.name} () {`);
+  fileBuilder.push(convertHooks(hooksBuilder));
+  fileBuilder.push(functionsBuilder.join("\n"));
+  fileBuilder.push(`   return (`);
+  fileBuilder.push(`      <${rootComponent.type}>`);
+  fileBuilder.push(bableBuilder.join("\n"));
+  fileBuilder.push();
+  fileBuilder.push(`      </${rootComponent.type}>`);
+  fileBuilder.push(`   )`);
+  fileBuilder.push(`}`);
+  await fs.appendFile(file, convertImports(importsBuilder));
+  await fs.appendFile(file, "\n");
+  await fs.appendFile(file, "\n");
+  await fs.appendFile(file, fileBuilder.join("\n"));
 }
 
-export async function CreateProject(project: Project, appComponents: Component[], schema: Package[], version: string) {
-  const workdir = path.join('/tmp', `${project._id.toString()}-app`)
-  const srcdir = path.join(workdir, 'src')
-  fs.rmSync(workdir, { recursive: true, force: true })
+export async function CreateProject(
+  project: Project,
+  appComponents: Component[],
+  schema: Package[],
+  version: string
+) {
+  const workdir = path.join("/tmp", `${project._id.toString()}-app`);
+  const srcdir = path.join(workdir, "src");
   try {
-    fs.ensureDir(workdir)
-    fs.ensureDir(srcdir)
-
+    fs.ensureDir(workdir);
+    fs.ensureDir(srcdir);
   } catch {
-    throw new Error('happened here')
+    throw new Error("happened here");
   }
   if (!project.appConfig.appEntryComponentId) {
-    throw new Error('No entry point defined')
+    throw new Error("No entry point defined");
   }
-  const structuredAppComponents = await getProjectStructure(appComponents, project)
+  const structuredAppComponents = await getProjectStructure(
+    appComponents,
+    project
+  );
   // create server schema
   await fs.writeFile(
-    path.join(workdir, 'schema.graphql'),
+    path.join(workdir, "schema.graphql"),
     generateServerSchema(project),
-    { flag: 'w' }
-  )
-  await generateAuthGraphqlFiles(srcdir, project)
-  await generateEntityModelGraphqlFiles(srcdir, project)
+    { flag: "w" }
+  );
+  await generateAuthGraphqlFiles(srcdir, project);
+  await generateEntityModelGraphqlFiles(srcdir, project);
   // run apollo codegen
-  await new Promise((resolve, reject) =>
-    exec(`cd ${workdir} && yarn gen`, (error, stdout, stderr) => {
-      if (error) {
-        console.error(error)
-      }
-      if (stdout) {
-        console.error(stdout)
-      }
-      if (stderr) {
-        console.error(stderr)
-      }
-      resolve(1)
-    })
-  )
+  // execSync(`cd ${workdir} && yarn gen`);
 
   await fs.writeFile(
-    path.join(srcdir, 'RootNavigator.tsx'),
-    generateRootNavigator(structuredAppComponents, project.appConfig.appEntryComponentId.toString()),
-    { flag: 'w' }
-  )
-  await fs.writeFile(path.join(srcdir, 'App.tsx'), baseApp)
-  await fs.writeFile(path.join(srcdir, 'apollo-client.tsx'), apolloClient)
-  await Promise.all(structuredAppComponents.map(component =>
-    buildScreen(srcdir, component, schema, structuredAppComponents, project)
-  ))
+    path.join(srcdir, "RootNavigator.tsx"),
+    generateRootNavigator(
+      structuredAppComponents,
+      project.appConfig.appEntryComponentId.toString()
+    ),
+    { flag: "w" }
+  );
+  await fs.writeFile(path.join(srcdir, "App.tsx"), baseApp);
+  await fs.writeFile(path.join(workdir, "App.tsx"), `
+import 'react-native-gesture-handler';
+import App from './src/App';
+
+export default App;
+  `);
+  await fs.writeFile(path.join(srcdir, "apollo-client.tsx"), apolloClient);
+  await Promise.all(
+    structuredAppComponents.map((component) =>
+      buildScreen(srcdir, component, schema, structuredAppComponents, project)
+    )
+  );
 }

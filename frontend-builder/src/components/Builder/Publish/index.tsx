@@ -11,6 +11,7 @@ import {
   useUpdateServerVersionMutation,
 } from '../../../generated/graphql'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
+import QRCode from 'react-qr-code'
 
 function CreateServerInstance({ projectId }: { projectId: string }) {
   const [launchInstance] = useLaunchInstanceMutation()
@@ -169,6 +170,7 @@ function UpdateServerInstance({
         >
           Publish
         </button>
+        <QRCode value={`exp://exp.host/@fuchsia-for-all/${projectId}-app`} />
       </div>
     </div>
   )

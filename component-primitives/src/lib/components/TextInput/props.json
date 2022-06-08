@@ -32,13 +32,13 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "string",
-          "default": "24px"
+          "type": "number",
+          "default": 24
         },
         "width": {
           "title": "Width",
-          "type": "string",
-          "default": "160px"
+          "type": "number",
+          "default": 160
         },
         "color": {
           "title": "Text Color",

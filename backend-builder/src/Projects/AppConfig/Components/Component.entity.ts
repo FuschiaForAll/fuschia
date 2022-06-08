@@ -10,6 +10,8 @@ import {
 } from "@typegoose/typegoose";
 import { PackageComponentType } from "../../../Packages/PackageComponents/PackageComponentType.enum";
 
+
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class DataMembers {
   @Field()
@@ -21,6 +23,8 @@ export class DataMembers {
   type!: string;
 }
 
+
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class RequiredParameter {
   @Field((type) => ObjectIdScalar)
@@ -39,6 +43,7 @@ export class RequiredParameter {
   label!: string;
 }
 
+@modelOptions({ options: { allowMixed: Severity.ALLOW } })
 @ObjectType()
 export class DataSource {
   @Field((type) => Object)

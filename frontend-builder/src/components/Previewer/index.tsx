@@ -104,7 +104,6 @@ function Viewer(props: {
       ))
   )
   if (typeof componentProperties.text === 'object') {
-    debugger
   }
   const InlineComponent =
     // @ts-ignore
@@ -626,7 +625,6 @@ function findDataSourceData(dataSource: any, dataContext: any) {
   console.error(
     `This is not right, we need to get the filtered list from context`
   )
-  debugger
 
   return []
 }

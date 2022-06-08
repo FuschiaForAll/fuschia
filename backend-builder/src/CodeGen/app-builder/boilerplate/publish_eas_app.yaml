@@ -1,12 +1,14 @@
+name: Publish to EAS
+
 on:
   push:
     branches:
-      - deploy
+      - develop
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - name: 🏗 Setup repo
+      - name: Setup repo
         uses: actions/checkout@v2
 
       - name: 🏗 Setup Node
@@ -23,6 +25,12 @@ jobs:
 
       - name: 📦 Install dependencies
         run: yarn install
+
+      - name: 🏗 Generate code
+        run: yarn gen
+
+      - name: 📦 Install expo updates
+        run: expo install expo-updates
 
       - name: 🚀 Publish app
         run: expo publish --non-interactive
