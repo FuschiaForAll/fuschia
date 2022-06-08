@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import styled from '@emotion/styled'
 import { SourceType } from '../../../utils/draftJsConverters'
 
@@ -87,11 +87,15 @@ export function CascadingMenu({
   menu: RootMenu
   onSelect: (entityId: string, path: BoundItem[]) => void
 }) {
+  const [hoveredElement, setHoveredElement] = useState('')
   return (
     <NavMenu>
       {menu.map(element => (
         <li
           key={element.source}
+          onMouseEnter={() => {
+            setHoveredElement(element.source)
+          }}
           onClick={e => {
             e.stopPropagation()
             onSelect(element.entity, [
@@ -113,7 +117,7 @@ export function CascadingMenu({
             <span>{element.label}</span>
             <span>{element.hasSubMenu ? '>' : ''}</span>
           </div>
-          {dataStructure[element.entity] && (
+          {hoveredElement == element.source && dataStructure[element.entity] && (
             <CascadingMenu
               menu={dataStructure[element.entity].fields}
               dataStructure={dataStructure}
