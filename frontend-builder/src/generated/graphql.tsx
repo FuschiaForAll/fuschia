@@ -209,6 +209,14 @@ export type DataFieldInput = {
   nullable: Scalars['Boolean'];
 };
 
+export type DataFieldUpdateInput = {
+  dataType?: InputMaybe<Scalars['String']>;
+  isHashed?: InputMaybe<Scalars['Boolean']>;
+  isList?: InputMaybe<Scalars['Boolean']>;
+  isUnique?: InputMaybe<Scalars['Boolean']>;
+  nullable?: InputMaybe<Scalars['Boolean']>;
+};
+
 export type DataSource = {
   __typename?: 'DataSource';
   entityType: Scalars['JSONObject'];
@@ -344,6 +352,7 @@ export type Mutation = {
   updateComponent: Component;
   updateComponentLayout?: Maybe<Component>;
   updateComponentProps?: Maybe<Component>;
+  updateDataField?: Maybe<Scalars['ObjectId']>;
   updateEntityModel?: Maybe<Scalars['Boolean']>;
   updateImageMetaData: Scalars['Boolean'];
   updateMe: User;
@@ -599,6 +608,14 @@ export type MutationUpdateComponentLayoutArgs = {
 export type MutationUpdateComponentPropsArgs = {
   componentId: Scalars['ObjectId'];
   props: Scalars['JSONObject'];
+};
+
+
+export type MutationUpdateDataFieldArgs = {
+  dataField: DataFieldUpdateInput;
+  dataFieldId: Scalars['ObjectId'];
+  entityModelId: Scalars['ObjectId'];
+  projectId: Scalars['ObjectId'];
 };
 
 
@@ -1298,6 +1315,16 @@ export type DeleteDataFieldMutationVariables = Exact<{
 
 
 export type DeleteDataFieldMutation = { __typename?: 'Mutation', deleteDataField?: any | null };
+
+export type UpdateDataFieldMutationVariables = Exact<{
+  projectId: Scalars['ObjectId'];
+  entityModelId: Scalars['ObjectId'];
+  dataFieldId: Scalars['ObjectId'];
+  dataField: DataFieldUpdateInput;
+}>;
+
+
+export type UpdateDataFieldMutation = { __typename?: 'Mutation', updateDataField?: any | null };
 
 export type CreateEntityModelMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
@@ -2595,6 +2622,45 @@ export function useDeleteDataFieldMutation(baseOptions?: Apollo.MutationHookOpti
 export type DeleteDataFieldMutationHookResult = ReturnType<typeof useDeleteDataFieldMutation>;
 export type DeleteDataFieldMutationResult = Apollo.MutationResult<DeleteDataFieldMutation>;
 export type DeleteDataFieldMutationOptions = Apollo.BaseMutationOptions<DeleteDataFieldMutation, DeleteDataFieldMutationVariables>;
+export const UpdateDataFieldDocument = gql`
+    mutation UpdateDataField($projectId: ObjectId!, $entityModelId: ObjectId!, $dataFieldId: ObjectId!, $dataField: DataFieldUpdateInput!) {
+  updateDataField(
+    projectId: $projectId
+    entityModelId: $entityModelId
+    dataFieldId: $dataFieldId
+    dataField: $dataField
+  )
+}
+    `;
+export type UpdateDataFieldMutationFn = Apollo.MutationFunction<UpdateDataFieldMutation, UpdateDataFieldMutationVariables>;
+
+/**
+ * __useUpdateDataFieldMutation__
+ *
+ * To run a mutation, you first call `useUpdateDataFieldMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateDataFieldMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateDataFieldMutation, { data, loading, error }] = useUpdateDataFieldMutation({
+ *   variables: {
+ *      projectId: // value for 'projectId'
+ *      entityModelId: // value for 'entityModelId'
+ *      dataFieldId: // value for 'dataFieldId'
+ *      dataField: // value for 'dataField'
+ *   },
+ * });
+ */
+export function useUpdateDataFieldMutation(baseOptions?: Apollo.MutationHookOptions<UpdateDataFieldMutation, UpdateDataFieldMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateDataFieldMutation, UpdateDataFieldMutationVariables>(UpdateDataFieldDocument, options);
+      }
+export type UpdateDataFieldMutationHookResult = ReturnType<typeof useUpdateDataFieldMutation>;
+export type UpdateDataFieldMutationResult = Apollo.MutationResult<UpdateDataFieldMutation>;
+export type UpdateDataFieldMutationOptions = Apollo.BaseMutationOptions<UpdateDataFieldMutation, UpdateDataFieldMutationVariables>;
 export const CreateEntityModelDocument = gql`
     mutation CreateEntityModel($projectId: ObjectId!, $name: String!, $isLocal: Boolean!) {
   createEntityModel(projectId: $projectId, name: $name, isLocal: $isLocal) {

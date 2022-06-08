@@ -7,8 +7,10 @@ import {
   GetProjectDocument,
   useCreateDataFieldMutation,
   useDeleteDataFieldMutation,
+  useUpdateDataFieldMutation,
 } from '../../../generated/graphql'
 import DeleteIcon from '@mui/icons-material/Delete'
+import EditIcon from '@mui/icons-material/Edit'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import { PRIMITIVE_DATA_TYPES } from '@fuchsia/types'
 import { LabeledSelect } from '../../Shared/primitives/LabeledSelect'
@@ -55,6 +57,9 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
   const [deleteDataField] = useDeleteDataFieldMutation({
     refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
   })
+  const [updateDataField] = useUpdateDataFieldMutation({
+    refetchQueries: [{ query: GetProjectDocument, variables: { projectId } }],
+  })
   const handleAccordianChange =
     (panel: string) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       setExpanded(isExpanded ? panel : false)
@@ -97,13 +102,51 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
           </AccordionSummary>
           <AccordionDetails sx={{ color: 'black' }}>
             <div>
-              <span>Datatype: {field.dataType}</span>
+              <LabeledSelect
+                label="Data Type"
+                selectedValue={field.dataType}
+                onChange={e => {
+                  const type = e.target.value
+                  updateDataField({
+                    variables: {
+                      dataField: {
+                        dataType: type,
+                      },
+                      dataFieldId: field._id,
+                      entityModelId: model._id,
+                      projectId,
+                    },
+                  })
+                }}
+                options={[
+                  ...PRIMITIVE_DATA_TYPES.map(type => ({
+                    label: type,
+                    value: type,
+                  })),
+                  ...models.map(modelType => ({
+                    label: modelType.name,
+                    value: modelType._id,
+                  })),
+                ]}
+              />
               <div>
                 <label htmlFor="isUnique">Is Unique</label>
                 <input
                   name="isUnique"
                   type="checkbox"
-                  readOnly
+                  onChange={e => {
+                    const value = e.target.checked
+                    updateDataField({
+                      variables: {
+                        dataField: {
+                          isUnique: value,
+                        },
+                        dataFieldId: field._id,
+                        entityModelId: model._id,
+                        projectId,
+                      },
+                    })
+                  }}
                   checked={field.isUnique}
                 />
               </div>
@@ -112,7 +155,19 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 <input
                   name="isHashed"
                   type="checkbox"
-                  readOnly
+                  onChange={e => {
+                    const value = e.target.checked
+                    updateDataField({
+                      variables: {
+                        dataField: {
+                          isHashed: value,
+                        },
+                        dataFieldId: field._id,
+                        entityModelId: model._id,
+                        projectId,
+                      },
+                    })
+                  }}
                   checked={field.isHashed}
                 />
               </div>
@@ -121,7 +176,19 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 <input
                   name="nullable"
                   type="checkbox"
-                  readOnly
+                  onChange={e => {
+                    const value = e.target.checked
+                    updateDataField({
+                      variables: {
+                        dataField: {
+                          nullable: value,
+                        },
+                        dataFieldId: field._id,
+                        entityModelId: model._id,
+                        projectId,
+                      },
+                    })
+                  }}
                   checked={field.nullable}
                 />
               </div>
@@ -130,7 +197,19 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
                 <input
                   name="isList"
                   type="checkbox"
-                  readOnly
+                  onChange={e => {
+                    const value = e.target.checked
+                    updateDataField({
+                      variables: {
+                        dataField: {
+                          isList: value,
+                        },
+                        dataFieldId: field._id,
+                        entityModelId: model._id,
+                        projectId,
+                      },
+                    })
+                  }}
                   checked={!!field.isList}
                 />
               </div>
@@ -147,6 +226,19 @@ export function EntityModel({ projectId, model, models }: EntityModelProps) {
               >
                 <DeleteIcon />
               </IconButton>
+              {/* <IconButton
+                onClick={() => {
+                  // deleteDataField({
+                  //   variables: {
+                  //     projectId,
+                  //     entityModelId: model._id,
+                  //     dataFieldId: field._id,
+                  // },
+                  // })
+                }}
+              >
+                <EditIcon />
+              </IconButton> */}
             </div>
           </AccordionDetails>
         </Accordion>

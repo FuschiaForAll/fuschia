@@ -7,9 +7,9 @@ import { Context } from "../../../../types";
 import { ObjectIdScalar } from "../../../../utils/object-id.scalar";
 import { ProjectService } from "../../../Project.service";
 import { DataField } from "./DataField.entity";
-import { DataFieldInput } from "./DataField.input";
+import { DataFieldInput, DataFieldUpdateInput } from "./DataField.input";
 
-const PRIMITIVE_DATA_TYPES = ["ID", "String", "Boolean", "Int", "Float"];
+const PRIMITIVE_DATA_TYPES = ["ID", "String", "Boolean", "Int", "Float", "Date"];
 
 @Service()
 @Resolver()
@@ -96,6 +96,41 @@ export class DataFieldResolver {
         });
         project.save();
         return dataFieldId;
+      }
+    }
+    return null;
+  }
+
+  @Mutation(() => ObjectIdScalar, { nullable: true})
+  async updateDataField(
+    @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
+    @Arg("entityModelId", (type) => ObjectIdScalar) entityModelId: ObjectId,
+    @Arg("dataField") dataFieldInput: DataFieldUpdateInput,
+    @Ctx() ctx: Context,
+    @Arg("dataFieldId", (type) => ObjectIdScalar) dataFieldId: ObjectId
+  ){
+    const project = await ProjectModel.findById(projectId);
+    if (project) {
+      const entityModel = project.serverConfig.apiConfig.models.find(
+        (model) => {
+          // @ts-ignore
+          return model._id.equals(entityModelId);
+        }
+      );
+      if (entityModel) {
+        const dataField = entityModel.fields.find(field => {
+          // @ts-ignore
+          return field._id.equals(dataFieldId);
+        })
+        if (dataField) {
+          Object.keys(dataFieldInput).forEach(key => {
+          // @ts-ignore
+            dataField[key] = dataFieldInput[key]
+          })
+          project.save();
+          return dataFieldId;
+        }
+
       }
     }
     return null;

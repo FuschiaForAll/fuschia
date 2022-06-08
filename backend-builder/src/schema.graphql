@@ -176,6 +176,14 @@ input DataFieldInput {
   nullable: Boolean!
 }
 
+input DataFieldUpdateInput {
+  dataType: String
+  isHashed: Boolean
+  isList: Boolean
+  isUnique: Boolean
+  nullable: Boolean
+}
+
 type DataSource {
   entityType: JSONObject!
   variables: [JSONObject!]!
@@ -309,6 +317,7 @@ type Mutation {
   updateComponent(componentId: ObjectId!, componentInput: ComponentInput!): Component!
   updateComponentLayout(componentId: ObjectId!, layout: JSONObject!): Component
   updateComponentProps(componentId: ObjectId!, props: JSONObject!): Component
+  updateDataField(dataField: DataFieldUpdateInput!, dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   updateEntityModel: Boolean
   updateImageMetaData(projectId: ObjectId!): Boolean!
   updateMe(userInput: UserInput!): User!

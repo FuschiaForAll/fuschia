@@ -1,0 +1,13 @@
+mutation UpdateDataField(
+  $projectId: ObjectId!
+  $entityModelId: ObjectId!
+  $dataFieldId: ObjectId!
+  $dataField: DataFieldUpdateInput!
+) {
+  updateDataField(
+    projectId: $projectId
+    entityModelId: $entityModelId
+    dataFieldId: $dataFieldId
+    dataField: $dataField
+  )
+}

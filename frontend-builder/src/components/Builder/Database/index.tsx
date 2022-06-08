@@ -224,7 +224,6 @@ function DatabaseConfiguration({
       projectId,
       sandbox: false,
     },
-    pollInterval: 10000,
   })
   const { data: sandboxServerStatusData } = useGetServerStatusQuery({
     variables: {

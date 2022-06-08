@@ -23,3 +23,21 @@ export class DataFieldInput implements Partial<DataField> {
   @Field()
   dataType!: string;
 }
+
+@InputType()
+export class DataFieldUpdateInput implements Partial<DataField> {
+  @Field({nullable: true})
+  isUnique?: boolean;
+
+  @Field({nullable: true})
+  isHashed?: boolean;
+
+  @Field({nullable: true})
+  isList?: boolean;
+
+  @Field({nullable: true})
+  nullable?: boolean;
+
+  @Field({nullable: true})
+  dataType?: string;
+}
