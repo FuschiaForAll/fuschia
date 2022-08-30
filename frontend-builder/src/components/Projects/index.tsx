@@ -6,6 +6,8 @@ import {
   useCreateProjectMutation,
   useListOrganizationsQuery,
   useListProjectsQuery,
+  ListProjectsDocument,
+  useDeleteProjectMutation,
 } from '../../generated/graphql'
 
 const Projects: React.FC = function Projects() {
@@ -34,6 +36,10 @@ const Projects: React.FC = function Projects() {
         },
       })
     },
+  })
+
+  const [deleteProjectMutation] = useDeleteProjectMutation({
+    refetchQueries: [{ query: ListProjectsDocument }],
   })
 
   useEffect(() => {

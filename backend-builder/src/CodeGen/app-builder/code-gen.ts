@@ -98,12 +98,12 @@ function getImports(imports: Import, parent: StructuredComponent) {
   return newImports;
 }
 
-async function buildScreen(
-  srcdir: string,
+export async function buildScreen(
   rootComponent: StructuredComponent,
   packages: Package[],
   rootComponents: StructuredComponent[],
-  projectInfo: Project
+  projectInfo: Project,
+  assetFolder: string
 ) {
   const hooksBuilder = {} as Hooks;
   const importsBuilder = getImports({}, rootComponent);
@@ -261,9 +261,9 @@ async function buildScreen(
             if (structure) {
               switch (structure.type) {
                 case "function":
-                  acc[prop] = `${component.name}${prop}`;
+                  acc[prop] = `${component.name}_${prop}`;
                   functionsBuilder.push(
-                    `async function ${component.name}${prop}() {`
+                    `async function ${component.name}_${prop}() {`
                   );
                   (componentProps[prop] as ActionProps[]).forEach((action) => {
                     functionBuilder(
@@ -273,7 +273,8 @@ async function buildScreen(
                       rootComponents,
                       functionsBuilder,
                       projectInfo,
-                      packages
+                      packages,
+                      assetFolder
                     );
                   });
                   functionsBuilder.push(`}`);
@@ -284,7 +285,8 @@ async function buildScreen(
                       componentProps[prop],
                       rootComponents,
                       projectInfo,
-                      packages
+                      packages,
+                      assetFolder
                     );
                     if (!conversion) {
                       // do nothing
@@ -301,7 +303,8 @@ async function buildScreen(
                       componentProps[prop],
                       rootComponents,
                       projectInfo,
-                      packages
+                      packages,
+                      assetFolder
                     );
                     if (conversion) {
                       acc[prop] = conversion;
@@ -415,8 +418,6 @@ async function buildScreen(
     }
   }
 
-  const file = path.join(srcdir, `${rootComponent.name}.tsx`);
-  await fs.createFile(file);
   const fileBuilder = [];
   if (rootComponent.children) {
     rootComponent.children.forEach((child) =>
@@ -498,10 +499,7 @@ async function buildScreen(
   fileBuilder.push(`      </${rootComponent.type}>`);
   fileBuilder.push(`   )`);
   fileBuilder.push(`}`);
-  await fs.appendFile(file, convertImports(importsBuilder));
-  await fs.appendFile(file, "\n");
-  await fs.appendFile(file, "\n");
-  await fs.appendFile(file, fileBuilder.join("\n"));
+  return `${convertImports(importsBuilder)}\n\n${fileBuilder.join("\n")}`
 }
 
 export async function CreateProject(
@@ -512,9 +510,11 @@ export async function CreateProject(
 ) {
   const workdir = path.join("/tmp", `${project._id.toString()}-app`);
   const srcdir = path.join(workdir, "src");
+  const assetsdir = path.join(srcdir, "assets")
   try {
     fs.ensureDir(workdir);
     fs.ensureDir(srcdir);
+    fs.ensureDir(assetsdir);
   } catch {
     throw new Error("happened here");
   }
@@ -551,10 +551,13 @@ import App from './src/App';
 
 export default App;
   `);
+  
   await fs.writeFile(path.join(srcdir, "apollo-client.tsx"), apolloClient);
   await Promise.all(
-    structuredAppComponents.map((component) =>
-      buildScreen(srcdir, component, schema, structuredAppComponents, project)
-    )
+    structuredAppComponents.map(async (component) => {
+      const file = path.join(srcdir, `${component.name}.tsx`);
+      await fs.createFile(file);
+      await fs.writeFile(file, buildScreen(component, schema, structuredAppComponents, project, assetsdir))
+    })
   );
 }
