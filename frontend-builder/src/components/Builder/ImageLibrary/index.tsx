@@ -7,7 +7,11 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+<<<<<<< HEAD
   imageListClasses,
+=======
+  IconButton,
+>>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
   Link,
   List,
   ListItem,
@@ -25,10 +29,15 @@ import {
   useCreateAssetFolderMutation,
   useListAssetFolderQuery,
   useUploadAssetMutation,
+<<<<<<< HEAD
   useDeleteAssetMutation,
   ListAssetFolderDocument,
+=======
+  useDeleteAssetMutation
+>>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
 } from '../../../generated/graphql'
 import { ArrowRight, Folder, Description } from '@mui/icons-material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 interface FolderStructure {
   [key: string]: null | FolderStructure
@@ -84,6 +93,7 @@ const ImageLibrary = function ImageLibrary() {
     },
   })
   const [uploadAsset] = useUploadAssetMutation()
+  const [deleteAsset] = useDeleteAssetMutation()
   const [createAssetFolder] = useCreateAssetFolderMutation()
   let dragCounter = 0
   useEffect(() => {
@@ -142,7 +152,7 @@ const ImageLibrary = function ImageLibrary() {
       setCurrentFolderContents(
         Object.keys(currentFolderObject).map(key => ({
           title: key,
-          isFolder: !!currentFolderObject[key],
+          isFolder: !!currentFolderObject[key]
         }))
       )
     } else {
@@ -350,7 +360,7 @@ const [deleteAssetMutation] = useDeleteAssetMutation({
                       +!a.isFolder - +!b.isFolder ||
                       a.title.localeCompare(b.title)
                   )
-                  .map(({ title, isFolder }) => (
+                  .map(({ title, isFolder, }) => (
                     <React.Fragment key={`${location}${title}`}>
                       <Divider />
                       <ListItem
@@ -368,6 +378,18 @@ const [deleteAssetMutation] = useDeleteAssetMutation({
                             )
                           }
                         }}
+                        secondaryAction={
+                          <IconButton>
+                            <DeleteIcon
+                              onClick={() => {
+                                deleteAsset({
+                                  variables: {
+                                    projectId,
+                                    imageId: title
+                                  }
+                                })
+                              }} />
+                          </IconButton>}
                       >
                         {isFolder && <ArrowRight />}
 

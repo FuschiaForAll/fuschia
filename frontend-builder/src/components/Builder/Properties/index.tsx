@@ -18,6 +18,7 @@ import DataSources from './DataSources'
 import { useParams } from 'react-router-dom'
 import { LabeledTextInput } from '../../Shared/primitives/LabeledTextInput'
 import {
+  useDeleteComponents,
   useInsertComponent,
   useSelection,
   useUpdateComponent,
@@ -47,6 +48,8 @@ import { DragIndicator } from '@mui/icons-material'
 import { LexoRankHelper } from '../../../utils/lexoRankHelper'
 import { EntitySelector } from '../../Shared/EntitySelector'
 import { SourceType } from '../../../utils/draftJsConverters'
+import { IconButton } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 const TabHeader = styled.span`
   font-weight: 600;
@@ -147,6 +150,8 @@ function LayerChildren({
 }) {
   const { setSelection } = useSelection()
   const [addMenuOpened, setAddMenuOpened] = useState(false)
+  const deleteLayers = useDeleteComponents()
+
   return (
     <Droppable droppableId={parentId} type="ACTIONS" direction="vertical">
       {droppableActionsProvided => (
@@ -187,14 +192,21 @@ function LayerChildren({
                       >
                         <span>{_c.name}</span>
                         {_c.componentType !== PackageComponentType.Element ? (
-                          <OutlinedButton
-                            onClick={e => {
+                          <>
+                            <OutlinedButton
+                              onClick={e => {
+                                e.stopPropagation()
+                                setAddMenuOpened(o => !o)
+                              }}
+                            >
+                              Add
+                            </OutlinedButton>
+                            <IconButton onClick={(e) => {
                               e.stopPropagation()
-                              setAddMenuOpened(o => !o)
-                            }}
-                          >
-                            Add
-                          </OutlinedButton>
+                              deleteLayers(_c._id)
+                            }}>
+                              <DeleteIcon />
+                            </IconButton> </>
                         ) : (
                           <></>
                         )}
@@ -263,6 +275,7 @@ function Layers({ componentId }: { componentId: string }) {
           Add
         </OutlinedButton>
         {addMenuOpened && <AddMenu parentId={structuredComponent._id} />}
+
       </div>
     )
   }
@@ -467,43 +480,43 @@ function Properties({
       />
       {(component.componentType === PackageComponentType.Screen ||
         component.componentType === PackageComponentType.Stack) && (
-        <div style={{ display: 'grid', gap: '1em', gridAutoFlow: 'column' }}>
-          <LabeledTextInput
-            label="x"
-            value={component.x}
-            onChange={e => {
-              const x = parseInt(e.target.value)
+          <div style={{ display: 'grid', gap: '1em', gridAutoFlow: 'column' }}>
+            <LabeledTextInput
+              label="x"
+              value={component.x}
+              onChange={e => {
+                const x = parseInt(e.target.value)
 
-              updateComponent(
-                elementId,
-                {
-                  x,
-                },
-                {
-                  x: component.x,
-                }
-              )
-            }}
-          />
-          <LabeledTextInput
-            label="y"
-            value={component.y}
-            onChange={e => {
-              const y = parseInt(e.target.value)
+                updateComponent(
+                  elementId,
+                  {
+                    x,
+                  },
+                  {
+                    x: component.x,
+                  }
+                )
+              }}
+            />
+            <LabeledTextInput
+              label="y"
+              value={component.y}
+              onChange={e => {
+                const y = parseInt(e.target.value)
 
-              updateComponent(
-                elementId,
-                {
-                  y,
-                },
-                {
-                  y: component.y,
-                }
-              )
-            }}
-          />
-        </div>
-      )}
+                updateComponent(
+                  elementId,
+                  {
+                    y,
+                  },
+                  {
+                    y: component.y,
+                  }
+                )
+              }}
+            />
+          </div>
+        )}
       {component.componentType === PackageComponentType.Screen && (
         <LabeledCheckbox
           label="Welcome Screen?"

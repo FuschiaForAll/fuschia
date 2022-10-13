@@ -7,18 +7,6 @@
   "width": 160,
   "height": 35,
   "properties": {
-    "properties": {
-      "type": "object",
-      "title": "Properties",
-      "properties": {
-        "source": {
-          "type": "string",
-          "title": "Image URL",
-          "description": "The value to display",
-          "default": "Lorem Ipsum"
-        }
-      }
-    },
     "style": {
       "type": "object",
       "title": "Component Styling",
@@ -26,25 +14,85 @@
       "properties": {
         "height": {
           "title": "Height",
-          "type": "string",
-          "default": "35px"
+          "type": "number",
+          "default": 150
         },
         "width": {
           "title": "Width",
+          "type": "number",
+          "default": 150
+        },
+        "borderRadius": {
+          "title": "Border Radius",
+          "type": "number",
+          "default": 5
+        },
+        "backgroundColor": {
+          "title": "Background Color",
           "type": "string",
-          "default": "175px"
+          "default": "#303030",
+          "format": "color"
+        },
+        "backgroundImage": {
+          "type": "object",
+          "title": "Background Image",
+          "properties": {
+            "source": {
+              "title": "Image URL",
+              "type": "string"
+            },
+            "resizeMode": {
+              "title": "Resize Mode",
+              "type": "string"
+            },
+            "style": {
+              "type": "object",
+              "title": "Style",
+              "properties": {
+                "justifyContent": {
+                  "title": "Justify Content",
+                  "type": "string"
+                },
+                "flex": {
+                  "title": "Flex",
+                  "type": "number"
+                }
+              }
+            }
+          }
         }
       }
     },
-    "actions": {
+    "layout": {
       "type": "object",
-      "title": "Actions",
+      "title": "Component Layout",
       "properties": {
-        "onPress": {
-          "title": "onPress",
-          "type": "function",
-          "arguments": [],
-          "returnType": "null"
+        "display": {
+          "title": "Display",
+          "type": "string",
+          "default": "flex"
+        },
+        "position": {
+          "title": "Position",
+          "type": "string",
+          "default": "initial"
+        },
+        "flexContainer": {
+          "title": "Flex",
+          "type": "flexContainer"
+        },
+        "margin": {
+          "title": "Margin",
+          "type": "margin"
+        },
+        "padding": {
+          "title": "Padding",
+          "type": "padding"
+        },
+        "flex": {
+          "title": "Flex",
+          "type": "string",
+          "default": "1"
         }
       }
     }

@@ -35,7 +35,9 @@ const defaultPackages = [
   { packageName: "react-native", version: "0.68.2" },
   { packageName: "react-native-gesture-handler", version: "2.2.1" },
   { packageName: "react-native-safe-area-context", version: "4.2.4" },
-  { packageName: "react-native-web", version: "0.17.7" }
+  { packageName: "react-native-web", version: "0.17.7" },
+  { packageName: "react-native-reanimated", version: "2.9.1"},
+  { packageName: "react-native-screens", version: "3.15.0"}
 ]
 
 @Service()
@@ -58,7 +60,7 @@ export class AppBuilderService {
         await repository.AddGithubSecrets({ expoToken })
       }
       console.log('executing expo init')
-      execSync(`cd /tmp/ && expo init --name ${repositoryName} --no-install --template expo-template-blank-typescript`)
+      execSync(`cd /tmp/ && expo init ${repositoryName} --no-install --template expo-template-blank-typescript`)
 
       // update app.json for Expo
       const expoAppJson = JSON.parse(fs.readFileSync(path.join(`/tmp`, repositoryName, 'app.json'), 'utf-8'))
@@ -79,7 +81,7 @@ export class AppBuilderService {
       packageJson.version = version
       packageJson.scripts.gen = "graphql-codegen --config codegen.yml"
       packageJson.scripts.lint = "eslint ."
-      packageJson.scripts.format = "prettier --write '**/*.js'"
+      packageJson.scripts.format = "prettier --write '**/*.ts'"
       defaultPackages.forEach(p => packageJson.dependencies[p.packageName] = p.version)
       defaultDevPackages.forEach(p => packageJson.devDependencies[p.packageName] = p.version)
       console.log('writing package.json')
@@ -97,10 +99,14 @@ export class AppBuilderService {
         path.join(biolerplatedir, 'codegen.yml'),
         path.join(`/tmp`, repositoryName, 'codegen.yml')
       )
+      await fs.copyFile(
+        path.join(biolerplatedir, 'gitignore.template'),
+        path.join(`/tmp`, repositoryName, '.gitignore')
+      )
       console.log('executing create project')
       await CreateProject(project, components, packages, version)
       console.log('executing upload of project')
-      await repository.UploadToRepo(path.join('/tmp', repositoryName), 'develop', [`/tmp/${repositoryName}/.github/workflows/publish_eas_app.yaml`])
+      await repository.UploadToRepo(path.join('/tmp', repositoryName), 'develop', [`/tmp/${repositoryName}/.github/workflows/publish_eas_app.yaml`, `/tmp/${repositoryName}/.gitignore`])
     } catch (e) {
       console.error(e)
     } finally {

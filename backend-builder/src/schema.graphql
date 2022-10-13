@@ -288,7 +288,7 @@ type Mutation {
   createTranslation(languageId: ObjectId!, projectId: ObjectId!, tagId: ObjectId!, translations: [String!]!): Project!
   createUser(user: UserInput!): User!
   deleteAppVariable(projectId: ObjectId!, variableId: ObjectId!): Boolean!
-  deleteAsset(imageId: ObjectId!, projectId: ObjectId!): Boolean!
+  deleteAsset(imageId: String!, projectId: ObjectId!): Boolean!
   deleteComponents(componentIds: [ObjectId!]!, projectId: ObjectId!): [ObjectId!]!
   deleteDataField(dataFieldId: ObjectId!, entityModelId: ObjectId!, projectId: ObjectId!): ObjectId
   deleteEntityModel(entityModelId: ObjectId!, projectId: ObjectId!): ObjectId

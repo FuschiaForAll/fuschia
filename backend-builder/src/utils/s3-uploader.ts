@@ -86,4 +86,21 @@ export class S3Uploader {
       })
       .promise();
   }
+
+  public async saveFile(key: string, fullPath: string) {
+    return new Promise((resolve, reject) => {
+      this.s3
+        .getObject({
+          Bucket: S3_BUCKET_NAME,
+          Key: key,
+        }, async (err, data) => {
+          if (err) return reject(err);
+          if (data.Body) {
+            fs.writeFileSync(fullPath, data.Body?.toString(), 'utf8')
+            return resolve('true')
+          }
+        })
+        reject('something went wrong')
+    })
+  }
 }

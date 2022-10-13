@@ -44,7 +44,7 @@ export class AssetLibraryResolver {
   constructor(
     private s3Uploader: S3Uploader,
     private projectService: ProjectService
-  ) {}
+  ) { }
   @Mutation((type) => Boolean)
   async uploadAsset(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
@@ -64,7 +64,7 @@ export class AssetLibraryResolver {
         .toLowerCase()
         .trim();
       if ([".jpg", ".jpeg", ".gif", ".png"].includes(ext)) {
-        const generatedFileName = `${uuid()}${ext}`;
+        const generatedFileName = filename;
         const tempPath = path.join("/tmp", generatedFileName);
         try {
           const fileStream = createReadStream();
@@ -116,10 +116,27 @@ export class AssetLibraryResolver {
   @Mutation((type) => Boolean)
   async deleteAsset(
     @Arg("projectId", (type) => ObjectIdScalar) projectId: ObjectId,
-    @Arg("imageId", (type) => ObjectIdScalar) imageId: ObjectId,
+    @Arg("imageId") imageId: string,
     @Ctx() ctx: Context
   ) {
-    throw new Error("Not Implemented");
+    const project = await ProjectModel.findById(projectId);
+    if (project && project.assetLibrary?.assets) {
+      const asset = await AssetModel.findOne({
+        where: { key: imageId }
+      })
+      if (asset) {
+        const assetItem = project.assetLibrary.assets.find(item => item === asset._id)
+        if (!assetItem) {
+          throw new Error("Asset does not exist");
+        }
+        this.s3Uploader.deleteFile(asset.key)
+        await AssetModel.findByIdAndDelete(assetItem)
+        project.assetLibrary.assets = project.assetLibrary.assets.filter(item => item !== asset._id)
+        await project.save()
+        return true;
+      }
+    }
+    return false;
   }
 
   @Mutation((type) => Boolean)
