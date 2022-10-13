@@ -6,6 +6,8 @@ import path from 'path'
 import { Component } from '../../Projects/AppConfig/Components/Component.entity'
 import { Project } from '../../Projects/Project.entity'
 import { Package } from '../../Packages/Package.entity'
+import { Container } from "typedi";
+import { S3Uploader } from '../../utils/s3-uploader'
 export interface Import {
   [packageName: string]: { [componentName: string]: 'default' | 'single' }
 }
@@ -82,12 +84,13 @@ export const draftJsStuff = (
   value: any,
   rootComponents: StructuredComponent[],
   projectInfo: Project,
-  packages: Package[]
+  packages: Package[],
+  assetFolder: string
 ) => {
   if (!value) {
     return ``
   }
-
+  const uploader = Container.get(S3Uploader)
   if (typeof value === 'object') {
     if (value.blocks) {
       let textParts = [] as string[]
@@ -105,6 +108,9 @@ export const draftJsStuff = (
               }, {} as any)
 
               switch (entityData[0].type) {
+                case 'ASSET':
+                  // save the asset into the assets folder
+                  break;
                 case 'INPUT':
                   const [parts, dataPath] = entityData[
                     entityData.length - 1
@@ -198,7 +204,7 @@ export const draftJsStuff = (
       return textParts.join('\n')
     }
     return Object.keys(value).reduce((acc, key) => {
-      acc[key] = draftJsStuff(value[key], rootComponents, projectInfo, packages)
+      acc[key] = draftJsStuff(value[key], rootComponents, projectInfo, packages, assetFolder)
       return acc
     }, {} as any)
   }
@@ -541,7 +547,8 @@ export function functionBuilder(
   rootComponents: StructuredComponent[],
   propsBuilder: string[],
   projectInfo: Project,
-  packages: Package[]
+  packages: Package[],
+  assetFolder: string
 ) {
   switch (action.type) {
     case 'NAVIGATE':
@@ -590,7 +597,8 @@ export function functionBuilder(
           action.message,
           rootComponents,
           projectInfo,
-          packages
+          packages,
+          assetFolder
         )}");`
       )
       break
@@ -616,12 +624,14 @@ export function functionBuilder(
           action.username,
           rootComponents,
           projectInfo,
-          packages
+          packages,
+          assetFolder
         )}\`, password: \`${draftJsStuff(
           action.password,
           rootComponents,
           projectInfo,
-          packages
+          packages,
+          assetFolder
         )}\`}});`
       )
       if (action.onSucess) {
@@ -643,7 +653,8 @@ export function functionBuilder(
             rootComponents,
             propsBuilder,
             projectInfo,
-            packages
+            packages,
+            assetFolder
           )
         )
         propsBuilder.push(`}`)
@@ -658,7 +669,8 @@ export function functionBuilder(
             rootComponents,
             propsBuilder,
             projectInfo,
-            packages
+            packages,
+            assetFolder
           )
         )
         propsBuilder.push(`}`)
@@ -696,7 +708,8 @@ export function functionBuilder(
             action.fields[f],
             rootComponents,
             projectInfo,
-            packages
+            packages,
+            assetFolder
           )
           const field = authModel.fields.find(
             field => field._id.toString() === f
@@ -730,7 +743,8 @@ export function functionBuilder(
               rootComponents,
               propsBuilder,
               projectInfo,
-              packages
+              packages,
+              assetFolder
             )
           )
           propsBuilder.push(`}`)
@@ -745,7 +759,8 @@ export function functionBuilder(
               rootComponents,
               propsBuilder,
               projectInfo,
-              packages
+              packages,
+              assetFolder
             )
           )
           propsBuilder.push(`}`)
@@ -789,7 +804,8 @@ export function functionBuilder(
               actionFields[f],
               rootComponents,
               projectInfo,
-              packages
+              packages,
+              assetFolder
             )
             const field = model.fields.find(field => field._id.toString() === f)
             if (field) {
@@ -929,7 +945,8 @@ export function functionBuilder(
               actionFields[f],
               rootComponents,
               projectInfo,
-              packages
+              packages,
+              assetFolder
             )
             const field = model.fields.find(field => field._id.toString() === f)
             if (field) {

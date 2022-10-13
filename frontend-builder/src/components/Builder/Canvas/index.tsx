@@ -121,15 +121,22 @@ const Canvas: React.FC = function Canvas() {
     <Wrapper
       id="main-canvas"
       ref={ref}
-      onMouseDown={e => {
-        if (e.button === 1) {
-          document.body.addEventListener('mousemove', mouseMove, true)
-        }
-      }}
-      onMouseUp={e => {
-        document.body.removeEventListener('mousemove', mouseMove, true)
-      }}
-      onWheel={handleWheel}
+      // onMouseDown={e => {
+      //   if (e.button === 1) {
+      //     document.body.addEventListener('mousemove', mouseMove, true)
+      //   }
+      // }}
+      // onMouseUp={e => {
+      //   document.body.removeEventListener('mousemove', mouseMove, true)
+      // }}
+      // onWheel={handleWheel}
+      onMouseDown={e => console.log('mouse down')}
+      onMouseUp={e => console.log('mouse up')}
+      onWheel={e => console.log('on wheel')}
+      onTouchStart={e => console.log('touch start')}
+      onTouchEnd={e => console.log('touch end')}
+      onTouchMove={e => console.log('touch move')}
+      onTouchCancel={e => console.log('touch cancel')}
     >
       <KeyboardEvents />
       <Backdrop onMouseDown={handleDeselect} />
