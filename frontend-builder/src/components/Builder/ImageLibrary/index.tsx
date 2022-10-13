@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  IconButton,
   Link,
   List,
   ListItem,
@@ -24,8 +25,10 @@ import {
   useCreateAssetFolderMutation,
   useListAssetFolderQuery,
   useUploadAssetMutation,
+  useDeleteAssetMutation
 } from '../../../generated/graphql'
 import { ArrowRight, Folder, Description } from '@mui/icons-material'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 interface FolderStructure {
   [key: string]: null | FolderStructure
@@ -81,6 +84,7 @@ const ImageLibrary = function ImageLibrary() {
     },
   })
   const [uploadAsset] = useUploadAssetMutation()
+  const [deleteAsset] = useDeleteAssetMutation()
   const [createAssetFolder] = useCreateAssetFolderMutation()
   let dragCounter = 0
   useEffect(() => {
@@ -139,7 +143,7 @@ const ImageLibrary = function ImageLibrary() {
       setCurrentFolderContents(
         Object.keys(currentFolderObject).map(key => ({
           title: key,
-          isFolder: !!currentFolderObject[key],
+          isFolder: !!currentFolderObject[key]
         }))
       )
     } else {
@@ -344,7 +348,7 @@ const ImageLibrary = function ImageLibrary() {
                       +!a.isFolder - +!b.isFolder ||
                       a.title.localeCompare(b.title)
                   )
-                  .map(({ title, isFolder }) => (
+                  .map(({ title, isFolder, }) => (
                     <React.Fragment key={`${location}${title}`}>
                       <Divider />
                       <ListItem
@@ -362,6 +366,18 @@ const ImageLibrary = function ImageLibrary() {
                             )
                           }
                         }}
+                        secondaryAction={
+                          <IconButton>
+                            <DeleteIcon
+                              onClick={() => {
+                                deleteAsset({
+                                  variables: {
+                                    projectId,
+                                    imageId: title
+                                  }
+                                })
+                              }} />
+                          </IconButton>}
                       >
                         {isFolder && <ArrowRight />}
 

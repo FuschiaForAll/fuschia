@@ -468,7 +468,7 @@ export type MutationDeleteAppVariableArgs = {
 
 
 export type MutationDeleteAssetArgs = {
-  imageId: Scalars['ObjectId'];
+  imageId: Scalars['String'];
   projectId: Scalars['ObjectId'];
 };
 
@@ -1158,7 +1158,7 @@ export type CreateAssetFolderMutation = { __typename?: 'Mutation', createAssetFo
 
 export type DeleteAssetMutationVariables = Exact<{
   projectId: Scalars['ObjectId'];
-  imageId: Scalars['ObjectId'];
+  imageId: Scalars['String'];
 }>;
 
 
@@ -1879,7 +1879,7 @@ export type CreateAssetFolderMutationHookResult = ReturnType<typeof useCreateAss
 export type CreateAssetFolderMutationResult = Apollo.MutationResult<CreateAssetFolderMutation>;
 export type CreateAssetFolderMutationOptions = Apollo.BaseMutationOptions<CreateAssetFolderMutation, CreateAssetFolderMutationVariables>;
 export const DeleteAssetDocument = gql`
-    mutation DeleteAsset($projectId: ObjectId!, $imageId: ObjectId!) {
+    mutation DeleteAsset($projectId: ObjectId!, $imageId: String!) {
   deleteAsset(projectId: $projectId, imageId: $imageId)
 }
     `;
