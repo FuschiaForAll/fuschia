@@ -9,6 +9,8 @@ import NewProject from '../Projects/NewProject'
 import Organizations from '../Settings/Organizations'
 import './App.css'
 import { PrivateRoute } from './PrivateRoute'
+import Datatable from '../Dashboard/datatable'
+
 const App: React.FC = function App() {
   const [loaded, setLoaded] = useState(false)
   const { data: packageData } = useGetPackagesQuery({
@@ -42,6 +44,7 @@ const App: React.FC = function App() {
           <Route path="/projects/:projectId/builder/*" element={<Builder />} />
           <Route path="/projects" element={<Projects />} />
           <Route path="/organizations" element={<Organizations />} />
+          <Route path="/dashboard/datatable" element={<Datatable />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -78,14 +78,14 @@ const Organizations: React.FC = function Organizations() {
     return <div>Loading...</div>
   }
   return (
-    <div>
+    <div style={{ margin: '10px', padding: '10px'}} >
       <h1>Organizations</h1>
-      <div>
+      <div  style={{ margin: '10px', padding: '10px', fontSize:'16px'}} >
         {organizationData?.listOrganizations.map(orgs => (
-          <div key={orgs._id}>
+          <div key={orgs._id} >
             <span>{orgs.name}</span>
             <span>
-              <button
+              <button style={{ margin: '10px'}}
                 onClick={() =>
                   deleteOrganization({
                     variables: { organizationId: orgs._id },
@@ -100,7 +100,7 @@ const Organizations: React.FC = function Organizations() {
       </div>
       <div>
         <h2>Create New Organization</h2>
-        <div>
+        <div  style={{ margin: '10px', padding: '10px'}} >
           <input
             type="text"
             value={newOrgName}
@@ -109,7 +109,7 @@ const Organizations: React.FC = function Organizations() {
               setNewOrgName(name)
             }}
           />
-          <button onClick={() => createNewOrg()}>Create</button>
+          <button style={{ margin: '10px', fontSize:'20px',backgroundColor: 'fuchsia'}} onClick={() => createNewOrg()}>Create</button>
         </div>
       </div>
       <button onClick={() => navigate('/projects')}>Go to projects</button>

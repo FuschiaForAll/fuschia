@@ -21,7 +21,11 @@ export function LabeledTextInput(props: LabeledTextInputProps) {
       }}
       labelPlacement={labelPlacement}
       control={<TextInput {...rest} />}
-      label={<span style={{ fontSize }}>{label}</span>}
+      label={
+        <span style={{ fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+          {label}
+        </span>
+      }
     />
   )
 }

@@ -56,7 +56,7 @@ function StatusChip({
         borderWidth: 1,
         borderStyle: 'solid',
         borderRadius: 5,
-        width: 125,
+        width: 100,
       }}
     >
       <Box
@@ -139,7 +139,7 @@ function VariableConfiguration({
           </IconButton>
         </div>
       ))}
-      <div>Create variable</div>
+      <div className='auth'>Create variable</div>
       <div>
         <LabeledTextInput
           label="Field Name"
@@ -271,6 +271,7 @@ function DatabaseConfiguration({
               gridTemplateColumns: 'auto auto',
               justifyContent: 'end',
               gap: '0.5rem',
+              cursor: 'pointer',
             }}
           >
             <StatusChip

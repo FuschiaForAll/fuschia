@@ -1,0 +1,38 @@
+[ 
+  {
+    "id": 1, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  },
+  {
+    "id": 2, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  },
+  {
+    "id": 3, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  },
+  {
+    "id": 4, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  },
+  {
+    "id": 5, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  },
+  {
+    "id": 6, 
+    "name": "John Doe", 
+    "email": "jdoe@gmail.com",
+    "role": "Admin"
+  }
+]
