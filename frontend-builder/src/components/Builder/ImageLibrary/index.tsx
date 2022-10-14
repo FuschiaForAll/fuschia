@@ -7,11 +7,7 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-<<<<<<< HEAD
-  imageListClasses,
-=======
   IconButton,
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
   Link,
   List,
   ListItem,
@@ -29,13 +25,9 @@ import {
   useCreateAssetFolderMutation,
   useListAssetFolderQuery,
   useUploadAssetMutation,
-<<<<<<< HEAD
   useDeleteAssetMutation,
   ListAssetFolderDocument,
-=======
-  useDeleteAssetMutation
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
-} from '../../../generated/graphql'
+ } from '../../../generated/graphql'
 import { ArrowRight, Folder, Description } from '@mui/icons-material'
 import DeleteIcon from '@mui/icons-material/Delete'
 

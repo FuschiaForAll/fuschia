@@ -457,16 +457,9 @@ export type MutationDeleteAppVariableArgs = {
 }
 
 export type MutationDeleteAssetArgs = {
-<<<<<<< HEAD
   imageId: Scalars['ObjectId']
   projectId: Scalars['ObjectId']
-}
-=======
-  imageId: Scalars['String'];
-  projectId: Scalars['ObjectId'];
 };
-
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
 
 export type MutationDeleteComponentsArgs = {
   componentIds: Array<Scalars['ObjectId']>
@@ -1111,16 +1104,9 @@ export type CreateAssetFolderMutation = {
 }
 
 export type DeleteAssetMutationVariables = Exact<{
-<<<<<<< HEAD
   projectId: Scalars['ObjectId']
   imageId: Scalars['ObjectId']
-}>
-=======
-  projectId: Scalars['ObjectId'];
-  imageId: Scalars['String'];
 }>;
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
-
 export type DeleteAssetMutation = {
   __typename?: 'Mutation'
   deleteAsset: boolean
@@ -3174,7 +3160,6 @@ export type CreateAssetFolderMutationFn = Apollo.MutationFunction<
  *   },
  * });
  */
-<<<<<<< HEAD
 export function useCreateAssetFolderMutation(
   baseOptions?: Apollo.MutationHookOptions<
     CreateAssetFolderMutation,
@@ -3186,18 +3171,6 @@ export function useCreateAssetFolderMutation(
     CreateAssetFolderMutation,
     CreateAssetFolderMutationVariables
   >(CreateAssetFolderDocument, options)
-=======
-export function useCreateAssetFolderMutation(baseOptions?: Apollo.MutationHookOptions<CreateAssetFolderMutation, CreateAssetFolderMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateAssetFolderMutation, CreateAssetFolderMutationVariables>(CreateAssetFolderDocument, options);
-      }
-export type CreateAssetFolderMutationHookResult = ReturnType<typeof useCreateAssetFolderMutation>;
-export type CreateAssetFolderMutationResult = Apollo.MutationResult<CreateAssetFolderMutation>;
-export type CreateAssetFolderMutationOptions = Apollo.BaseMutationOptions<CreateAssetFolderMutation, CreateAssetFolderMutationVariables>;
-export const DeleteAssetDocument = gql`
-    mutation DeleteAsset($projectId: ObjectId!, $imageId: String!) {
-  deleteAsset(projectId: $projectId, imageId: $imageId)
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
 }
 export type CreateAssetFolderMutationHookResult = ReturnType<
   typeof useCreateAssetFolderMutation

@@ -7,12 +7,8 @@ import {
   useCreateProjectMutation,
   useListOrganizationsQuery,
   useListProjectsQuery,
-<<<<<<< HEAD
-  
-=======
   ListProjectsDocument,
   useDeleteProjectMutation,
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
 } from '../../generated/graphql'
 
 const Projects: React.FC = function Projects() {
@@ -42,15 +38,9 @@ const Projects: React.FC = function Projects() {
       })
     },
   })
-<<<<<<< HEAD
-  
-=======
-
   const [deleteProjectMutation] = useDeleteProjectMutation({
     refetchQueries: [{ query: ListProjectsDocument }],
   })
-
->>>>>>> 72a04242a793ef08d8bb4367e8d197ecff1a8e89
   useEffect(() => {
     if (organizations && organizations.listOrganizations.length > 0) {
       setSelectedOrganization(organizations.listOrganizations[0]._id)
