@@ -10,7 +10,7 @@ export const Button = styled.button`
   border-radius: 8px;
   padding: 0.75em;
   &:disabled {
-    color: gray;
+    color: white;
   }
   &:hover:enabled {
     cursor: pointer;

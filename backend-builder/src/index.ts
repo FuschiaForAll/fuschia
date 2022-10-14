@@ -55,8 +55,8 @@ import { InvitationResolver } from "./Invitations/Invitation.resolver";
 import AWS from "aws-sdk";
 import { ServerResolver } from "./Projects/ServerConfig/Server.resolver";
 
-const key = fs.readFileSync(path.join(__dirname, "./cert/key.pem"));
-const cert = fs.readFileSync(path.join(__dirname, "./cert/cert.pem"));
+const key = fs.readFileSync(path.join(__dirname, "./cert/localhost.key"));
+const cert = fs.readFileSync(path.join(__dirname, "./cert/localhost.crt"));
 
 (async () => {
 

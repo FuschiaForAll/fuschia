@@ -25,8 +25,9 @@ import {
   useCreateAssetFolderMutation,
   useListAssetFolderQuery,
   useUploadAssetMutation,
-  useDeleteAssetMutation
-} from '../../../generated/graphql'
+  useDeleteAssetMutation,
+  ListAssetFolderDocument,
+ } from '../../../generated/graphql'
 import { ArrowRight, Folder, Description } from '@mui/icons-material'
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -226,7 +227,9 @@ const ImageLibrary = function ImageLibrary() {
       dragCounter = 0
     }
   }
-
+const [deleteAssetMutation] = useDeleteAssetMutation({
+    refetchQueries: [{ query: ListAssetFolderDocument }],
+  })
   const handleClose = () => {
     setContextItem(undefined)
     setState(initialState)
@@ -234,6 +237,7 @@ const ImageLibrary = function ImageLibrary() {
   if (error) {
     return <div>The requested folder does not exist.</div>
   }
+  
   return (
     <Modal open={true} onClose={() => navigate('../')} sx={{ padding: '5rem' }}>
       <Paper
@@ -385,6 +389,18 @@ const ImageLibrary = function ImageLibrary() {
                           {isFolder ? <Folder /> : <Description />}
                         </ListItemIcon>
                         <ListItemText primary={title} />
+                        <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={(e) =>
+                        {e.stopPropagation()
+                          deleteAssetMutation({
+                      variables: { projectId: projectId, imageId: currentFolderPath },
+                    })}
+                  }
+                >
+                  Delete Asset Folder
+                </Button>
                       </ListItem>
                     </React.Fragment>
                   ))}
@@ -514,6 +530,7 @@ const ImageLibrary = function ImageLibrary() {
               >
                 Create
               </Button>
+              
             </DialogActions>
           </Dialog>
         </div>

@@ -1,3 +1,7 @@
 mutation DeleteProject($projectId: ObjectId!) {
-  deleteProject(projectId: $projectId)
+  deleteProject(projectId: $projectId) {
+    _id
+    projectName
+    appId
+  }
 }

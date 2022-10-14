@@ -1,5 +1,6 @@
 import { gql } from '@apollo/client'
 import React, { useEffect, useState } from 'react'
+import {Button} from "@mui/material"
 import { Link } from 'react-router-dom'
 
 import {
@@ -37,11 +38,9 @@ const Projects: React.FC = function Projects() {
       })
     },
   })
-
   const [deleteProjectMutation] = useDeleteProjectMutation({
     refetchQueries: [{ query: ListProjectsDocument }],
   })
-
   useEffect(() => {
     if (organizations && organizations.listOrganizations.length > 0) {
       setSelectedOrganization(organizations.listOrganizations[0]._id)
@@ -49,17 +48,20 @@ const Projects: React.FC = function Projects() {
   }, [organizations])
 
   return (
-    <div>
+    <div style={{ margin: '10px', padding: '10px'}}>
       <h1>Projects</h1>
-      <div>
+      <div style={{ margin: '5px', padding: '10px'}}>
         <span>Select an organization to create a project for</span>
         <div>
-          <div>All Teams</div>
+          <div style={{ marginLeft: '5px', padding: '10px', fontSize: '20px'}}>All Teams</div>
           {organizations?.listOrganizations.map(org => (
-            <div key={org._id}>{org.name}</div>
+            <div 
+             style={{ marginLeft: '20px', padding: '5px', fontSize: '14px'}}
+            key={org._id}>{org.name}</div>
           ))}
         </div>
         <select
+          style={{ margin: '20px', padding: '5px', fontSize: '18px', minWidth: '150px'}}
           value={selectedOrganization}
           onChange={e => {
             const newValue = e.target.value
@@ -73,9 +75,10 @@ const Projects: React.FC = function Projects() {
           ))}
         </select>
       </div>
-      <div>
+      <div style={{ fontSize: '20px'}}>
         <label htmlFor="project-name">Project Name</label>
         <input
+          style={{ margin: '10px', padding: '10px'}}
           name="project-name"
           type="text"
           value={projectName}
@@ -85,6 +88,7 @@ const Projects: React.FC = function Projects() {
           }}
         />
         <button
+          style={{ fontSize: '20px', backgroundColor: 'fuchsia'}}
           onClick={async () => {
             await createProject({
               variables: {
@@ -99,13 +103,17 @@ const Projects: React.FC = function Projects() {
         >
           Create Project
         </button>
-      </div>
-      {projects?.listProjects.map(project => (
-        <Link key={project._id} to={`/projects/${project._id}/builder`}>
+        </div>
+       {projects?.listProjects.map(project => (
+       <div style={{ fontSize: '20px'}}>
+       <Link key={project._id} to={`/projects/${project._id}/builder`}>
           {project.projectName}
         </Link>
+       </div>
       ))}
     </div>
+    
+    
   )
 }
 

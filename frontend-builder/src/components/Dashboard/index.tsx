@@ -8,11 +8,13 @@ import {
   useListProjectsQuery,
   useMeQuery,
   useUpdateMeMutation,
+  useDeleteProjectMutation,
+  ListProjectsDocument,
 } from '../../generated/graphql'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ListIcon from '@mui/icons-material/List'
 import SortIcon from '@mui/icons-material/Sort'
-import { IconButton } from '@mui/material'
+import { IconButton, Tooltip } from '@mui/material'
 import { LabeledTextInput } from '../Shared/primitives/LabeledTextInput'
 import { useNavigate } from 'react-router-dom'
 import { gql } from '@apollo/client'
@@ -20,6 +22,9 @@ import { Button } from '../Shared/primitives/Button'
 import { useAuth } from '../../utils/hooks/useAuth'
 import { Logout } from '@mui/icons-material'
 import { MainTabHeader, TabHeader, TabWrapper } from '../Shared/Tabs'
+import { Link } from 'react-router-dom'
+import Datatable from './datatable'
+import axios from 'axios';
 
 const DashboardWrapper = styled.div`
   padding: 2em;
@@ -37,7 +42,6 @@ const ViewSelectionWrapper = styled.div`
 
 const ProfileWrapper = styled.div`
   display: grid;
-  grid-template-columns: 150px 1fr;
   margin-top: 3em;
 `
 
@@ -49,8 +53,8 @@ const SettingsWrapper = styled.div`
 `
 
 const ProjectView = styled.div`
-  height: 250px;
-  width: 350px;
+  height: auto;
+  width: auto;
   border-radius: 1em;
   padding: 1em;
   border: solid 1px var(--black);
@@ -73,8 +77,7 @@ function Teams({
 }) {
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
-      Teams
-      <div>TOD: Pending invitaions and acceptances</div>
+      <Datatable />
     </div>
   )
 }
@@ -86,6 +89,7 @@ function Profile({
   selectedPage: number
   pageIndex: number
 }) {
+  
   const { data: meData } = useMeQuery()
   const [updateMe] = useUpdateMeMutation()
   const [changePassword] = useChangePasswordMutation()
@@ -106,7 +110,18 @@ function Profile({
   return (
     <div style={{ display: selectedPage === pageIndex ? 'initial' : 'none' }}>
       <ProfileWrapper>
-        <div>AVATAR</div>
+        <div className="ava">
+        {/* <img src="" alt= " person " width="100%" height="100%" object-fit= 'cover'></img> */}
+        
+        {/* <button style={{ margin: '2px' }} onClick={ async () => {
+           (alert('Hello world!'))
+        }}> */}
+          <form action= "upload.php" method="POST" encType="multipart/form-data">
+          <input type="file" name="file"/>
+          <button type='submit' name='submit'>Upload Image or Avatar</button>
+          </form>
+          
+          </div>
         <div>
           <SettingsWrapper>
             <LabeledTextInput
@@ -132,7 +147,7 @@ function Profile({
               }}
             />
             <Button
-              style={{ width: '200px' }}
+              style={{ width: '150px' }}
               disabled={
                 me.email === (meData?.me?.email || '') &&
                 me.name === (meData?.me?.fullName || '')
@@ -171,7 +186,7 @@ function Profile({
               }}
             />
             <Button
-              style={{ width: '200px' }}
+              style={{ width: '150px' }}
               disabled={!newPassword || !oldPassword}
               onClick={async () => {
                 try {
@@ -274,6 +289,9 @@ function Projects({
       })
     },
   })
+  const [deleteProjectMutation] = useDeleteProjectMutation({
+    refetchQueries: [{ query: ListProjectsDocument }],
+  })
 
   const navigate = useNavigate()
   const { data: organizationsData } = useListOrganizationsQuery()
@@ -317,6 +335,7 @@ function Projects({
               }}
             />
             <button
+              className="createcan"
               onClick={async () => {
                 await createProject({
                   variables: {
@@ -334,6 +353,7 @@ function Projects({
               Create Project
             </button>
             <button
+              className="createcan"
               onClick={() => {
                 setProjectName('')
                 setNewProjectSelected(false)
@@ -348,11 +368,19 @@ function Projects({
               Create New Project
             </ProjectView>
             {projectsData?.listProjects.map(project => (
-              <ProjectView
-                key={project._id}
-                onClick={() => navigate(`/projects/${project._id}/builder`)}
-              >
-                {project.projectName}
+              <ProjectView key={project._id}>
+                <Link to={`/projects/${project._id}/builder`}>
+                  {project.projectName}
+                </Link>
+                <Button
+                  onClick={() =>
+                    deleteProjectMutation({
+                      variables: { projectId: project._id },
+                    })
+                  }
+                >
+                  Delete Project
+                </Button>
               </ProjectView>
             ))}
           </>
@@ -394,9 +422,11 @@ const Dashboard: React.FC = function Dashboard() {
             Hub
           </MainTabHeader>
         </TabWrapper>
-        <IconButton onClick={logout}>
-          <Logout />
-        </IconButton>
+        <Tooltip title="Logout">
+          <IconButton onClick={logout}>
+            <Logout />
+          </IconButton>
+        </Tooltip>
       </div>
       <SearchBar>
         <SearchIcon />

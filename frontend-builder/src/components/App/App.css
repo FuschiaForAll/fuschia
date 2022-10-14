@@ -39,6 +39,7 @@ body {
   border-radius: 8px;
   background-color: var(--white);
   cursor: pointer;
+  margin: 10px 0 5px 20px;
 }
 
 .outlined-accent-button:hover {
@@ -90,4 +91,72 @@ select[multiple] {
 select[multiple] option {
   white-space: normal;
   outline-color: var(--select-focus);
+}
+.auth {
+  font-size: 1.5rem;
+  font-style: italic;
+  margin: 10px;
+}
+.mfacon {
+  display: inline-flex;
+  border:  2px solid black;
+}
+.container{
+  display:grid;
+  border: var(--accent) 1px solid;
+  background-color: rgba(189, 186, 230, 0.917);
+  flex-direction: column; 
+  margin: 5px 5px 20px 5px;
+  padding:10px;
+  box-shadow: 2px 2px 5px var(--accent);
+}
+.container1{
+  border: var(--black) 2px solid;
+  flex-direction: column, row-reverse; 
+  margin: 5px;
+  padding: 5px;
+  box-shadow: 2px 2px 5px gray;
+
+}
+select{
+  border: var(--black) 1px solid;
+  background-color: white;
+  width:auto;
+  padding:2px;
+  margin-left: 10px;
+  font-size: smaller;
+}
+label[type=text] {
+  width: 100%;
+  padding: 5px;
+  margin-left: 10px;
+}
+input[type=text] {
+  padding: 5px;
+  margin-left: 0px;
+}
+input[type=checkbox] {
+  padding: 12px;
+  margin-left: 10px;
+}
+input[type=number] {
+  padding: 2px;
+  margin-left: 10px;
+}
+.createcan{
+  display: flexbox;
+  margin-top: 10px;
+  margin-left: 10px;
+  padding: 10px;
+  box-shadow: 5px 5px 5px gray;
+}
+.ava{
+  display: grid;
+  width: 25%;
+  height: 200px;
+  border: 3px solid var(--accent);
+  border-radius: 5px;
+  /* text-align: center; */
+  align-content: center;
+  padding-left:5px;
 }

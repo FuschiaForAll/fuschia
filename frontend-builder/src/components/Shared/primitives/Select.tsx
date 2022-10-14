@@ -19,7 +19,8 @@ const StyledSelect = styled.select`
   max-width: 30ch;
   border: 1px solid var(--text);
   border-radius: 0.25em;
-  padding: 0.25em 0.5em;
+  padding: 0.5em 0.5em;
+  margin-left: 10px;
   cursor: pointer;
   background-color: #fff;
   background-image: linear-gradient(to top, #f9f9f9, #fff 33%);
