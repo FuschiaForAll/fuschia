@@ -254,6 +254,12 @@ export function convertHooks(hooks: Hooks) {
         hookBuilder.push(`   const `)
         hookBuilder.push(buildUpHook(v))
         hookBuilder.push(` = ${key}(`)
+        
+        var defaultValSetter = `'`;
+        if (hooks[key].parameters !== null && hooks[key].parameters !== undefined) {
+          defaultValSetter = ``;
+        }
+        hookBuilder.push(defaultValSetter);
         if (hooks[key].parameters) {
           const params = hooks[key].parameters!
           hookBuilder.push(`{ variables: {`)
@@ -262,6 +268,7 @@ export function convertHooks(hooks: Hooks) {
           })
           hookBuilder.push(`}}`)
         }
+        hookBuilder.push(defaultValSetter);
         hookBuilder.push(`)`)
         hooksBuilder.push(hookBuilder.join(''))
       })
