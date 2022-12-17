@@ -119,4 +119,8 @@ export class Component {
   @Field()
   @Property()
   layerSort!: string;
+
+  @Field()
+  @Property()
+  children!: Component[];
 }
