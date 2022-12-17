@@ -119,7 +119,19 @@ export const draftJsStuff = (
                   let currentComponent: StructuredComponent | null = null
                   bits.forEach(bit => {
                     if (!currentComponent) {
-                      const comp = rootComponents.find(p => p._id.toString() === bit)
+                      var comp: any;
+                      rootComponents.forEach(element => {
+                        element.children.forEach(grandChildElement => {
+                          if (grandChildElement._id.toString() === bit) {
+                            comp = grandChildElement;
+                          }
+                          grandChildElement.children.forEach(xx => {
+                            if (xx._id.toString() === bit) {
+                              comp = xx;
+                            }
+                          })
+                        })
+                      });
                       if (comp) {
                         currentComponent = comp
                       }
@@ -135,9 +147,8 @@ export const draftJsStuff = (
                     }
                   })
                   if (currentComponent !== null) {
-                    replacementText = `\${${
-                      (currentComponent as Component).name
-                    }${dataPath ? dataPath : ''}}`
+                    //replacementText = `\${${(currentComponent as Component).name}${dataPath ? dataPath : ''}}`
+                    replacementText = (currentComponent as Component).name + (dataPath ? dataPath : '')
                   }
                   break
                 case 'LOCAL_DATA':
@@ -627,19 +638,19 @@ export function functionBuilder(
         value: 'login',
       })
       propsBuilder.push(
-        `const success = await login({ variables: { username: \`${draftJsStuff(
+        `const success = await login({ variables: { username: ${draftJsStuff(
           action.username,
           rootComponents,
           projectInfo,
           packages,
           assetFolder
-        )}\`, password: \`${draftJsStuff(
+        )}, password: ${draftJsStuff(
           action.password,
           rootComponents,
           projectInfo,
           packages,
           assetFolder
-        )}\`}});`
+        )}}});`
       )
       if (action.onSucess) {
         propsBuilder.push(`if (success.data) {`)
